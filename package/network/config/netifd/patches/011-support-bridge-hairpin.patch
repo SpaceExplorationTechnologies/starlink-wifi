@@ -1,0 +1,79 @@
+--- a/bridge.c
++++ b/bridge.c
+@@ -34,6 +34,7 @@
+ 	BRIDGE_ATTR_BRIDGE_EMPTY,
+ 	BRIDGE_ATTR_MULTICAST_QUERIER,
+ 	BRIDGE_ATTR_HASH_MAX,
++	BRIDGE_ATTR_HAIRPIN,
+ 	__BRIDGE_ATTR_MAX
+ };
+ 
+@@ -49,6 +50,7 @@
+ 	[BRIDGE_ATTR_BRIDGE_EMPTY] = { "bridge_empty", BLOBMSG_TYPE_BOOL },
+ 	[BRIDGE_ATTR_MULTICAST_QUERIER] = { "multicast_querier", BLOBMSG_TYPE_BOOL },
+ 	[BRIDGE_ATTR_HASH_MAX] = { "hash_max", BLOBMSG_TYPE_INT32 },
++	[BRIDGE_ATTR_HAIRPIN] = { "hairpin", BLOBMSG_TYPE_BOOL },
+ };
+ 
+ static const struct uci_blob_param_info bridge_attr_info[__BRIDGE_ATTR_MAX] = {
+@@ -207,6 +209,7 @@
+ 	}
+ 
+ 	device_set_present(&bst->dev, true);
++	system_bridge_set_hairpin(bm->dev.dev, bst->config.hairpin);
+ 	device_broadcast_event(&bst->dev, DEV_EVENT_TOPO_CHANGE);
+ 
+ 	return 0;
+@@ -556,6 +559,7 @@
+ 	cfg->hash_max = 512;
+ 	cfg->bridge_empty = false;
+ 	cfg->priority = 0x7FFF;
++	cfg->hairpin = false;
+ 
+ 	if ((cur = tb[BRIDGE_ATTR_STP]))
+ 		cfg->stp = blobmsg_get_bool(cur);
+@@ -592,6 +596,10 @@
+ 
+ 	if ((cur = tb[BRIDGE_ATTR_BRIDGE_EMPTY]))
+ 		cfg->bridge_empty = blobmsg_get_bool(cur);
++
++	if ((cur = tb[BRIDGE_ATTR_HAIRPIN]))
++		cfg->hairpin = blobmsg_get_bool(cur);
++
+ }
+ 
+ enum dev_change_type
+--- a/system-linux.c
++++ b/system-linux.c
+@@ -692,6 +692,13 @@
+ 	return system_bridge_if(bridge->ifname, dev, SIOCBRDELIF, NULL);
+ }
+ 
++void system_bridge_set_hairpin(struct device *dev, int enable)
++{
++	char mode[4];
++	snprintf(mode, sizeof(mode), "%d", !!enable);
++	system_set_dev_sysctl("/sys/class/net/%s/brport/hairpin_mode", dev->ifname, mode);
++}
++
+ int system_if_resolve(struct device *dev)
+ {
+ 	struct ifreq ifr;
+--- a/system.h
++++ b/system.h
+@@ -59,6 +59,7 @@
+ 	int hello_time;
+ 	int max_age;
+ 	int hash_max;
++	int hairpin;
+ };
+ 
+ struct bonding_config {
+@@ -109,6 +110,7 @@
+ int system_bridge_delbr(struct device *bridge);
+ int system_bridge_addif(struct device *bridge, struct device *dev);
+ int system_bridge_delif(struct device *bridge, struct device *dev);
++void system_bridge_set_hairpin(struct device *dev, int enable);
+ 
+ int system_bonding_addbonding(struct device *bonding, struct bonding_config *cfg);
+ int system_bonding_delbonding(struct device *bonding);

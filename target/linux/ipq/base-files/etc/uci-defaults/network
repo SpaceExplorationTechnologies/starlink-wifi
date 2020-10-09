@@ -1,0 +1,126 @@
+#!/bin/sh
+#
+# Copyright (c) 2015 The Linux Foundation. All rights reserved.
+# Copyright (C) 2011 OpenWrt.org
+#
+
+[ -e /etc/config/network ] && exit 0
+
+touch /etc/config/network
+
+. /lib/functions/uci-defaults.sh
+. /lib/ipq806x.sh
+
+ucidef_set_interface_loopback
+
+board=$(ipq806x_board_name)
+
+case "$board" in
+db149|\
+db149_1xx|\
+db149_2xx)
+	ucidef_set_interfaces_lan_wan "eth1 eth2 eth3" "eth0"
+	ucidef_add_switch "switch0" "1" "1"
+	ucidef_add_switch_vlan "switch0" "1" "6 1 2 3 4"
+	ucidef_add_switch_vlan "switch0" "2" "0 5"
+	;;
+ap148|\
+ap148_1xx|\
+ap145|\
+ap145_1xx)
+	ucidef_set_interfaces_lan_wan "eth1" "eth0"
+	ucidef_add_switch "switch0" "1" "1"
+	ucidef_add_switch_vlan "switch0" "1" "6 1 2 3 4"
+	ucidef_add_switch_vlan "switch0" "2" "0 5"
+	;;
+ap160|\
+ap161)
+	ucidef_set_interfaces_lan_wan "eth1 eth2" "eth0"
+	ucidef_add_switch "switch0" "1" "1" "1"
+	ucidef_add_switch_vlan "switch0" "1" "6 4"
+	ucidef_add_switch_vlan "switch0" "2" "0 1 2 3"
+	;;
+ap160_2xx)
+	ucidef_set_interface_bond "bond0" "2" "eth1 eth2 eth3" "2"
+	ucidef_set_interface_lan "bond0 eth0"
+	ucidef_add_switch "switch0" "1" "1" "1"
+	ucidef_add_switch_vlan "switch0" "1" "1 26"
+	ucidef_add_switch_vlan "switch0" "2" "2 3 4 27"
+	;;
+storm)
+	ucidef_set_interfaces_lan_wan "eth1" "eth0"
+	ucidef_add_switch "switch0" "1" "1"
+	ucidef_add_switch_vlan "switch0" "1" "6 1 2 3"
+	ucidef_add_switch_vlan "switch0" "2" "0 5"
+	;;
+whirlwind)
+	ucidef_set_interfaces_lan_wan "eth1" "eth0"
+	ucidef_add_switch "switch0" "1" "1"
+	ucidef_add_switch_vlan "switch0" "1" "6 1"
+	ucidef_add_switch_vlan "switch0" "2" "0 2"
+	;;
+ak01_1xx)
+	ucidef_set_interfaces_lan_wan "eth1" "eth0"
+	;;
+ap-dk01.1-c1|\
+ap-dk01.1-c2|\
+ap-dk04.1-c1|\
+ap-dk04.1-c2|\
+ap-dk04.1-c3|\
+ap-dk04.1-c5|\
+ap-dk04.1-c6|\
+ap-dk05.1-c1|\
+ap-dk06.1-c1|\
+ap-dk07.1-c1|\
+ap-dk07.1-c2|\
+ap-dk07.1-c3|\
+ap-dk07.1-c4)
+	ucidef_set_interfaces_lan_wan "eth1" "eth0"
+	ucidef_add_switch "switch0" "1" "1"
+	ucidef_add_switch_vlan "switch0" "1" "0t 1 2 3 4"
+	ucidef_add_switch_vlan "switch0" "2" "0t 5"
+	ucidef_add_switch_ext "switch0" "QosPtMode" "1" "dscp" "enable"
+	ucidef_add_switch_ext "switch0" "QosPtMode" "2" "dscp" "enable"
+	ucidef_add_switch_ext "switch0" "QosPtMode" "3" "dscp" "enable"
+	ucidef_add_switch_ext "switch0" "QosPtMode" "4" "dscp" "enable"
+	ucidef_add_switch_ext "switch0" "QosPtMode" "5" "dscp" "enable"
+	;;
+ap-dk04.1-c4)
+	ucidef_set_interfaces_lan_wan "eth1" "eth0"
+	ucidef_add_switch "switch0" "1" "1"
+	ucidef_add_switch_vlan "switch0" "1" "0t 1 2 3"
+	ucidef_add_switch_vlan "switch0" "2" "0t 4 5"
+	ucidef_add_switch_ext "switch0" "QosPtMode" "1" "dscp" "enable"
+	ucidef_add_switch_ext "switch0" "QosPtMode" "2" "dscp" "enable"
+	ucidef_add_switch_ext "switch0" "QosPtMode" "3" "dscp" "enable"
+	ucidef_add_switch_ext "switch0" "QosPtMode" "4" "dscp" "enable"
+	ucidef_add_switch_ext "switch0" "QosPtMode" "5" "dscp" "enable"
+	ucidef_add_switch_ext_trunk "switch0" "TrunkGroup" "0" "enable" "0x30"
+	;;
+ap-hk01-c1|\
+ap-hk01-c2|\
+ap-hk01-c3|\
+ap-hk01-c4|\
+ap-hk02|\
+ap-hk05|\
+ap-hk06|\
+ap-hk07|\
+ap-hk08|\
+ap-hk09|\
+ap-ac01.1|\
+ap-ac01.2|\
+db-hk01|\
+db-hk02)
+	ucidef_add_switch "switch0"
+	ucidef_add_switch_ext_profile  "switch0" "CtrlpktRfdb" "0" "01-80-c2-00-00-00"
+	ucidef_add_switch_ext_hkxx "switch0" "CtrlpktAppProfile" "0x7e" "0x0" "0x1" "no" "no" "no" "no" "no" "no" "no" "no" "no" "no" "rdtcpu" "no" "no" "yes" "no"
+	ucidef_set_interfaces_lan_wan "eth1 eth2 eth3 eth4 eth5" "eth0"
+	;;
+*)
+	echo "Unsupported hardware. Network interfaces not intialized"
+	;;
+esac
+
+uci commit network
+
+exit 0

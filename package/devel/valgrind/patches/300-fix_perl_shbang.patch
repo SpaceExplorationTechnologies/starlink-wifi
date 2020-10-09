@@ -1,0 +1,10 @@
+Index: valgrind-3.12.0/coregrind/link_tool_exe_linux.in
+===================================================================
+--- valgrind-3.12.0.orig/coregrind/link_tool_exe_linux.in	2016-10-21 16:07:40.000000000 +0530
++++ valgrind-3.12.0/coregrind/link_tool_exe_linux.in	2018-04-02 10:56:02.437804074 +0530
+@@ -1,4 +1,4 @@
+-#! @PERL@
++#! /usr/bin/perl
+ 
+ # This script handles linking the tool executables on Linux,
+ # statically and at an alternative load address.

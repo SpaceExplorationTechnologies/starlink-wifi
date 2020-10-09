@@ -1,0 +1,13 @@
+Index: libiwinfo-2015-06-01/iwinfo_cli.c
+===================================================================
+--- libiwinfo-2015-06-01.orig/iwinfo_cli.c	2016-03-24 16:01:33.000000000 +0530
++++ libiwinfo-2015-06-01/iwinfo_cli.c	2016-03-24 17:18:20.939025492 +0530
+@@ -58,7 +58,7 @@
+ 
+ static char * format_frequency(int freq)
+ {
+-	static char buf[10];
++	static char buf[16];
+ 
+ 	if (freq <= 0)
+ 		snprintf(buf, sizeof(buf), "unknown");

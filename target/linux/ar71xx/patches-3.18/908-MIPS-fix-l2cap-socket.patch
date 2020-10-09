@@ -1,0 +1,13 @@
+Index: linux-3.18.29/net/bluetooth/l2cap_sock.c
+===================================================================
+--- linux-3.18.29.orig/net/bluetooth/l2cap_sock.c	2016-07-19 13:21:01.417014042 +0200
++++ linux-3.18.29/net/bluetooth/l2cap_sock.c	2016-07-19 13:22:11.689015361 +0200
+@@ -922,7 +922,7 @@
+ 			break;
+ 		}
+ 
+-		if (get_user(opt, (u32 __user *) optval)) {
++		if (get_user(opt, (u16 __user *) optval)) {
+ 			err = -EFAULT;
+ 			break;
+ 		}

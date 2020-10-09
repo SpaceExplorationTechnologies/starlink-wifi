@@ -1,0 +1,292 @@
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+--- a/extensions/rtsp/netfilter_helpers.h
++++ b/extensions/rtsp/netfilter_helpers.h
+@@ -1,4 +1,6 @@
+ /*
++ * Copyright (c) 2013 The Linux Foundation. All rights reserved.
++ *
+  * Helpers for netfiler modules.  This file provides implementations for basic
+  * functions such as strncasecmp(), etc.
+  *
+@@ -16,6 +18,32 @@
+ 
+ #include <linux/ctype.h>
+ #define iseol(c) ( (c) == '\r' || (c) == '\n' )
++#define NIPQUAD(addr) \
++    ((unsigned char *)&addr)[0], \
++    ((unsigned char *)&addr)[1], \
++    ((unsigned char *)&addr)[2], \
++    ((unsigned char *)&addr)[3]
++
++/* Single range specification. */
++struct nf_nat_range
++{
++    /* Set to OR of flags above. */
++    unsigned int flags;
++
++    /* Inclusive: network order. */
++    __be32 min_ip, max_ip;
++
++    /* Inclusive: network order */
++    union nf_conntrack_man_proto min, max;
++};
++/* For backwards compat: don't use in modern code. */
++struct nf_nat_multi_range_compat
++{
++    unsigned int rangesize; /* Must be 1. */
++
++    /* hangs off end. */
++    struct nf_nat_range range[1];
++};
+ 
+ /*
+  * The standard strncasecmp()
+--- a/extensions/rtsp/nf_conntrack_rtsp.c
++++ b/extensions/rtsp/nf_conntrack_rtsp.c
+@@ -1,5 +1,8 @@
+ /*
+  * RTSP extension for IP connection tracking
++ *
++ * Copyright (c) 2013 The Linux Foundation. All rights reserved.
++ *
+  * (C) 2003 by Tom Marshall <tmarshall at real.com>
+  * based on ip_conntrack_irc.c
+  *
+@@ -35,6 +38,7 @@
+ #include <net/tcp.h>
+ 
+ #include <net/netfilter/nf_conntrack.h>
++#include <net/netfilter/nf_conntrack_core.h>
+ #include <net/netfilter/nf_conntrack_expect.h>
+ #include <net/netfilter/nf_conntrack_helper.h>
+ #include "nf_conntrack_rtsp.h"
+@@ -253,13 +257,48 @@ rtsp_parse_transport(char* ptran, uint t
+ 	return rc;
+ }
+ 
++/* need to optimize:
++ * 1, should only remove connections which belongs to the teardowned seesion
++ * 2, when large traffic flow, timer will be updated immediately, rather then expired.
++ * */
++void destroy_rtsp_exp(struct nf_conn *master_ct)
++{
++	struct nf_conntrack_tuple_hash *h;
++	struct hlist_nulls_node *n;
++	struct net *net;
++	struct nf_conn *ct = NULL;
++	int i;
++
++	net = nf_ct_net(ct);
++
++	/*remove all established ct*/
++	spin_lock_bh(&nf_conntrack_lock);
++	for (i = 0; i < nf_conntrack_htable_size; i++)
++	{
++		hlist_nulls_for_each_entry(h, n, &net->ct.hash[i], hnnode)
++		{
++			ct = nf_ct_tuplehash_to_ctrack(h);
++			if(ct->master == master_ct)
++			{
++				mod_timer(&ct->timeout, jiffies);
++			}
++		}
++	}
++	spin_unlock_bh(&nf_conntrack_lock);
++
++    /*remove all unestablished expect*/
++	nf_ct_remove_expectations(master_ct);
++}
++
+ void expected(struct nf_conn *ct, struct nf_conntrack_expect *exp)
+ {
+-		typeof(nf_nat_rtsp_hook_expectfn) nf_nat_rtsp_expectfn;
+-		nf_nat_rtsp_expectfn = rcu_dereference(nf_nat_rtsp_hook_expectfn);
+-    if(nf_nat_rtsp_expectfn && ct->master->status & IPS_NAT_MASK) {
+-        nf_nat_rtsp_expectfn(ct,exp);
+-    }
++	typeof(nf_nat_rtsp_hook_expectfn) nf_nat_rtsp_expectfn;
++
++	nf_nat_rtsp_expectfn = rcu_dereference(nf_nat_rtsp_hook_expectfn);
++	if(nf_nat_rtsp_expectfn && ct->master->status & IPS_NAT_MASK)
++	{
++		nf_nat_rtsp_expectfn(ct,exp);
++	}
+ }
+ 
+ /*** conntrack functions ***/
+@@ -304,6 +343,12 @@ help_out(struct sk_buff *skb, unsigned c
+ 					&transoff, &translen))
+ 			break;      /* not a valid message */
+ 		
++		if (strncmp(pdata+cmdoff, "TEARDOWN ", 9) == 0)
++		{
++			destroy_rtsp_exp(ct);
++			continue;
++		}
++
+ 		if (strncmp(pdata+cmdoff, "SETUP ", 6) != 0)
+ 			continue;   /* not a SETUP message */
+ 		pr_debug("found a setup message\n");
+@@ -343,10 +388,10 @@ help_out(struct sk_buff *skb, unsigned c
+ 			//exp->mask.dst.u.udp.port  = 0xfffe;
+ 		}
+ 
+-		pr_debug("expect_related %pI4:%u-%pI4:%u\n",
+-		       &exp->tuple.src.u3.ip,
++		pr_debug("expect_related %u.%u.%u.%u:%u-%u.%u.%u.%u:%u\n",
++		       NIPQUAD(exp->tuple.src.u3.ip),
+ 		       ntohs(exp->tuple.src.u.udp.port),
+-		       &exp->tuple.dst.u3.ip,
++		       NIPQUAD(exp->tuple.dst.u3.ip),
+ 		       ntohs(exp->tuple.dst.u.udp.port));
+ 
+ 		nf_nat_rtsp = rcu_dereference(nf_nat_rtsp_hook);
+--- a/extensions/rtsp/nf_nat_rtsp.c
++++ b/extensions/rtsp/nf_nat_rtsp.c
+@@ -1,5 +1,13 @@
+ /*
+  * RTSP extension for TCP NAT alteration
++ *
++ * Copyright (c) 2013 The Linux Foundation. All rights reserved.
++ *
++ * (C) 2010 Atheros Communications. Inc.
++ *    3/23/2010, <yyu@atheros.com>
++ *      Fixed failure of RTCP transportation when "PLAY" command
++ *      was issued to RTSP server by client.
++ *
+  * (C) 2003 by Tom Marshall <tmarshall at real.com>
+  * based on ip_nat_irc.c
+  *
+@@ -44,13 +52,12 @@
+ #include "netfilter_helpers.h"
+ #define NF_NEED_MIME_NEXTLINE
+ #include "netfilter_mime.h"
+-
+-#include "../compat_xtables.h"
+-
++#define IP_NAT_MANIP_DST 1
+ #define MAX_PORTS       8
+ #define DSTACT_AUTO     0
+ #define DSTACT_STRIP    1
+ #define DSTACT_NONE     2
++#define IP_NAT_RANGE_MAP_IPS 1
+ 
+ static char*    stunaddr = NULL;
+ static char*    destaction = NULL;
+@@ -117,12 +124,14 @@ rtsp_mangle_tran(enum ip_conntrack_info
+     uint        off = 0;
+     uint        diff;           /* Number of bytes we removed */
+ 
++    struct nf_conntrack_expect *rtcp_exp;
+     struct nf_conn *ct = exp->master;
+     struct nf_conntrack_tuple *t;
+ 
+     char    szextaddr[15+1];
+     uint    extaddrlen;
+     int     is_stun;
++    int dir = CTINFO2DIR(ctinfo);
+ 
+     get_skb_tcpdata(skb, &ptcp, &tcplen);
+     ptran = ptcp+tranoff;
+@@ -141,8 +150,12 @@ rtsp_mangle_tran(enum ip_conntrack_info
+     t = &exp->tuple;
+     t->dst.u3.ip = newip;
+ 
+-    extaddrlen = extip ? sprintf(szextaddr, "%pI4", &extip)
+-                       : sprintf(szextaddr, "%pI4", &newip);
++    exp->saved_proto.udp.port = exp->tuple.dst.u.udp.port;
++    exp->expectfn = nf_nat_follow_master;
++    exp->dir = !dir;
++
++    extaddrlen = extip ? sprintf(szextaddr, "%u.%u.%u.%u", NIPQUAD(extip))
++                       : sprintf(szextaddr, "%u.%u.%u.%u", NIPQUAD(newip));
+     pr_debug("stunaddr=%s (%s)\n", szextaddr, (extip?"forced":"auto"));
+ 
+     rbuf1len = rbufalen = 0;
+@@ -170,9 +183,33 @@ rtsp_mangle_tran(enum ip_conntrack_info
+             t->dst.u.udp.port = htons(loport);
+             if (nf_ct_expect_related(exp) == 0)
+             {
++                __be16 be_loport;
++
++                be_loport = htons(loport + 1);
++
++                rtcp_exp = nf_ct_expect_alloc(ct);
++
++                nf_ct_expect_init(rtcp_exp, NF_CT_EXPECT_CLASS_DEFAULT, nf_ct_l3num(ct),
++                    &ct->tuplehash[!dir].tuple.src.u3, &ct->tuplehash[!dir].tuple.dst.u3,
++                    IPPROTO_UDP, NULL, &be_loport);
++
++                rtcp_exp->master = ct;
++                rtcp_exp->flags = 0;
++
++                rtcp_exp->saved_proto.udp.port = prtspexp->loport + 1;
++                rtcp_exp->expectfn = nf_nat_follow_master;
++                rtcp_exp->dir = !CTINFO2DIR(ctinfo);
++
++
+                 hiport = loport + 1; //~exp->mask.dst.u.udp.port;
+                 pr_debug("using ports %hu-%hu\n", loport, hiport);
+-                break;
++                if(nf_ct_expect_related(rtcp_exp) == 0)
++                {
++                    nf_ct_expect_put(rtcp_exp);
++                    break;
++                }
++                nf_ct_expect_put(rtcp_exp);
++                nf_ct_unexpect_related(exp);
+             }
+         }
+         if (loport != 0)
+@@ -257,7 +294,7 @@ rtsp_mangle_tran(enum ip_conntrack_info
+                 {
+                     diff = nextfieldoff-off;
+                     if (!nf_nat_mangle_tcp_packet(skb, ct, ctinfo,
+-                                                         off, diff, NULL, 0))
++                                                         tranoff + off + 12, diff - 12 - 1, szextaddr, extaddrlen))
+                     {
+                         /* mangle failed, all we can do is bail */
+ 			nf_ct_unexpect_related(exp);
+@@ -432,7 +469,7 @@ help(struct sk_buff *skb, enum ip_conntr
+ 
+ static void expected(struct nf_conn* ct, struct nf_conntrack_expect *exp)
+ {
+-    struct nf_nat_ipv4_multi_range_compat mr;
++    struct nf_nat_multi_range_compat mr;
+     u_int32_t newdstip, newsrcip, newip;
+ 
+     struct nf_conn *master = ct->master;
+@@ -440,18 +477,18 @@ static void expected(struct nf_conn* ct,
+     newdstip = master->tuplehash[IP_CT_DIR_ORIGINAL].tuple.src.u3.ip;
+     newsrcip = ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple.src.u3.ip;
+     //FIXME (how to port that ?)
+-    //code from 2.4 : newip = (HOOK2MANIP(hooknum) == NF_NAT_MANIP_SRC) ? newsrcip : newdstip;
++    //code from 2.4 : newip = (HOOK2MANIP(hooknum) == IP_NAT_MANIP_SRC) ? newsrcip : newdstip;
+     newip = newdstip;
+ 
+-    pr_debug("newsrcip=%pI4, newdstip=%pI4, newip=%pI4\n",
+-           &newsrcip, &newdstip, &newip);
++    pr_debug("newsrcip=%u.%u.%u.%u, newdstip=%u.%u.%u.%u, newip=%u.%u.%u.%u\n",
++           NIPQUAD(newsrcip), NIPQUAD(newdstip), NIPQUAD(newip));
+ 
+     mr.rangesize = 1;
+     // We don't want to manip the per-protocol, just the IPs. 
+-    mr.range[0].flags = NF_NAT_RANGE_MAP_IPS;
++    mr.range[0].flags = IP_NAT_RANGE_MAP_IPS;
+     mr.range[0].min_ip = mr.range[0].max_ip = newip;
+ 
+-    nf_nat_setup_info(ct, &mr.range[0], NF_NAT_MANIP_DST);
++    nf_nat_setup_info(ct, &mr.range[0], IP_NAT_MANIP_DST);
+ }
+ 
+ 

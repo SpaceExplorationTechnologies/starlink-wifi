@@ -1,0 +1,67 @@
+--- netifd-2015-12-16.orig/bonding.c
++++ netifd-2015-12-16/bonding.c
+@@ -28,6 +28,7 @@
+         BONDING_ATTR_SLAVES,
+         BONDING_ATTR_MODE,
+         BONDING_ATTR_XMITHASHPOL,
++        BONDING_ATTR_L2DA_MULTIMAC,
+         __BONDING_ATTR_MAX
+ };
+ 
+@@ -36,6 +37,7 @@
+         [BONDING_ATTR_SLAVES] = { "slaves", BLOBMSG_TYPE_ARRAY },
+         [BONDING_ATTR_MODE] = { "mode", BLOBMSG_TYPE_INT32 },
+         [BONDING_ATTR_XMITHASHPOL] = { "xmit_hash_policy", BLOBMSG_TYPE_STRING },
++        [BONDING_ATTR_L2DA_MULTIMAC] = { "l2da_multimac", BLOBMSG_TYPE_INT32 },
+ };
+ 
+ static const struct uci_blob_param_info bonding_attr_info[__BONDING_ATTR_MAX] = {
+@@ -455,6 +457,7 @@
+ 
+         /* defaults */
+         cfg->mode = 0;
++        cfg->l2da_multimac = 0;
+ 
+         if ((cur = tb[BONDING_ATTR_MODE]))
+                 cfg->mode = blobmsg_get_u32(cur);
+@@ -463,6 +466,9 @@
+                 memcpy(&cfg->xmit_hash_policy, blobmsg_get_string(cur),
+                        sizeof(cfg->xmit_hash_policy));
+         }
++
++        if ((cur = tb[BONDING_ATTR_L2DA_MULTIMAC]))
++                cfg->l2da_multimac = blobmsg_get_u32(cur);
+ }
+ 
+ enum dev_change_type
+--- netifd-2015-12-16.orig/system-linux.c
++++ netifd-2015-12-16/system-linux.c
+@@ -924,7 +924,7 @@
+ 
+ int system_bonding_addbonding(struct device *bonding, struct bonding_config *cfg)
+ {
+-	char cmd[32], mode[4], policy[16];
++	char cmd[32], mode[4], l2da_multimac[4], policy[16];
+ 
+ 	snprintf(cmd, sizeof(cmd), "+%s", bonding->ifname);
+ 	system_set_sysctl("/sys/class/net/bonding_masters", cmd);
+@@ -932,6 +932,9 @@
+ 	snprintf(mode, sizeof(mode), "%d", cfg->mode);
+ 	system_set_dev_sysctl("/sys/class/net/%s/bonding/mode", bonding->ifname, mode);
+ 
++	snprintf(l2da_multimac, sizeof(l2da_multimac), "%d", cfg->l2da_multimac);
++	system_set_dev_sysctl("/sys/class/net/%s/bonding/l2da_multimac", bonding->ifname, l2da_multimac);
++
+ 	snprintf(policy, sizeof(policy), "%s", cfg->xmit_hash_policy);
+ 	system_set_dev_sysctl("/sys/class/net/%s/bonding/xmit_hash_policy",
+ 				bonding->ifname, policy);
+--- netifd-2015-12-16.orig/system.h
++++ netifd-2015-12-16/system.h
+@@ -64,6 +64,7 @@
+ 
+ struct bonding_config {
+ 	int mode;
++	int l2da_multimac;
+ 	char xmit_hash_policy[16];
+ };
+ 

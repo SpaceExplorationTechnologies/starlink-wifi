@@ -1,0 +1,199 @@
+From 12eb77a30925e37dcbd480c5d9f1ffa12dbfd034 Mon Sep 17 00:00:00 2001
+From: Natesh babu <nrameg@codeaurora.org>
+Date: Mon, 11 Apr 2016 19:27:31 +0530
+Subject: [PATCH] ipq40xx Read and print banner info from vmlinux
+
+Signed-off-by: Natesh babu <nrameg@codeaurora.org>
+---
+ linux-ramdump-parser-v2/ramdump.py | 87 +++++++++++++++++++++++++++++---------
+ 1 file changed, 67 insertions(+), 20 deletions(-)
+
+diff --git a/linux-ramdump-parser-v2/ramdump.py b/linux-ramdump-parser-v2/ramdump.py
+index eebc6ea..829ea5f 100755
+--- a/linux-ramdump-parser-v2/ramdump.py
++++ b/linux-ramdump-parser-v2/ramdump.py
+@@ -16,6 +16,10 @@ import struct
+ import gzip
+ import functools
+ import string
++import random
++import platform
++import stat
++
+ from boards import get_supported_boards, get_supported_ids
+ from tempfile import NamedTemporaryFile
+ 
+@@ -23,6 +27,7 @@ import gdbmi
+ from print_out import print_out_str
+ from mmu import Armv7MMU, Armv7LPAEMMU, Armv8MMU
+ import parser_util
++import linux_list as llist
+ 
+ FP = 11
+ SP = 13
+@@ -434,7 +439,21 @@ class RamDump():
+                 if urc < 0:
+                     break
+ 
+-    def __init__(self, vmlinux_path, nm_path, gdb_path, objdump_path, ebi, file_path, phys_offset, outdir, qtf_path, hw_id=None, hw_version=None, arm64=False, page_offset=None, qtf=False):
++        def arm_symbol_mapping(self, sym):
++            sym1="atd"
++            if len(sym)>=3:
++
++                if (sym[0] == '$' and sym1.find(sym[1]) and (sym[2] == '\0' or sym[2] == '.')):
++                    return 1
++                else:
++                    return 0
++            else:
++                return 0
++
++    def __init__(self, vmlinux_path, nm_path, gdb_path, objdump_path, ebi,
++                 file_path, phys_offset, outdir,qtf_path,
++                 hw_id=None,hw_version=None, arm64=False, page_offset=None,
++                 qtf=False, t32_host_system=None):
+         self.ebi_files = []
+         self.phys_offset = None
+         self.tz_start = 0
+@@ -504,7 +523,7 @@ class RamDump():
+         elif pg_dir_size == 0x5000:
+             print_out_str('Using LPAE MMU')
+             text_offset = 0x8000
+-            pg_dir_size = 0x5000    # 0x4000 for non-LPAE
++            pg_dir_size = 0x5000
+             swapper_pg_dir_addr = self.phys_offset + text_offset - pg_dir_size
+ 
+             # We deduce ttbr1 and ttbcr.t1sz based on the value of
+@@ -600,6 +619,17 @@ class RamDump():
+         return s in self.config
+ 
+     def get_version(self):
++        s = '{0} -ex "print linux_banner" -ex "quit" {1}'.format(self.gdb_path, self.vmlinux)
++	f = os.popen(s)
++        now = f.read()
++        try:
++                start_pos = now.index("Linux version")
++                banner=now[start_pos:]
++                flen = len(banner)
++                flen = flen - 4
++        except:
++                print('not able to find linux banner')
++
+         banner_addr = self.addr_lookup('linux_banner')
+         if banner_addr is not None:
+             # Don't try virt to phys yet, compute manually
+@@ -608,7 +638,14 @@ class RamDump():
+             if b is None:
+                 print_out_str('!!! Could not read banner address!')
+                 return False
+-            v = re.search('Linux version (\d{0,2}\.\d{0,2}\.\d{0,2})', b)
++
++            if (format(banner[0:flen]) != format(b[0:flen])):
++                print_out_str('!!! linux banner version mismatch!')
++                print_out_str('!!! In vmlinux : {0}'.format(banner[0:flen]))
++                print_out_str('!!! In Dump    : {0}'.format(b[0:flen]))
++                return False
++
++            v = re.search('Linux version (\d{0,2}\.\d{0,2}\.\d{0,3})', b)
+             if v is None:
+                 print_out_str('!!! Could not match version! {0}'.format(b))
+                 return False
+@@ -710,7 +747,11 @@ class RamDump():
+ 
+         startup_script = open(out_path + '/t32_startup_script.cmm', 'wb')
+ 
+-        if self.arm64 and (self.hw_id == 8916 or self.hw_id == 8939 or self.hw_id == 8936):
++        startup_script.write(('title \"' + out_path + '\"\n').encode('ascii', 'ignore'))
++
++        is_cortex_a53 = self.hw_id == 8916 or self.hw_id == 8939 or self.hw_id == 8936
++
++        if self.arm64 and is_cortex_a53:
+             startup_script.write('sys.cpu CORTEXA53\n'.encode('ascii', 'ignore'))
+         else:
+             startup_script.write('sys.cpu {0}\n'.format(self.cpu_type).encode('ascii', 'ignore'))
+@@ -723,14 +764,12 @@ class RamDump():
+         if self.arm64:
+             startup_script.write('Register.Set NS 1\n'.encode('ascii', 'ignore'))
+ 
+-            if self.hw_id == 8916 or self.hw_id == 8939:
+-                startup_script.write('Data.Set SPR:0x30201 %Quad 0x000000008007D000\n'.encode('ascii', 'ignore'))
++            if is_cortex_a53:
+                 startup_script.write('Data.Set SPR:0x30202 %Quad 0x00000012B5193519\n'.encode('ascii', 'ignore'))
+                 startup_script.write('Data.Set SPR:0x30A20 %Quad 0x000000FF440C0400\n'.encode('ascii', 'ignore'))
+                 startup_script.write('Data.Set SPR:0x30A30 %Quad 0x0000000000000000\n'.encode('ascii', 'ignore'))
+                 startup_script.write('Data.Set SPR:0x30100 %Quad 0x0000000034D5D91D\n'.encode('ascii', 'ignore'))
+             else:
+-                startup_script.write('Data.Set SPR:0x30201 %Quad 0x000000000007D000\n'.encode('ascii', 'ignore'))
+                 startup_script.write('Data.Set SPR:0x30202 %Quad 0x00000032B5193519\n'.encode('ascii', 'ignore'))
+                 startup_script.write('Data.Set SPR:0x30A20 %Quad 0x000000FF440C0400\n'.encode('ascii', 'ignore'))
+                 startup_script.write('Data.Set SPR:0x30A30 %Quad 0x0000000000000000\n'.encode('ascii', 'ignore'))
+@@ -780,7 +819,7 @@ class RamDump():
+         t32_bat = open(out_path + '/launch_t32.bat', 'wb')
+         if self.arm64:
+             t32_binary = 'C:\\T32\\bin\\windows64\\t32MARM64.exe'
+-        elif self.hw_id == 8916 or self.hw_id == 8939 or self.hw_id == 8936:
++        elif is_cortex_a53:
+             t32_binary = 'C:\\T32\\bin\\windows64\\t32MARM.exe'
+         else:
+             t32_binary = 'c:\\t32\\t32MARM.exe'
+@@ -800,18 +839,6 @@ class RamDump():
+             return self.read_word(self.tz_addr, False)
+ 
+     def get_hw_id(self, add_offset=True):
+-        heap_toc_offset = self.field_offset('struct smem_shared', 'heap_toc')
+-        if heap_toc_offset is None:
+-            print_out_str(
+-                '!!!! Could not get a necessary offset for auto detection!')
+-            print_out_str(
+-                '!!!! Please check the gdb path which is used for offsets!')
+-            print_out_str('!!!! Also check that the vmlinux is not stripped')
+-            print_out_str('!!!! Exiting...')
+-            sys.exit(1)
+-
+-        smem_heap_entry_size = self.sizeof('struct smem_heap_entry')
+-        offset_offset = self.field_offset('struct smem_heap_entry', 'offset')
+         socinfo_format = -1
+         socinfo_id = -1
+         socinfo_version = 0
+@@ -821,6 +848,18 @@ class RamDump():
+         boards = get_supported_boards()
+ 
+         if (self.hw_id is None):
++            heap_toc_offset = self.field_offset('struct smem_shared', 'heap_toc')
++            if heap_toc_offset is None:
++                print_out_str(
++                    '!!!! Could not get a necessary offset for auto detection!')
++                print_out_str(
++                    '!!!! Please check the gdb path which is used for offsets!')
++                print_out_str('!!!! Also check that the vmlinux is not stripped')
++                print_out_str('!!!! Exiting...')
++                sys.exit(1)
++
++            smem_heap_entry_size = self.sizeof('struct smem_heap_entry')
++            offset_offset = self.field_offset('struct smem_heap_entry', 'offset')
+             for board in boards:
+                 trace = board.trace_soc
+                 if trace:
+@@ -1170,12 +1209,20 @@ class RamDump():
+             return None
+         return struct.unpack(format_string, s)
+ 
++    def Is_Dakota(self):
++        if (self.hw_id == 4018):
++            return True
++        else:
++            return False
++
+     def hexdump(self, address, length, virtual=True, file_object=None):
+         """Does a hexdump (in the format of `xxd'). `length' is in bytes. If
+         given, will write to `file_object', otherwise will write to
+         stdout.
+ 
+         """
++        import StringIO
++        sio = StringIO.StringIO()
+         parser_util.xxd(
+             address,
+             [self.read_byte(address + i, virtual=virtual) or 0
+-- 
+1.9.1
+

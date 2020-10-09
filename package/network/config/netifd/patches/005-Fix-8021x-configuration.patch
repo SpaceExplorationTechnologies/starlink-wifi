@@ -1,0 +1,37 @@
+diff --git a/scripts/netifd-wireless.sh b/scripts/netifd-wireless.sh
+index e30aeec..659284b 100644
+--- a/scripts/netifd-wireless.sh
++++ b/scripts/netifd-wireless.sh
+@@ -201,8 +201,6 @@ wireless_vif_parse_encryption() {
+ 		*tkip | wpa | psk) wpa_pairwise="TKIP";;
+ 	esac
+ 
+-	# Standlone TKIP is no longer allowed
+-	[ "$wpa_pairwise" = "TKIP" ] && wpa_pairwise="CCMP TKIP"
+ 
+ 	# Examples:
+ 	# psk-mixed/tkip    => WPA1+2 PSK, TKIP
+@@ -225,13 +223,19 @@ wireless_vif_parse_encryption() {
+ 			wpa=1
+ 		;;
+ 		*)
+-			# TKIP alone is now prohibited by WFA so the only
+-			# combination left must be CCMP+TKIP (wpa=3)
+-			wpa=3
+-			wpa_pairwise="CCMP TKIP"
++			wpa=0
++			wpa_pairwise=
+ 		;;
+ 	esac
+ 
++	# Standlone TKIP is no longer allowed
++	# TKIP alone is now prohibited by WFA so the only
++	# combination left must be CCMP+TKIP (wpa=3)
++	[ "$wpa_pairwise" = "TKIP" ] && {
++		wpa=3
++		wpa_pairwise="CCMP TKIP"
++	}
++
+ 	case "$encryption" in
+ 		*psk*)
+ 			auth_type=psk

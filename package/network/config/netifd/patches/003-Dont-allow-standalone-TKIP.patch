@@ -1,0 +1,70 @@
+diff --git a/scripts/netifd-wireless.sh b/scripts/netifd-wireless.sh
+index aaa3a1c..e30aeec 100644
+--- a/scripts/netifd-wireless.sh
++++ b/scripts/netifd-wireless.sh
+@@ -42,7 +42,6 @@ _wdev_prepare_channel() {
+ 	json_get_vars channel hwmode
+ 
+ 	auto_channel=0
+-	enable_ht=0
+ 	htmode=
+ 	hwmode="${hwmode##11}"
+ 	hwmode_n="${hwmode##n}"
+@@ -59,7 +58,6 @@ _wdev_prepare_channel() {
+ 	esac
+ 
+ 	[[ "$hwmode_n" = "$hwmode" ]] || {
+-		enable_ht=1
+ 		hwmode="$hwmode_n"
+ 
+ 		json_get_vars htmode
+@@ -195,15 +193,16 @@ wireless_vif_parse_encryption() {
+ 	auth_mode_open=1
+ 	auth_mode_shared=0
+ 	auth_type=none
+-	wpa_pairwise=CCMP
++	wpa=0
++	wpa_pairwise=
+ 	case "$encryption" in
+ 		*tkip+aes|*tkip+ccmp|*aes+tkip|*ccmp+tkip) wpa_pairwise="CCMP TKIP";;
+-		*aes|*ccmp) wpa_pairwise="CCMP";;
+-		*tkip) wpa_pairwise="TKIP";;
++		*aes|*ccmp| psk2 | wpa2) wpa_pairwise="CCMP";;
++		*tkip | wpa | psk) wpa_pairwise="TKIP";;
+ 	esac
+ 
+-	# 802.11n requires CCMP for WPA
+-	[ "$enable_ht:$wpa_pairwise" = "1:TKIP" ] && wpa_pairwise="CCMP TKIP"
++	# Standlone TKIP is no longer allowed
++	[ "$wpa_pairwise" = "TKIP" ] && wpa_pairwise="CCMP TKIP"
+ 
+ 	# Examples:
+ 	# psk-mixed/tkip    => WPA1+2 PSK, TKIP
+@@ -211,18 +210,25 @@ wireless_vif_parse_encryption() {
+ 	# wpa2/tkip+aes     => WPA2 RADIUS, CCMP+TKIP
+ 
+ 	case "$encryption" in
++		none)
++			wpa=0
++			wpa_pairwise=
++		;;
+ 		wpa2*|*psk2*)
+ 			wpa=2
+ 		;;
+ 		*mixed*)
+ 			wpa=3
++			wpa_pairwise="CCMP TKIP"
+ 		;;
+ 		wpa*|*psk*)
+ 			wpa=1
+ 		;;
+ 		*)
+-			wpa=0
+-			wpa_pairwise=
++			# TKIP alone is now prohibited by WFA so the only
++			# combination left must be CCMP+TKIP (wpa=3)
++			wpa=3
++			wpa_pairwise="CCMP TKIP"
+ 		;;
+ 	esac
+ 

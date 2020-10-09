@@ -1,0 +1,17 @@
+Index: linux-ramdump-parser-v2/linux-ramdump-parser-v2/ramdump.py
+===================================================================
+--- linux-ramdump-parser-v2.orig/linux-ramdump-parser-v2/ramdump.py	2018-05-23 16:47:58.591426443 +0530
++++ linux-ramdump-parser-v2/linux-ramdump-parser-v2/ramdump.py	2018-05-23 16:49:00.811495671 +0530
+@@ -596,6 +596,12 @@
+         self.qtf_path = qtf_path
+         self.qtf = qtf
+         self.kernel_version = (0, 0, 0)
++
++        if self.Is_Hawkeye() and self.isELF32():
++            self.page_offset = 0x80000000
++        else:
++            self.page_offset = 0xc0000000
++
+         if ebi is not None:
+             # TODO sanity check to make sure the memory regions don't overlap
+             for file_path, start, end in ebi:

@@ -1,0 +1,13 @@
+diff --git a/pppd/ipv6cp.c b/pppd/ipv6cp.c
+index ecdc397..d18ff0e 100644
+--- a/pppd/ipv6cp.c
++++ b/pppd/ipv6cp.c
+@@ -1085,7 +1085,7 @@ ipv6_check_options()
+      * Persistent link-local id is only used when user has not explicitly
+      * configure/hard-code the id
+      */
+-    if ((wo->use_persistent) && (!wo->opt_local) && (!wo->opt_remote)) {
++    if ((wo->use_persistent) && (!wo->opt_local)) {
+ 
+ 	/* 
+ 	 * On systems where there are no Ethernet interfaces used, there

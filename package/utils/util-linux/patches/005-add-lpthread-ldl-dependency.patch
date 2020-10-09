@@ -1,0 +1,26 @@
+Index: util-linux-2.25.2/login-utils/Makemodule.am
+===================================================================
+--- util-linux-2.25.2.orig/login-utils/Makemodule.am	2014-09-16 18:07:06.173552014 +0530
++++ util-linux-2.25.2/login-utils/Makemodule.am	2017-04-12 17:27:45.611222723 +0530
+@@ -5,7 +5,7 @@
+ 	login-utils/last.1 \
+ 	login-utils/lastb.1
+ last_SOURCES = login-utils/last.c lib/boottime.c
+-last_LDADD = $(LDADD) libcommon.la -lrt
++last_LDADD = $(LDADD) libcommon.la -lrt -lpthread -ldl
+ 
+ install-exec-hook-last:
+ 	cd $(DESTDIR)$(usrbin_execdir) && ln -sf last lastb
+Index: util-linux-2.25.2/sys-utils/Makemodule.am
+===================================================================
+--- util-linux-2.25.2.orig/sys-utils/Makemodule.am	2014-10-24 14:51:20.441389247 +0530
++++ util-linux-2.25.2/sys-utils/Makemodule.am	2017-04-12 17:27:34.687141739 +0530
+@@ -72,7 +72,7 @@
+ bin_PROGRAMS += dmesg
+ dist_man_MANS += sys-utils/dmesg.1
+ dmesg_SOURCES = sys-utils/dmesg.c lib/boottime.c
+-dmesg_LDADD = $(LDADD) libcommon.la -lrt
++dmesg_LDADD = $(LDADD) libcommon.la -lrt -lpthread -ldl
+ endif
+ 
+ if BUILD_CTRLALTDEL

@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+# This script is called with the following parameters:
+# interface tty speed local-address remote-address ipparam
+#
+DEVICE="$1"
+# The  environment is cleared before executing this script
+# so the path must be reset
+PATH=/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin
+export PATH
+echo $5+$4 >> /tmp/pppcmd.log
+ip -6 route add $5 dev $1 scope host proto static

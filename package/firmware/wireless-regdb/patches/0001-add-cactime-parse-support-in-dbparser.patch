@@ -1,0 +1,84 @@
+diff --git a/db2bin.py b/db2bin.py
+index 41d3741728e1..be3a16a5dec3 100755
+--- a/db2bin.py
++++ b/db2bin.py
+@@ -94,7 +94,7 @@ for reg_rule in rules:
+     reg_rules[reg_rule] = output.tell()
+     # struct regdb_file_reg_rule
+     output.write(struct.pack('>III', freq_ranges[freq_range], power_rules[power_rule],
+-                             reg_rule.flags))
++                             reg_rule.flags, reg_rule.cactime))
+ 
+ 
+ reg_rules_collections = {}
+diff --git a/dbparse.py b/dbparse.py
+index b735b6afa56d..fdf41f77af0e 100755
+--- a/dbparse.py
++++ b/dbparse.py
+@@ -77,7 +77,7 @@ class FlagError(Exception):
+         self.flag = flag
+ 
+ class Permission(object):
+-    def __init__(self, freqband, power, flags):
++    def __init__(self, freqband, power, flags, cactime):
+         assert isinstance(freqband, FreqBand)
+         assert isinstance(power, PowerRestriction)
+         self.freqband = freqband
+@@ -88,9 +88,10 @@ class Permission(object):
+                 raise FlagError(flag)
+             self.flags |= flag_definitions[flag]
+         self.textflags = flags
++	self.cactime = int(cactime)
+ 
+     def _as_tuple(self):
+-        return (self.freqband, self.power, self.flags)
++        return (self.freqband, self.power, self.flags, self.cactime)
+ 
+     def __cmp__(self, other):
+         if not isinstance(other, Permission):
+@@ -282,7 +283,7 @@ class DBParser(object):
+                 flags = []
+             else:
+                 pname = items[0]
+-                flags = items[1].split(',')
++		line = items[1]
+             power = pname[1:]
+             pname = 'UNNAMED %d' % self._lineno
+             self._parse_power_def(pname, power, dupwarn=False)
+@@ -291,6 +292,26 @@ class DBParser(object):
+             pname = line[0]
+             flags = line[1:]
+ 
++	cactime = 0
++	if (line != '' and line[0] == '('):
++		items = line.split('),', 1)
++		if len(items) == 1:
++			ctime = items[0]
++			line = ''
++			if not ctime[-1] == ')':
++				self._syntax_error("Badly parenthesised cactime definition")
++			ctime = ctime[:-1]
++			flags = []
++		else:
++			ctime = items[0]
++			flags = items[1].split(',')
++		cactime = ctime[1:]
++	else:
++		if line != '':
++			line = line.split(',')
++		cactime = 0
++		flags = line
++
+         if not bname in self._bands:
+             self._syntax_error("band does not exist")
+         if not pname in self._power:
+@@ -303,7 +324,7 @@ class DBParser(object):
+         b = self._bands[bname]
+         p = self._power[pname]
+         try:
+-            perm = Permission(b, p, flags)
++            perm = Permission(b, p, flags, cactime)
+         except FlagError, e:
+             self._syntax_error("Invalid flag '%s'" % e.flag)
+         for cname, c in self._current_countries.iteritems():
+

@@ -1,0 +1,20 @@
+diff --git a/lib/route/qdisc/tbf.c b/lib/route/qdisc/tbf.c
+index eb574d9..d2416bc 100644
+--- a/lib/route/qdisc/tbf.c
++++ b/lib/route/qdisc/tbf.c
+@@ -54,13 +54,13 @@ static int tbf_msg_parser(struct rtnl_tc *tc, void *data)
+ 	
+ 		rtnl_copy_ratespec(&tbf->qt_rate, &opts.rate);
+ 		tbf->qt_rate_txtime = opts.buffer;
+-		bufsize = rtnl_tc_calc_bufsize(nl_ticks2us(opts.buffer),
++		bufsize = rtnl_tc_calc_bufsize(tbf->qt_rate_txtime,
+ 					       opts.rate.rate);
+ 		tbf->qt_rate_bucket = bufsize;
+ 
+ 		rtnl_copy_ratespec(&tbf->qt_peakrate, &opts.peakrate);
+ 		tbf->qt_peakrate_txtime = opts.mtu;
+-		bufsize = rtnl_tc_calc_bufsize(nl_ticks2us(opts.mtu),
++		bufsize = rtnl_tc_calc_bufsize(tbf->qt_peakrate_txtime,
+ 					       opts.peakrate.rate);
+ 		tbf->qt_peakrate_bucket = bufsize;
+ 

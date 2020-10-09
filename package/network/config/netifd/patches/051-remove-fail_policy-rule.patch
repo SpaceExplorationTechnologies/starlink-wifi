@@ -1,0 +1,12 @@
+--- a/interface-ip.c
++++ b/interface-ip.c
+@@ -1292,9 +1292,6 @@
+ 	if (ip->iface && ip->iface->l3_dev.dev) {
+ 		set_ip_lo_policy(enabled, true, ip->iface);
+ 		set_ip_lo_policy(enabled, false, ip->iface);
+-
+-		set_ip_source_policy(enabled, true, IPRULE_PRIORITY_REJECT + ip->iface->l3_dev.dev->ifindex,
+-			NULL, 0, 0, ip->iface, "failed_policy");
+ 	}
+ }
+ 

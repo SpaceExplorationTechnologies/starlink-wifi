@@ -1,0 +1,72 @@
+diff --git a/client.c b/client.c
+index 73e0e49..37d12a2 100644
+--- a/client.c
++++ b/client.c
+@@ -40,6 +40,7 @@ const char * const http_methods[] = {
+ 	[UH_HTTP_MSG_POST] = "POST",
+ 	[UH_HTTP_MSG_HEAD] = "HEAD",
+ 	[UH_HTTP_MSG_OPTIONS] = "OPTIONS",
++	[UH_HTTP_MSG_PUT] = "PUT",
+ };
+ 
+ void uh_http_header(struct client *cl, int code, const char *summary)
+@@ -185,7 +186,7 @@ static int client_parse_request(struct client *cl, char *data)
+ 	req->method = h_method;
+ 	req->version = h_version;
+ 	if (req->version < UH_HTTP_VER_1_1 || req->method == UH_HTTP_MSG_POST ||
+-	    !conf.http_keepalive)
++	    !conf.http_keepalive || req->method == UH_HTTP_MSG_PUT)
+ 		req->connection_close = true;
+ 
+ 	return CLIENT_STATE_HEADER;
+@@ -289,7 +290,7 @@ static void client_header_complete(struct client *cl)
+ 
+ 	switch(r->ua) {
+ 	case UH_UA_MSIE_OLD:
+-		if (r->method != UH_HTTP_MSG_POST)
++		if (r->method != UH_HTTP_MSG_POST && r->method != UH_HTTP_MSG_PUT)
+ 			break;
+ 
+ 		/* fall through */
+diff --git a/ubus.c b/ubus.c
+index f7d1f11..c226731 100644
+--- a/ubus.c
++++ b/ubus.c
+@@ -139,7 +139,7 @@ static void uh_ubus_add_cors_headers(struct client *cl)
+ 	{
+ 		char *hdr = (char *) blobmsg_data(tb[HDR_ACCESS_CONTROL_REQUEST_METHOD]);
+ 
+-		if (strcmp(hdr, "POST") && strcmp(hdr, "OPTIONS"))
++		if (strcmp(hdr, "POST") && strcmp(hdr, "OPTIONS") && strcmp(hdr, "PUT"))
+ 			return;
+ 	}
+ 
+@@ -150,7 +150,7 @@ static void uh_ubus_add_cors_headers(struct client *cl)
+ 		ustream_printf(cl->us, "Access-Control-Allow-Headers: %s\r\n",
+ 		               blobmsg_data(tb[HDR_ACCESS_CONTROL_REQUEST_HEADERS]));
+ 
+-	ustream_printf(cl->us, "Access-Control-Allow-Methods: POST, OPTIONS\r\n");
++	ustream_printf(cl->us, "Access-Control-Allow-Methods: POST, OPTIONS, PUT\r\n");
+ 	ustream_printf(cl->us, "Access-Control-Allow-Credentials: true\r\n");
+ }
+ 
+@@ -623,6 +623,7 @@ static void uh_ubus_handle_request(struct client *cl, char *url, struct path_inf
+ 	switch (cl->request.method)
+ 	{
+ 	case UH_HTTP_MSG_POST:
++	case UH_HTTP_MSG_PUT:
+ 		d->data_send = uh_ubus_data_send;
+ 		d->data_done = uh_ubus_data_done;
+ 		d->close_fds = uh_ubus_close_fds;
+diff --git a/uhttpd.h b/uhttpd.h
+index f9ea761..d5392c0 100644
+--- a/uhttpd.h
++++ b/uhttpd.h
+@@ -92,6 +92,7 @@ enum http_method {
+ 	UH_HTTP_MSG_POST,
+ 	UH_HTTP_MSG_HEAD,
+ 	UH_HTTP_MSG_OPTIONS,
++	UH_HTTP_MSG_PUT,
+ };
+ 
+ enum http_version { 

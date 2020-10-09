@@ -1,0 +1,26 @@
+--- a/gcc/gcc.c
++++ b/gcc/gcc.c
+@@ -727,7 +727,9 @@ proper position among the other output f
+ #endif
+ 
+ #ifndef LINK_SSP_SPEC
+-#ifdef TARGET_LIBC_PROVIDES_SSP
++#if DEFAULT_LIBC == LIBC_MUSL
++#define LINK_SSP_SPEC "-lssp_nonshared"
++#elif defined(TARGET_LIBC_PROVIDES_SSP)
+ #define LINK_SSP_SPEC "%{fstack-protector|fstack-protector-all" \
+ 		       "|fstack-protector-strong|fstack-protector-explicit:}"
+ #else
+Index: gcc-5.2.0/libssp/Makefile.in
+===================================================================
+--- gcc-5.2.0.orig/libssp/Makefile.in	2011-02-13 17:15:53.000000000 +0530
++++ gcc-5.2.0/libssp/Makefile.in	2018-07-31 15:20:43.475456077 +0530
+@@ -257,7 +257,7 @@
+ @LIBSSP_USE_SYMVER_FALSE@version_dep = 
+ @LIBSSP_USE_SYMVER_GNU_TRUE@@LIBSSP_USE_SYMVER_TRUE@version_dep = $(srcdir)/ssp.map
+ @LIBSSP_USE_SYMVER_SUN_TRUE@@LIBSSP_USE_SYMVER_TRUE@version_dep = ssp.map-sun
+-AM_CFLAGS = -Wall
++AM_CFLAGS = -Wall -Wl,-z,now -Wl,-z,relro
+ toolexeclib_LTLIBRARIES = libssp.la libssp_nonshared.la
+ libsubincludedir = $(libdir)/gcc/$(target_noncanonical)/$(gcc_version)/include
+ nobase_libsubinclude_HEADERS = ssp/ssp.h ssp/string.h ssp/stdio.h ssp/unistd.h

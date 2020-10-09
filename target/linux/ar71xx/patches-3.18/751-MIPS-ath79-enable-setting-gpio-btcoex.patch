@@ -1,0 +1,28 @@
+--- a/arch/mips/ath79/dev-wmac.c
++++ b/arch/mips/ath79/dev-wmac.c
+@@ -403,6 +403,14 @@ void __init ath79_wmac_set_led_pin(int gpio)
+ 	ath79_wmac_data.led_pin = gpio;
+ }
+ 
++void __init ath79_wmac_set_btcoex_pin(int bt_active_pin, int bt_priority_pin,
++				      int wlan_active_pin)
++{
++	ath79_wmac_data.bt_active_pin = bt_active_pin;;
++	ath79_wmac_data.bt_priority_pin = bt_priority_pin;
++	ath79_wmac_data.wlan_active_pin = wlan_active_pin;
++}
++
+ void __init ath79_register_wmac(u8 *cal_data, u8 *mac_addr)
+ {
+ 	if (soc_is_ar913x())
+--- a/arch/mips/ath79/dev-wmac.h
++++ b/arch/mips/ath79/dev-wmac.h
+@@ -19,6 +19,8 @@ void ath79_wmac_disable_5ghz(void);
+ void ath79_wmac_set_tx_gain_buffalo(void);
+ void ath79_wmac_set_ext_lna_gpio(unsigned chain, int gpio);
+ void ath79_wmac_set_led_pin(int gpio);
++void ath79_wmac_set_btcoex_pin(int bt_active_pin, int bt_priority_pin,
++			       int wlan_active_pin);
+ 
+ bool ar93xx_wmac_read_mac_address(u8 *dest);
+ 

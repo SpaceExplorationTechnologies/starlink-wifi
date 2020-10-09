@@ -1,0 +1,22 @@
+diff --git a/lib/route/tc.c b/lib/route/tc.c
+index 29954fd..d1308a2 100644
+--- a/lib/route/tc.c
++++ b/lib/route/tc.c
+@@ -578,7 +578,7 @@ int rtnl_tc_calc_txtime(int bufsize, int rate)
+ 	
+ 	tx_time_secs = (double) bufsize / (double) rate;
+ 
+-	return tx_time_secs * 1000000.;
++	return nl_us2ticks(tx_time_secs * 1000000.);
+ }
+ 
+ /**
+@@ -601,7 +601,7 @@ int rtnl_tc_calc_bufsize(int txtime, int rate)
+ 
+ 	bufsize = (double) txtime * (double) rate;
+ 
+-	return bufsize / 1000000.;
++	return nl_ticks2us(bufsize / 1000000.);
+ }
+ 
+ /**

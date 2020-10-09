@@ -1,0 +1,12 @@
+diff -Nur a/extensions/rtsp/nf_conntrack_rtsp.c xtables-addons-2.10/extensions/rtsp/nf_conntrack_rtsp.c
+--- a/extensions/rtsp/nf_conntrack_rtsp.c	2017-02-14 15:51:33.681020488 -0800
++++ xtables-addons-2.10/extensions/rtsp/nf_conntrack_rtsp.c	2017-02-14 15:52:21.821021701 -0800
+@@ -273,7 +273,7 @@
+ 	spinlock_t *lockp;
+ #endif
+ 
+-	net = nf_ct_net(ct);
++	net = nf_ct_net(master_ct);
+ 
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(3,18,0)
+ 	spin_lock_bh(&nf_conntrack_lock);

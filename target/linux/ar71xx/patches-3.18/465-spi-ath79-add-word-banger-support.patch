@@ -1,0 +1,68 @@
+--- a/arch/mips/include/asm/mach-ath79/ar71xx_regs.h
++++ b/arch/mips/include/asm/mach-ath79/ar71xx_regs.h
+@@ -710,6 +710,9 @@
+ #define AR71XX_SPI_REG_IOC	0x08	/* SPI I/O Control */
+ #define AR71XX_SPI_REG_RDS	0x0c	/* Read Data Shift */
+ 
++#define AR71XX_SPI_REG_SHIFT_DO		0x10	/* SPI data to shift out */
++#define AR71XX_SPI_REG_SHIFT_CNT	0x14	/* SPI content to shift out or in */
++
+ #define AR71XX_SPI_FS_GPIO	BIT(0)	/* Enable GPIO mode */
+ 
+ #define AR71XX_SPI_CTRL_RD	BIT(6)	/* Remap Disable */
+--- a/arch/mips/include/asm/mach-ath79/ath79_spi_platform.h
++++ b/arch/mips/include/asm/mach-ath79/ath79_spi_platform.h
+@@ -14,6 +14,7 @@
+ struct ath79_spi_platform_data {
+ 	unsigned	bus_num;
+ 	unsigned	num_chipselect;
++	bool		word_banger;
+ };
+ 
+ enum ath79_spi_cs_type {
+--- a/drivers/spi/spi-ath79.c
++++ b/drivers/spi/spi-ath79.c
+@@ -204,8 +204,8 @@ static void ath79_spi_cleanup(struct spi_device *spi)
+ 	spi_bitbang_cleanup(spi);
+ }
+ 
+-static u32 ath79_spi_txrx_mode0(struct spi_device *spi, unsigned nsecs,
+-			       u32 word, u8 bits)
++static u32 ath79_spi_txrx_mode0_bb(struct spi_device *spi, unsigned nsecs,
++				   u32 word, u8 bits)
+ {
+ 	struct ath79_spi *sp = ath79_spidev_to_sp(spi);
+ 	u32 ioc = sp->ioc_base;
+@@ -233,6 +233,22 @@ static u32 ath79_spi_txrx_mode0(struct spi_device *spi, unsigned nsecs,
+ 	return ath79_spi_rr(sp, AR71XX_SPI_REG_RDS);
+ }
+ 
++static u32 ath79_spi_txrx_mode0_wb(struct spi_device *spi, unsigned nsecs,
++				   u32 word, u8 bits)
++{
++	struct ath79_spi *sp = ath79_spidev_to_sp(spi);
++
++	u32 cs = (~(sp->ioc_base >> 16)) & 0x07;
++
++	ath79_spi_wr(sp, AR71XX_SPI_REG_SHIFT_DO, word);
++	ath79_spi_wr(sp, AR71XX_SPI_REG_SHIFT_CNT,
++		     bits | (cs << 28) | (1 << 31));
++
++	while (ath79_spi_rr(sp, AR71XX_SPI_REG_SHIFT_CNT) & (1 << 31));
++
++	return ath79_spi_rr(sp, AR71XX_SPI_REG_RDS);
++}
++
+ static int ath79_spi_do_read_flash_data(struct spi_device *spi,
+ 					struct spi_transfer *t)
+ {
+@@ -373,7 +389,8 @@ static int ath79_spi_probe(struct platform_device *pdev)
+ 
+ 	sp->bitbang.master = master;
+ 	sp->bitbang.chipselect = ath79_spi_chipselect;
+-	sp->bitbang.txrx_word[SPI_MODE_0] = ath79_spi_txrx_mode0;
++	sp->bitbang.txrx_word[SPI_MODE_0] = pdata->word_banger == true ?
++		ath79_spi_txrx_mode0_wb : ath79_spi_txrx_mode0_bb;
+ 	sp->bitbang.setup_transfer = ath79_spi_setup_transfer;
+ 	sp->bitbang.flags = SPI_CS_HIGH;
+ 

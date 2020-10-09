@@ -1,0 +1,137 @@
+From f8527e5b20043db706b2bedd3cca305b4814d932 Mon Sep 17 00:00:00 2001
+From: Naresh Kumar Mehta <naresh@codeaurora.org>
+Date: Mon, 4 Apr 2016 19:07:54 +0530
+Subject: [PATCH] linux-system: Set MTU while adding interfaces to bridge
+
+1. This change fixes the mtu setting for bridge
+   When setting the mtu of a bridge, the value need be set to the interfaces
+   adding to the bridge, otherwise, it will use the least mtu of all of the
+   interface to bridge's mtu. This change will set the bridge's mtu to the
+   added interfaces.
+
+2. This change also fixes the MTU settings for VLANed interfaces
+   While setting MTU, set MTU to master iterface first & then set it for VLANed
+   interface. This fixes ticket #20393
+
+Signed-off-by: Zhu Ken <guigenz@codeaurora.org>
+Signed-off-by: Naresh Kumar Mehta <naresh@codeaurora.org>
+---
+ system-dummy.c |    5 +++++
+ system-linux.c |   45 ++++++++++++++++++++++++++++++++++++++++-----
+ system.h       |    2 ++
+ 3 files changed, 47 insertions(+), 5 deletions(-)
+
+diff --git a/system-dummy.c b/system-dummy.c
+index 9c734ea..0b36132 100644
+--- a/system-dummy.c
++++ b/system-dummy.c
+@@ -260,6 +260,11 @@ int system_add_ip_tunnel(const char *name, struct blob_attr *attr)
+ 	return 0;
+ }
+ 
++int system_update_ipv4_mtu(struct device *dev, int mtu)
++{
++	return 0;
++}
++
+ int system_update_ipv6_mtu(struct device *dev, int mtu)
+ {
+ 	return 0;
+diff --git a/system-linux.c b/system-linux.c
+index 351a994..f79180c 100644
+--- a/system-linux.c
++++ b/system-linux.c
+@@ -636,6 +636,12 @@ int system_bridge_addif(struct device *bridge, struct device *dev)
+ 	char *oldbr;
+ 	int ret = 0;
+ 
++	if (bridge->settings.flags & DEV_OPT_MTU) {
++		system_update_ipv4_mtu(dev, bridge->settings.mtu);
++	}
++	if (bridge->settings.flags & DEV_OPT_MTU6) {
++		system_update_ipv6_mtu(dev, bridge->settings.mtu6);
++	}
+ 	oldbr = system_get_bridge(dev->ifname, dev_buf, sizeof(dev_buf));
+ 	if (!oldbr || strcmp(oldbr, bridge->ifname) != 0)
+ 		ret = system_bridge_if(bridge->ifname, dev, SIOCBRADDIF, NULL);
+@@ -1163,10 +1169,9 @@ system_if_get_settings(struct device *dev, struct device_settings *s)
+ 	memset(&ifr, 0, sizeof(ifr));
+ 	strncpy(ifr.ifr_name, dev->ifname, sizeof(ifr.ifr_name));
+ 
+-	if (ioctl(sock_ioctl, SIOCGIFMTU, &ifr) == 0) {
+-		s->mtu = ifr.ifr_mtu;
++	s->mtu = system_update_ipv4_mtu(dev, 0);
++	if (s->mtu > 0)
+ 		s->flags |= DEV_OPT_MTU;
+-	}
+ 
+ 	s->mtu6 = system_update_ipv6_mtu(dev, 0);
+ 	if (s->mtu6 > 0)
+@@ -1274,8 +1279,7 @@ system_if_apply_settings(struct device *dev, struct device_settings *s, unsigned
+ 	memset(&ifr, 0, sizeof(ifr));
+ 	strncpy(ifr.ifr_name, dev->ifname, sizeof(ifr.ifr_name));
+ 	if (s->flags & DEV_OPT_MTU & apply_mask) {
+-		ifr.ifr_mtu = s->mtu;
+-		if (ioctl(sock_ioctl, SIOCSIFMTU, &ifr) < 0)
++		if (system_update_ipv4_mtu(dev, s->mtu) < 0)
+ 			s->flags &= ~DEV_OPT_MTU;
+ 	}
+ 	if (s->flags & DEV_OPT_MTU6 & apply_mask) {
+@@ -2416,10 +2420,41 @@ int system_del_ip_tunnel(const char *name, struct blob_attr *attr)
+ 	return __system_del_ip_tunnel(name, tb);
+ }
+ 
++int system_update_ipv4_mtu(struct device *dev, int mtu)
++{
++	int ret = -1;
++	struct ifreq ifr;
++
++	if(!dev)
++		return ret;
++
++	memset(&ifr, 0, sizeof(ifr));
++	ifr.ifr_addr.sa_family = AF_INET;
++	strncpy(ifr.ifr_name, dev->ifname, sizeof(ifr.ifr_name));
++
++	if (!mtu) {
++		ret = ioctl(sock_ioctl, SIOCGIFMTU, &ifr);
++		if (ret == 0)
++			ret = ifr.ifr_mtu;
++	} else {
++		struct device * parent = system_if_get_parent(dev);
++		if (parent)
++			system_update_ipv4_mtu(parent, mtu);
++
++		ifr.ifr_mtu = mtu;
++		ret = ioctl(sock_ioctl, SIOCSIFMTU, &ifr);
++	}
++	return (ret == 0)?mtu:ret;
++}
++
+ int system_update_ipv6_mtu(struct device *dev, int mtu)
+ {
+ 	int ret = -1;
+ 	char buf[64];
++
++	if(!dev)
++		return ret;
++
+ 	snprintf(buf, sizeof(buf), "/proc/sys/net/ipv6/conf/%s/mtu",
+ 			dev->ifname);
+ 
+diff --git a/system.h b/system.h
+index d5cb4e3..7d583ad 100644
+--- a/system.h
++++ b/system.h
+@@ -163,6 +163,8 @@ time_t system_get_rtime(void);
+ 
+ void system_fd_set_cloexec(int fd);
+ 
++int system_update_ipv4_mtu(struct device *device, int mtu);
++
+ int system_update_ipv6_mtu(struct device *device, int mtu);
+ 
+ #endif
+-- 
+1.7.9.5
+

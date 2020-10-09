@@ -1,0 +1,27 @@
+From 2475541608efec919ad3cbd0613f0f51fdbd50fd Mon Sep 17 00:00:00 2001
+From: Hans Dedecker <dedeckeh@gmail.com>
+Date: Mon, 1 Feb 2016 10:56:20 +0100
+Subject: [PATCH] proto: Fix possible buffer overflow due to non null
+ terminated string
+
+Signed-off-by: Hans Dedecker <dedeckeh@gmail.com>
+---
+ proto.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/proto.c b/proto.c
+index eaec913..b91fcde 100644
+--- a/proto.c
++++ b/proto.c
+@@ -287,7 +287,7 @@
+ parse_prefix_option(struct interface *iface, const char *str, size_t len)
+ {
+ 	char buf[128] = {0}, *saveptr;
+-	if (len > sizeof(buf))
++	if (len >= sizeof(buf))
+ 		return false;
+ 
+ 	memcpy(buf, str, len);
+-- 
+1.8.2.1
+

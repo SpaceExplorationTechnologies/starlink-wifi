@@ -1,0 +1,105 @@
+Index: wireless_tools.29/iwlib.c
+===================================================================
+--- wireless_tools.29.orig/iwlib.c	2016-11-03 19:54:55.107527082 +0530
++++ wireless_tools.29/iwlib.c	2016-11-03 20:20:44.743523808 +0530
+@@ -1223,6 +1223,7 @@
+ #endif	/* WE_NOLIBM */
+ }
+
++extern int decimal_tx_power;
+ /*------------------------------------------------------------------*/
+ /*
+  * Output a txpower with proper conversion
+@@ -1232,7 +1233,7 @@
+ 		 int			buflen,
+ 		 struct iw_param *	txpower)
+ {
+-  int		dbm;
++  double	dbm;
+ 
+   /* Check if disabled */
+   if(txpower->disabled)
+@@ -1244,20 +1245,35 @@
+       /* Check for relative values */
+       if(txpower->flags & IW_TXPOW_RELATIVE)
+ 	{
+-	  snprintf(buffer, buflen, "%d", txpower->value);
++            if (decimal_tx_power == 1) {
++                dbm = txpower->value * pow(10,-2);
++                snprintf(buffer, buflen, "%f", dbm);
++            } else {
++            	snprintf(buffer, buflen, "%d", txpower->value);
++            }
+ 	}
+       else
+ 	{
+ 	  /* Convert everything to dBm */
+ 	  if(txpower->flags & IW_TXPOW_MWATT)
+ 	    dbm = iw_mwatt2dbm(txpower->value);
+-	  else
+-	    dbm = txpower->value;
++	  else {
++	  	if (decimal_tx_power == 1) {
++	  	    dbm = txpower->value * pow(10,-2);
++	  	} else {
++	  	    dbm = txpower->value;
++	  	}
++	  }
+ 
+ 	  /* Display */
+-	  snprintf(buffer, buflen, "%d dBm", dbm);
++	  if (decimal_tx_power == 1) {
++	      snprintf(buffer, buflen, "%f dBm", dbm);
++	  } else {
++	      snprintf(buffer, buflen, "%d dBm", (int)dbm);
++	 }
+ 	}
+     }
++    decimal_tx_power = 0;
+ }
+
+ /********************** STATISTICS SUBROUTINES **********************/
+Index: wireless_tools.29/iwconfig.c
+===================================================================
+--- wireless_tools.29.orig/iwconfig.c	2016-11-03 19:54:55.091527082 +0530
++++ wireless_tools.29/iwconfig.c	2016-11-03 20:02:15.635526151 +0530
+@@ -126,6 +126,10 @@
+
+   if((info->has_range) && (info->range.we_version_compiled > 9))
+     {
++        if(decimal_tx_power == 1) {
++#define TXPOWER_IN_DECIMAL 1
++            wrq.u.txpower.flags |= TXPOWER_IN_DECIMAL;
++        }
+       /* Get Transmit Power */
+       if(iw_get_ext(skfd, ifname, SIOCGIWTXPOW, &wrq) >= 0)
+ 	{
+@@ -1905,7 +1909,7 @@
+   fprintf(stderr,   "       Check man pages for more details.\n");
+ }
+
+-
++int decimal_tx_power = 0;
+ /******************************* MAIN ********************************/
+
+ /*------------------------------------------------------------------*/
+@@ -1926,6 +1930,19 @@
+       exit(-1);
+     }
+
++   if(argc >=2) {
++    if (strcmp(argv[1], "-e") == 0) {
++        decimal_tx_power = 1;
++        argv[1] = '\0';
++        argc--;
++    }
++    if (argv[2] && (strcmp(argv[2], "-e")) == 0) {
++        decimal_tx_power = 1;
++        argv[2] = '\0';
++        argc--;
++    }
++    }
++
+   /* No argument : show the list of all device + info */
+   if(argc == 1)
+     iw_enum_devices(skfd, &print_info, NULL, 0);

@@ -1,0 +1,13 @@
+Index: wireless_tools.29/iwconfig.c
+===================================================================
+--- wireless_tools.29.orig/iwconfig.c	2017-08-22 11:44:02.314848926 +0530
++++ wireless_tools.29/iwconfig.c	2017-08-22 11:45:02.994848798 +0530
+@@ -651,7 +651,7 @@
+ 	/* '-' or '--' allow to escape the ESSID string, allowing
+ 	 * to set it to the string "any" or "off".
+ 	 * This is a big ugly, but it will do for now */
+-	if((!strcmp(args[0], "-")) || (!strcmp(args[0], "--")))
++	if(((!strcmp(args[0], "-")) || (!strcmp(args[0], "--"))) && count > 1)
+ 	  {
+ 	    if(++i >= count)
+ 	      return(IWERR_ARG_NUM);

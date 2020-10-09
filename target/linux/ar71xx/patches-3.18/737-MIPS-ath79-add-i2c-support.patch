@@ -1,0 +1,24 @@
+--- a/arch/mips/ath79/Kconfig
++++ b/arch/mips/ath79/Kconfig
+@@ -1224,6 +1224,9 @@ config ATH79_DEV_NFC
+ config ATH79_DEV_SPI
+ 	def_bool n
+ 
++config ATH79_DEV_I2C
++	def_bool n
++
+ config ATH79_DEV_USB
+ 	def_bool n
+ 
+diff --git a/arch/mips/ath79/Makefile b/arch/mips/ath79/Makefile
+index 31bdedf..b24f636 100644
+--- a/arch/mips/ath79/Makefile
++++ b/arch/mips/ath79/Makefile
+@@ -25,6 +25,7 @@ obj-$(CONFIG_ATH79_DEV_LEDS_GPIO)	+= dev-leds-gpio.o
+ obj-$(CONFIG_ATH79_DEV_M25P80)		+= dev-m25p80.o
+ obj-$(CONFIG_ATH79_DEV_NFC)		+= dev-nfc.o
+ obj-$(CONFIG_ATH79_DEV_SPI)		+= dev-spi.o
++obj-$(CONFIG_ATH79_DEV_I2C)		+= dev-i2c.o
+ obj-$(CONFIG_ATH79_DEV_USB)		+= dev-usb.o
+ obj-$(CONFIG_ATH79_DEV_WMAC)		+= dev-wmac.o
+ 

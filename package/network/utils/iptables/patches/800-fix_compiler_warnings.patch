@@ -1,0 +1,287 @@
+Index: iptables-1.4.21/extensions/libxt_CT.c
+===================================================================
+--- iptables-1.4.21.orig/extensions/libxt_CT.c	2016-06-16 11:52:47.009856825 +0530
++++ iptables-1.4.21/extensions/libxt_CT.c	2016-06-16 11:52:47.021856876 +0530
+@@ -8,7 +8,7 @@
+ #include <linux/netfilter/nf_conntrack_common.h>
+ #include <linux/netfilter/xt_CT.h>
+ 
+-static void ct_help(void)
++__attribute__((unused)) static void ct_help(void)
+ {
+ 	printf(
+ "CT target options:\n"
+@@ -129,7 +129,7 @@
+ 	}
+ }
+ 
+-static void ct_parse(struct xt_option_call *cb)
++__attribute__((unused)) static void ct_parse(struct xt_option_call *cb)
+ {
+ 	struct xt_ct_target_info *info = cb->data;
+ 
+@@ -169,7 +169,7 @@
+ 	}
+ }
+ 
+-static void ct_print(const void *ip, const struct xt_entry_target *target, int numeric)
++__attribute__((unused)) static void ct_print(const void *ip, const struct xt_entry_target *target, int numeric)
+ {
+ 	const struct xt_ct_target_info *info =
+ 		(const struct xt_ct_target_info *)target->data;
+@@ -216,7 +216,7 @@
+ 		printf("zone %u ", info->zone);
+ }
+ 
+-static void ct_save(const void *ip, const struct xt_entry_target *target)
++__attribute__((unused)) static void ct_save(const void *ip, const struct xt_entry_target *target)
+ {
+ 	const struct xt_ct_target_info *info =
+ 		(const struct xt_ct_target_info *)target->data;
+@@ -268,21 +268,21 @@
+ 	return info->flags & XT_CT_NOTRACK_ALIAS ? "NOTRACK" : "CT";
+ }
+ 
+-static void notrack_ct0_tg_init(struct xt_entry_target *target)
++__attribute__((unused)) static void notrack_ct0_tg_init(struct xt_entry_target *target)
+ {
+ 	struct xt_ct_target_info *info = (void *)target->data;
+ 
+ 	info->flags = XT_CT_NOTRACK;
+ }
+ 
+-static void notrack_ct1_tg_init(struct xt_entry_target *target)
++__attribute__((unused)) static void notrack_ct1_tg_init(struct xt_entry_target *target)
+ {
+ 	struct xt_ct_target_info_v1 *info = (void *)target->data;
+ 
+ 	info->flags = XT_CT_NOTRACK;
+ }
+ 
+-static void notrack_ct2_tg_init(struct xt_entry_target *target)
++__attribute__((unused)) static void notrack_ct2_tg_init(struct xt_entry_target *target)
+ {
+ 	struct xt_ct_target_info_v1 *info = (void *)target->data;
+ 
+Index: iptables-1.4.21/extensions/libxt_conntrack.c
+===================================================================
+--- iptables-1.4.21.orig/extensions/libxt_conntrack.c	2016-06-16 11:52:47.009856825 +0530
++++ iptables-1.4.21/extensions/libxt_conntrack.c	2016-06-16 11:53:35.590062628 +0530
+@@ -334,7 +334,7 @@
+ 		xtables_error(PARAMETER_PROBLEM, "Bad ctstatus \"%s\"", arg);
+ }
+ 
+-static void conntrack_parse(struct xt_option_call *cb)
++__attribute__((unused)) static void conntrack_parse(struct xt_option_call *cb)
+ {
+ 	struct xt_conntrack_info *sinfo = cb->data;
+ 
+@@ -512,7 +512,7 @@
+ 		(r)->status_mask = (l)->status_mask; \
+ 	} while (false);
+ 
+-static void conntrack1_mt_parse(struct xt_option_call *cb)
++__attribute__((unused)) static void conntrack1_mt_parse(struct xt_option_call *cb)
+ {
+ 	struct xt_conntrack_mtinfo1 *info = cb->data;
+ 	struct xt_conntrack_mtinfo3 up;
+@@ -535,7 +535,7 @@
+ 	cb->data = info;
+ }
+ 
+-static void conntrack2_mt_parse(struct xt_option_call *cb)
++__attribute__((unused)) static void conntrack2_mt_parse(struct xt_option_call *cb)
+ {
+ #define cinfo2_transform(r, l) \
+ 		memcpy((r), (l), offsetof(typeof(*(l)), sizeof(*info));
+@@ -913,13 +913,13 @@
+ 		? "state" : "conntrack";
+ }
+ 
+-static void conntrack_print(const void *ip, const struct xt_entry_match *match,
++__attribute__((unused)) static void conntrack_print(const void *ip, const struct xt_entry_match *match,
+                             int numeric)
+ {
+ 	matchinfo_print(ip, match, numeric, "");
+ }
+ 
+-static void
++__attribute__((unused)) static void
+ conntrack1_mt4_print(const void *ip, const struct xt_entry_match *match,
+                      int numeric)
+ {
+@@ -930,7 +930,7 @@
+ 	conntrack_dump(&up, "", NFPROTO_IPV4, numeric, false);
+ }
+ 
+-static void
++__attribute__((unused)) static void
+ conntrack1_mt6_print(const void *ip, const struct xt_entry_match *match,
+                      int numeric)
+ {
+@@ -941,14 +941,14 @@
+ 	conntrack_dump(&up, "", NFPROTO_IPV6, numeric, false);
+ }
+ 
+-static void
++__attribute__((unused)) static void
+ conntrack2_mt_print(const void *ip, const struct xt_entry_match *match,
+                     int numeric)
+ {
+ 	conntrack_dump((const void *)match->data, "", NFPROTO_IPV4, numeric, false);
+ }
+ 
+-static void
++__attribute__((unused)) static void
+ conntrack2_mt6_print(const void *ip, const struct xt_entry_match *match,
+                      int numeric)
+ {
+@@ -969,7 +969,7 @@
+ 	conntrack_dump((const void *)match->data, "", NFPROTO_IPV6, numeric, true);
+ }
+ 
+-static void conntrack_save(const void *ip, const struct xt_entry_match *match)
++__attribute__((unused)) static void conntrack_save(const void *ip, const struct xt_entry_match *match)
+ {
+ 	matchinfo_print(ip, match, 1, "--");
+ }
+@@ -986,19 +986,19 @@
+ 	conntrack_dump((const void *)match->data, "--", NFPROTO_IPV6, true, true);
+ }
+ 
+-static void conntrack2_mt_save(const void *ip,
++__attribute__((unused)) static void conntrack2_mt_save(const void *ip,
+                                const struct xt_entry_match *match)
+ {
+ 	conntrack_dump((const void *)match->data, "--", NFPROTO_IPV4, true, false);
+ }
+ 
+-static void conntrack2_mt6_save(const void *ip,
++__attribute__((unused)) static void conntrack2_mt6_save(const void *ip,
+                                 const struct xt_entry_match *match)
+ {
+ 	conntrack_dump((const void *)match->data, "--", NFPROTO_IPV6, true, false);
+ }
+ 
+-static void
++__attribute__((unused)) static void
+ conntrack1_mt4_save(const void *ip, const struct xt_entry_match *match)
+ {
+ 	const struct xt_conntrack_mtinfo1 *info = (void *)match->data;
+@@ -1008,7 +1008,7 @@
+ 	conntrack_dump(&up, "--", NFPROTO_IPV4, true, false);
+ }
+ 
+-static void
++__attribute__((unused)) static void
+ conntrack1_mt6_save(const void *ip, const struct xt_entry_match *match)
+ {
+ 	const struct xt_conntrack_mtinfo1 *info = (void *)match->data;
+@@ -1079,7 +1079,7 @@
+ 	xtables_error(PARAMETER_PROBLEM, "Bad state \"%s\"", arg);
+ }
+ 
+-static void state_parse(struct xt_option_call *cb)
++__attribute__((unused)) static void state_parse(struct xt_option_call *cb)
+ {
+ 	struct xt_state_info *sinfo = cb->data;
+ 
+@@ -1089,7 +1089,7 @@
+ 		sinfo->statemask = ~sinfo->statemask;
+ }
+ 
+-static void state_ct1_parse(struct xt_option_call *cb)
++__attribute__((unused)) static void state_ct1_parse(struct xt_option_call *cb)
+ {
+ 	struct xt_conntrack_mtinfo1 *sinfo = cb->data;
+ 
+Index: iptables-1.4.21/extensions/libxt_id.c
+===================================================================
+--- iptables-1.4.21.orig/extensions/libxt_id.c	2016-06-16 11:52:46.973856672 +0530
++++ iptables-1.4.21/extensions/libxt_id.c	2016-06-16 11:52:47.021856876 +0530
+@@ -25,7 +25,7 @@
+ {
+ 	struct xt_id_info *idinfo = (void *)match->data;
+ 
+-	printf(" --id %lu", idinfo->id);
++	printf(" --id %lu", (unsigned long int) idinfo->id);
+ }
+ 
+ static struct xtables_match id_match = {
+Index: iptables-1.4.21/extensions/libxt_multiport.c
+===================================================================
+--- iptables-1.4.21.orig/extensions/libxt_multiport.c	2016-06-16 11:52:47.009856825 +0530
++++ iptables-1.4.21/extensions/libxt_multiport.c	2016-06-16 11:52:47.025856893 +0530
+@@ -19,7 +19,7 @@
+ };
+ 
+ /* Function which prints out usage message. */
+-static void multiport_help(void)
++__attribute__((unused)) static void multiport_help(void)
+ {
+ 	printf(
+ "multiport match options:\n"
+@@ -193,14 +193,14 @@
+ 			   "multiport.0 does not support invert");
+ }
+ 
+-static void multiport_parse(struct xt_option_call *cb)
++__attribute__((unused)) static void multiport_parse(struct xt_option_call *cb)
+ {
+ 	const struct ipt_entry *entry = cb->xt_entry;
+ 	return __multiport_parse(cb,
+ 	       entry->ip.proto, entry->ip.invflags);
+ }
+ 
+-static void multiport_parse6(struct xt_option_call *cb)
++__attribute__((unused)) static void multiport_parse6(struct xt_option_call *cb)
+ {
+ 	const struct ip6t_entry *entry = cb->xt_entry;
+ 	return __multiport_parse(cb,
+@@ -311,14 +311,14 @@
+ 	}
+ }
+ 
+-static void multiport_print(const void *ip_void,
++__attribute__((unused)) static void multiport_print(const void *ip_void,
+                             const struct xt_entry_match *match, int numeric)
+ {
+ 	const struct ipt_ip *ip = ip_void;
+ 	__multiport_print(match, numeric, ip->proto);
+ }
+ 
+-static void multiport_print6(const void *ip_void,
++__attribute__((unused)) static void multiport_print6(const void *ip_void,
+                              const struct xt_entry_match *match, int numeric)
+ {
+ 	const struct ip6t_ip6 *ip = ip_void;
+@@ -406,14 +406,14 @@
+ 	}
+ }
+ 
+-static void multiport_save(const void *ip_void,
++__attribute__((unused)) static void multiport_save(const void *ip_void,
+                            const struct xt_entry_match *match)
+ {
+ 	const struct ipt_ip *ip = ip_void;
+ 	__multiport_save(match, ip->proto);
+ }
+ 
+-static void multiport_save6(const void *ip_void,
++__attribute__((unused)) static void multiport_save6(const void *ip_void,
+                             const struct xt_entry_match *match)
+ {
+ 	const struct ip6t_ip6 *ip = ip_void;
+Index: iptables-1.4.21/libxtables/xtables.c
+===================================================================
+--- iptables-1.4.21.orig/libxtables/xtables.c	2016-06-16 11:52:46.893856328 +0530
++++ iptables-1.4.21/libxtables/xtables.c	2016-06-16 11:52:47.025856893 +0530
+@@ -301,7 +301,7 @@
+ 	return p;
+ }
+ 
+-static char *get_modprobe(void)
++__attribute__((unused)) static char *get_modprobe(void)
+ {
+ 	int procfile;
+ 	char *ret;

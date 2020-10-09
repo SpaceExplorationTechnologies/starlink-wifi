@@ -1,0 +1,59 @@
+--- a/wpa_supplicant/wpa_supplicant.c
++++ b/wpa_supplicant/wpa_supplicant.c
+@@ -125,14 +125,27 @@ static void wpas_update_fils_connect_par
+ #endif /* CONFIG_FILS && IEEE8021X_EAPOL */
+ 
+ 
+-static int hostapd_stop(struct wpa_supplicant *wpa_s)
++static int hostapd_disable(struct wpa_supplicant *wpa_s)
+ {
+-	const char *cmd = "STOP_AP";
++	const char *cmd = "DISABLE";
+ 	char buf[256];
+ 	size_t len = sizeof(buf);
+ 
+ 	if (wpa_ctrl_request(wpa_s->hostapd, cmd, os_strlen(cmd), buf, &len, NULL) < 0) {
+-		wpa_printf(MSG_ERROR, "\nFailed to stop hostapd AP interfaces\n");
++		wpa_printf(MSG_ERROR, "\nFailed to disable hostapd AP interfaces\n");
++		return -1;
++	}
++	return 0;
++}
++
++static int hostapd_enable(struct wpa_supplicant *wpa_s)
++{
++	const char *cmd = "ENABLE";
++	char buf[256];
++	size_t len = sizeof(buf);
++
++	if (wpa_ctrl_request(wpa_s->hostapd, cmd, os_strlen(cmd), buf, &len, NULL) < 0) {
++		wpa_printf(MSG_ERROR, "\nFailed to enable hostapd AP interfaces\n");
+ 		return -1;
+ 	}
+ 	return 0;
+@@ -971,12 +984,14 @@ void wpa_supplicant_set_state(struct wpa
+ 		if (!fils_hlp_sent && ssid && ssid->eap.erp)
+ 			wpas_update_fils_connect_params(wpa_s);
+ #endif /* CONFIG_FILS && IEEE8021X_EAPOL */
+-		if (wpa_s->hostapd)
++		if (wpa_s->hostapd) {
+ 			hostapd_reload(wpa_s, wpa_s->current_bss);
++			hostapd_enable(wpa_s);
++		}
+ 	} else if (state == WPA_DISCONNECTED || state == WPA_ASSOCIATING ||
+ 		   state == WPA_ASSOCIATED) {
+ 		if (wpa_s->hostapd)
+-			hostapd_stop(wpa_s);
++			hostapd_disable(wpa_s);
+ 		wpa_s->new_connection = 1;
+ 		wpa_drv_set_operstate(wpa_s, 0);
+ #ifndef IEEE8021X_EAPOL
+@@ -5501,7 +5516,7 @@ static int wpa_supplicant_init_iface(str
+ 			wpa_printf(MSG_ERROR, "\nFailed to connect to hostapd\n");
+ 			return -1;
+ 		}
+-		if (hostapd_stop(wpa_s) < 0)
++		if (hostapd_disable(wpa_s) < 0)
+ 			return -1;
+ 	}
+ 

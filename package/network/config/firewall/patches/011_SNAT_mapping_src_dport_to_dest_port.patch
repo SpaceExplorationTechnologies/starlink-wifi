@@ -1,0 +1,13 @@
+diff -Nur a/redirects.c firewall-2014-03-20/redirects.c
+--- a/redirects.c	2015-08-26 12:18:41.047432218 -0700
++++ firewall-2014-03-20/redirects.c	2015-08-26 12:19:05.163432825 -0700
+@@ -368,9 +368,6 @@
+ 			continue;
+ 		}
+ 
+-		if (!redir->port_redir.set)
+-			redir->port_redir = redir->port_dest;
+-
+ 		list_add_tail(&redir->list, &state->redirects);
+ 	}
+ }

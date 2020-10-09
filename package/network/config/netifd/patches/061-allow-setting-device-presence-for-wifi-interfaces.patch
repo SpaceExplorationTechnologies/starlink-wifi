@@ -1,0 +1,12 @@
+--- netifd-2015-12-16.orig/device.c
++++ netifd-2015-12-16/device.c
+@@ -424,9 +424,6 @@
+ {
+ 	struct device *dev;
+ 
+-	if (!external && system_if_force_external(name))
+-		return NULL;
+-
+ 	D(DEVICE, "Create simple device '%s'\n", name);
+ 	dev = calloc(1, sizeof(*dev));
+ 	dev->external = external;

@@ -1,0 +1,22 @@
+Index: busybox-1.25.1/miscutils/lock.c
+===================================================================
+--- busybox-1.25.1.orig/miscutils/lock.c	2017-03-14 12:44:18.832516659 +0530
++++ busybox-1.25.1/miscutils/lock.c	2017-03-14 15:01:10.356577194 +0530
+@@ -6,6 +6,7 @@
+ #include <sys/types.h>
+ #include <sys/file.h>
+ #include <sys/stat.h>
++#include <sys/prctl.h>
+ #include <signal.h>
+ #include <fcntl.h>
+ #include <unistd.h>
+@@ -69,6 +70,9 @@
+ 		}
+ 	}
+ 
++	/*to make sure that lock process exits if parent process is killed*/
++	prctl(PR_SET_PDEATHSIG, SIGKILL);
++
+ 	flags = shared ? LOCK_SH : LOCK_EX;
+ 	flags |= try_lock ? LOCK_NB : 0;
+ 

@@ -1,0 +1,10 @@
+--- a/tools/env/fw_env.c
++++ b/tools/env/fw_env.c
+@@ -21,6 +21,7 @@
+ #include <sys/ioctl.h>
+ #include <sys/stat.h>
+ #include <unistd.h>
++#include <compiler.h>
+ 
+ #ifdef MTD_OLD
+ # include <stdint.h>

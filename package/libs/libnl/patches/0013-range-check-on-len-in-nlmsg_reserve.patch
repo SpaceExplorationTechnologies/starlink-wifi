@@ -1,0 +1,14 @@
+Index: libnl-3.2.21/lib/msg.c
+===================================================================
+--- libnl-3.2.21.orig/lib/msg.c	2013-01-24 18:00:34.000000000 +0530
++++ libnl-3.2.21/lib/msg.c	2017-05-30 21:48:15.866800806 +0530
+@@ -415,6 +415,9 @@
+ 	size_t nlmsg_len = n->nm_nlh->nlmsg_len;
+ 	size_t tlen;
+ 
++	if (len > n->nm_size)
++		return NULL;
++
+ 	tlen = pad ? ((len + (pad - 1)) & ~(pad - 1)) : len;
+ 
+ 	if ((tlen + nlmsg_len) > n->nm_size)

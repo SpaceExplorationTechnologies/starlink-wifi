@@ -1,0 +1,43 @@
+From 8c7b22ee8000d6d8e7264d048fab5368174f4182 Mon Sep 17 00:00:00 2001
+From: Natesh babu <nrameg@codeaurora.org>
+Date: Thu, 7 Apr 2016 21:09:17 +0530
+Subject: [PATCH] ipq40xx: Ramdump: Add Dakota board entry
+
+Signed-off-by: Natesh babu <nrameg@codeaurora.org>
+---
+ linux-ramdump-parser-v2/boards.py | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/linux-ramdump-parser-v2/boards.py b/linux-ramdump-parser-v2/boards.py
+index 31d53ab..64aaf0f 100755
+--- a/linux-ramdump-parser-v2/boards.py
++++ b/linux-ramdump-parser-v2/boards.py
+@@ -205,6 +205,17 @@ class Board8994(Board):
+         self.wdog_addr = 0xfe87f658
+         self.imem_file_name = 'OCIMEM.BIN'
+ 
++class Board4018(Board):
++    def __init__(self, socid, smem_addr):
++        super(Board4018, self).__init__()
++        self.socid = socid
++        self.board_num = 4018
++        self.cpu = 'CORTEXA7'
++        self.ram_start = 0x80000000
++        self.smem_addr = smem_addr
++        self.phys_offset = 0x80000000
++        self.imem_start =  0x86000000
++
+ boards = []
+ boards.append(Board8916(socid=206, smem_addr=0xe200000))
+ boards.append(Board8916(socid=206, smem_addr=0x6300000))
+@@ -343,6 +354,7 @@ boards.append(Board8625(socid=133, board_num=8625))
+ boards.append(Board8625(socid=135, board_num=8625))
+ 
+ boards.append(Board8994(socid=207))
++boards.append(Board4018(socid=272, smem_addr=0x87e00000))
+ 
+ def get_supported_boards():
+     """ Called by other part of the code to get a list of boards """
+-- 
+1.9.1
+

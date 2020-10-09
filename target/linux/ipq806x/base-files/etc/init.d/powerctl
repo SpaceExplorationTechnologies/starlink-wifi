@@ -1,0 +1,69 @@
+#!/bin/sh /etc/rc.common
+
+START=98
+
+# ipq806x_power_auto()
+#   Changes the governor to ondemand and sets the default parameters for cpu ondemand governor.
+#   The parameters are tuned for best performance than for power.
+#   Also, the up_thresholds have been set to low value, to workaround the cpu
+#   utilization anamolies we are seeing with kcpustat with tickless kernel.
+ipq806x_power_auto() {
+	echo "ondemand" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+	echo "ondemand" > /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor
+
+	# Change the minimum operating frequency for CPU0.
+	# This is required for cases where large amount of network traffic is sent
+	# instantaneously  without any ramp-up time , when CPU is at minimum perf level.
+	# At 384 MHz, CPU0 stays fully busy in softirq context and doesn't move to ksoftirqd, and
+	# doesn't give any other thread including cpufreq thread a chance to run.
+	# Hence, the CPU frequency is locked up at 384MHz till the traffic is stopped.
+	# Increasing the min frequency for CPU0 to 800 MHz (L2=1GHz), allows 4 Gbps instantaneous
+	# traffic without any hangs/lockups.
+	#
+	# CPU1 min frequency also has to be increased because there is a hardware constraint
+	# kraits cannot operate at 384MHz when L2 is at 1GHz.
+	#
+	# The impact on idle-state power with this change is about ~40-45mW.
+	echo "800000" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+	echo "800000" > /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
+
+	# Change sampling rate for frequency scaling decisions to 1s, from 10 ms
+	echo "1000000" > /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
+
+	# Change sampling rate for frequency down scaling decision to 10s
+	echo 10 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor
+
+	# Change the CPU load threshold above which frequency is up-scaled to
+	# turbo frequency,to 50%
+	echo 50 > /sys/devices/system/cpu/cpufreq/ondemand/up_threshold
+}
+
+ipq40xx_power_auto() {
+	# change scaling governor as ondemand to enable clock scaling based on system load
+	echo "ondemand" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+
+	# set scaling min freq as 200 MHz
+	echo "200000" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+
+	# Change sampling rate for frequency scaling decisions to 1s, from 10 ms
+	echo "1000000" > /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
+
+	# Change sampling rate for frequency down scaling decision to 10s
+	echo 10 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor
+
+	# Change the CPU load threshold above which frequency is up-scaled to
+	# turbo frequency,to 50%
+	echo 50 > /sys/devices/system/cpu/cpufreq/ondemand/up_threshold
+}
+
+start() {
+	. /lib/ipq806x.sh
+
+	local board=$(ipq806x_board_name)
+	case "$board" in
+	db149 | ap148 | ap145 | ap148_1xx | db149_1xx | db149_2xx | ap145_1xx | ap160 | ap160_2xx | ap161 | ak01_1xx)
+		ipq806x_power_auto ;;
+	ap-dk01.1-c1 | ap-dk01.1-c2 | ap-dk04.1-c1 | ap-dk04.1-c2 | ap-dk04.1-c3 | ap-dk04.1-c4 | ap-dk04.1-c5 | ap-dk04.1-c6 | ap-dk05.1-c1 | ap-dk06.1-c1 | ap-dk07.1-c1 | ap-dk07.1-c2 | ap-dk07.1-c3 | ap-dk07.1-c4)
+		ipq40xx_power_auto ;;
+	esac
+}

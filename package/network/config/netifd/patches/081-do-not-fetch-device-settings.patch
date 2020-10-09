@@ -1,0 +1,10 @@
+--- a/device.c
++++ b/device.c
+@@ -338,7 +338,6 @@ int device_claim(struct device_user *dep
+ 		if (!dev->ifindex)
+ 			ret = -1;
+ 
+-		system_if_get_settings(dev, &dev->orig_settings);
+ 	} else
+ 		ret = dev->set_state(dev, true);
+ 

@@ -1,0 +1,108 @@
+#!/bin/sh
+#
+# Copyright (c) 2013, 2015-2016 The Linux Foundation. All rights reserved
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+. /lib/functions.sh
+
+BT_OFFSET=64
+# parse cmdline
+while [ -n "$1" ]; do
+	case "$1" in
+		-h|--help) HELP=1; break;;
+		-n) NUM="$2"; shift;;
+		-b) BT_TRIM="$2"; shift;;
+		-d) DELETE=1;;
+		-*)
+			echo "Invalid option: $1"
+			ERROR=1
+			break
+		;;
+		*) break;;
+	esac
+	shift
+done
+
+SEED="$@"
+
+[ -z "$SEED" -o -n "$HELP" -o -n "$ERROR" ] && {
+	cat <<EOF
+Usage: $0 [-h] [-d] [-n NUM] [-b BT_TRIM] <boardID>
+
+setmac options:
+	-n	number of MAC@ to set.
+		(default: number of ethX devices in the system)
+	-d	erase the ART sector before setting the MAC@
+		(supported for NOR/NAND flash only)
+	-b	Set BT MAC address as well as Trim value @ offset BT_OFFSET
+	-h	print this help
+
+boardID is used as a seed and expanded through md5sum to create a
+supposedly unique MAC@ suffix. Please use something that is unique
+for every board.
+Example:
+$ setmac DB149-010-N0001
+EOF
+	# If we requested the help flag, then exit normally.
+	# Else, it's probably an error so report it as such.
+	[ -n "$HELP" ] && exit 0
+	exit 1
+}
+
+# By default, fill-in one MAC@ per ethernet interface found in the system
+[ -z ${NUM} ] && NUM=$(ls -d /sys/class/net/eth*|wc -l)
+
+# Expend the seed to get pseudo-random MAC@ per device
+md5=$(echo "${SEED}" | md5sum -)
+NUM=$((${NUM}-1))
+# reduce NUM by 1 to start below loop from 0
+for dev in $(seq 0 ${NUM});do
+	str="${str}\x00\x03\x7f"
+	for byte in 0 2 4;do
+		off=$((${byte}+6*${dev}))
+		str="${str}\x${md5:${off}:2}"
+	done
+done
+if [ -n "${BT_TRIM}" ]; then
+# increaement dev to past last used MAC address from md5
+	dev=$((${dev}+1))
+# reset remaining bits to 0 until BT_OFFSET-1
+	start=$((${off}+2))
+	end=$((${BT_OFFSET}-1))
+	for byte in $(seq ${start} ${end}); do
+	        str="${str}\x00"
+	done
+# set BT MAC address
+	str="${str}\x00\x03\x7f"
+	for byte in 0 2 4;do
+		off=$((${byte}+6*${dev}))
+		str="${str}\x${md5:${off}:2}"
+	done
+# set BT TRIM
+	str="${str}\x${BT_TRIM}"
+fi
+
+echo -n -e ${str} > /tmp/macaddr
+hexdump -C /tmp/macaddr
+
+art_partition=$(find_mtd_part 0:ART)
+if [ -z "$art_partition" ]; then
+	art_partition=$(find_mmc_part 0:ART)
+else
+	# If we set the delete flag, let's start by erasing the ART sector
+	[ -n "${DELETE}" ] && mtd erase  $(echo $art_partition | sed 's,block,,')
+fi
+
+# Find the partition and set the MAC addresses in the flash
+dd if=/tmp/macaddr of=$art_partition bs=64 conv=sync 2>/dev/null
+rm -f /tmp/macaddr

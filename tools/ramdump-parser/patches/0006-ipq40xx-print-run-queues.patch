@@ -1,0 +1,170 @@
+From 157d323b61c054b8f66fb51a605f8fc3af54ebf0 Mon Sep 17 00:00:00 2001
+From: Natesh babu <nrameg@codeaurora.org>
+Date: Tue, 5 Apr 2016 18:17:43 +0530
+Subject: [PATCH] ipq40xx: print run queues
+
+Signed-off-by: Natesh babu <nrameg@codeaurora.org>
+---
+ linux-ramdump-parser-v2/parsers/runqueue.py | 126 +++++++++++++++++++++++++++-
+ 1 file changed, 122 insertions(+), 4 deletions(-)
+
+diff --git a/linux-ramdump-parser-v2/parsers/runqueue.py b/linux-ramdump-parser-v2/parsers/runqueue.py
+index 523f715..f9a0e9e 100644
+--- a/linux-ramdump-parser-v2/parsers/runqueue.py
++++ b/linux-ramdump-parser-v2/parsers/runqueue.py
+@@ -10,6 +10,8 @@
+ # GNU General Public License for more details.
+ 
+ import rb_tree
++import re
++import os
+ from print_out import print_out_str
+ from parser_util import register_parser, RamParser
+ 
+@@ -156,10 +158,82 @@ class RunQueues(RamParser):
+ 
+         for i in range(stack_addr, stack_addr + 0x2000, 4):
+             callstack_addr = self.ramdump.read_word(i)
+-            if text_start_addr <= callstack_addr and callstack_addr < text_end_addr:
++            if (text_start_addr <= callstack_addr < text_end_addr) or \
++               (0xbf000000 <= callstack_addr < 0xbfe00000):
++                modname = None
++                symname = None
++                symtab_st_size = None
+                 wname = self.ramdump.unwind_lookup(callstack_addr)
+-                if wname is not None:
+-                    print_out_str('0x{0:x}:{1}'.format(i, wname))
++                if wname is not None and len(wname) > 3:
++                    symname, offset, modname, symtab_st_size = wname
++                else:
++                    symtab_st_size = None
++                    symname = 'UNKNOWN'
++                    offset = 0
++
++                if (modname is not None and symtab_st_size is not None):
++                    print_out_str('<0x{0:x}>:{1}+0x{2:x}/0x{5:x} [0x{3:x}] <{4}.ko>'.format(i, symname, offset, callstack_addr, modname, symtab_st_size))
++                elif (modname is None and symtab_st_size is not None):
++                    print_out_str('<0x{0:x}>:{1}+0x{2:x}/0x{4:x} [0x{3:x}]'.format(i, symname, offset, callstack_addr, symtab_st_size))
++                else:
++                    print_out_str('<0x{0:x}>:{1} [0x{2:x}]'.format(i, symname, callstack_addr))
++
++    def stack_dump_trace(self, svc_r13_core):
++        stext = self.ramdump.addr_lookup('stext')
++        etext = self.ramdump.addr_lookup('_etext')
++        stack_offset = self.ramdump.field_offset('struct task_struct', 'stack')
++        b = 0xb0000000
++        c = 0xc0000000
++        d = 0xd0000000
++        svc_r13_core = int(svc_r13_core, 16)
++
++        for i in range(svc_r13_core, svc_r13_core + 0x2000, 4):
++             stack_addr = self.ramdump.read_word(i)
++             if stack_addr is None:
++                 continue
++             if not ((stack_addr & b) == b or (stack_addr & c) == c):
++                 continue
++             if ((stack_addr & d) == d):
++                 continue
++             if ((stack_addr & c) == c):
++                 if not (stext <= stack_addr < etext):
++                     continue
++
++             if ((stack_addr & b) == b):
++                 if not (0xbf000000 <= stack_addr < 0xbfe00000):
++                     continue
++
++             modname = None
++             symname = None
++             symtab_st_size = None
++             offset = None
++             wname = self.ramdump.unwind_lookup(stack_addr)
++             if wname is not None and len(wname) > 3:
++                 symname, offset, modname, symtab_st_size = wname
++             else:
++                 symname = 'UNKNOWN'
++                 offset = 0
++                 symtab_st_size = None
++
++             if (modname is not None and symtab_st_size is not None):
++                 print_out_str('<0x{0:x}>:{1}+0x{2:x}/0x{5:x} [0x{3:x}] <{4}.ko>'.format(i, symname, offset, stack_addr, modname, symtab_st_size))
++             elif (modname is None and symtab_st_size is not None):
++                 print_out_str('<0x{0:x}>:{1}+0x{2:x}/0x{4:x} [0x{3:x}]'.format(i, symname, offset, stack_addr, symtab_st_size))
++             else:
++                 print_out_str('<0x{0:x}>:{1} [0x{2:x}]'.format(i, symname, stack_addr))
++
++    def get_stack_pointer(self, reg_fname):
++        pattern=re.compile(r'.*r.s r13_svc*')
++        ver_str = None
++        fhandle = open(reg_fname, 'rb')
++        for line in fhandle:
++            found=pattern.findall(line)
++            for a in found:
++                start_pos = line.index("0")
++                end_pos = start_pos + 10
++                ver_str = line[start_pos:end_pos]
++
++        return ver_str
+ 
+     def parse(self):
+         print_out_str(
+@@ -177,6 +251,23 @@ class RunQueues(RamParser):
+         rt_nr_running_offset = self.ramdump.field_offset(
+             'struct rt_rq', 'rt_nr_running')
+ 
++        svc_r13_core0 = None
++        svc_r13_core1 = None
++        if os.path.exists(self.ramdump.outdir + '/core0_regs.cmm'):
++            svc_r13_core0 = self.get_stack_pointer(self.ramdump.outdir + '/core0_regs.cmm')
++
++        if os.path.exists(self.ramdump.outdir + '/core1_regs.cmm'):
++            svc_r13_core1 = self.get_stack_pointer(self.ramdump.outdir + '/core1_regs.cmm')
++
++        if self.ramdump.Is_Dakota():
++            svc_r13_core2 = None
++            svc_r13_core3 = None
++            if os.path.exists(self.ramdump.outdir + '/core2_regs.cmm'):
++                svc_r13_core2 = self.get_stack_pointer(self.ramdump.outdir + '/core2_regs.cmm')
++            if os.path.exists(self.ramdump.outdir + '/core3_regs.cmm'):
++                svc_r13_core3 = self.get_stack_pointer(self.ramdump.outdir + '/core3_regs.cmm')
++        print_out_str('\n')
++
+         for i in self.ramdump.iter_cpus():
+             rq_addr = runqueues_addr + self.ramdump.per_cpu_offset(i)
+             nr_running = self.ramdump.read_int(rq_addr + nr_running_offset)
+@@ -201,5 +292,32 @@ class RunQueues(RamParser):
+             print_out_str('RT {0} process is pending'.format(rt_nr_running))
+             self.print_rt_state(rt_rq_addr)
+ 
+-            self.print_latest_callstack_maybe(curr_addr)
++            if i is 0:
++                if svc_r13_core0 is not None:
++                    print_out_str('\n Stack dump back trace for core0\n')
++                    self.stack_dump_trace(svc_r13_core0)
++                else:
++                    self.print_latest_callstack_maybe(curr_addr)
++            if i is 1:
++                if svc_r13_core1 is not None:
++                    print_out_str('\n Stack dump back trace for core1\n')
++                    self.stack_dump_trace(svc_r13_core1)
++                else:
++                    self.print_latest_callstack_maybe(curr_addr)
++
++            if self.ramdump.Is_Dakota():
++                if i is 2:
++                    if svc_r13_core2 is not None:
++                        print_out_str('\n Stack dump back trace for core2\n')
++                        self.stack_dump_trace(svc_r13_core2)
++                    else:
++                        self.print_latest_callstack_maybe(curr_addr)
++
++                if i is 3:
++                    if svc_r13_core3 is not None:
++                        print_out_str('\n Stack dump back trace for core3\n')
++                        self.stack_dump_trace(svc_r13_core3)
++                    else:
++                        self.print_latest_callstack_maybe(curr_addr)
++
+             print_out_str('')
+-- 
+1.9.1
+

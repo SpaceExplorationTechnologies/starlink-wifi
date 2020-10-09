@@ -1,0 +1,13 @@
+Index: argp-standalone-1.3/argp-help.c
+===================================================================
+--- argp-standalone-1.3.orig/argp-help.c	2003-12-11 14:07:05.000000000 +0530
++++ argp-standalone-1.3/argp-help.c	2016-06-15 11:31:24.714214353 +0530
+@@ -1722,7 +1722,7 @@
+   if (state)
+     return state->name;
+ #if HAVE_DECL_PROGRAM_INVOCATION_SHORT_NAME
+-  return program_invocation_short_name;
++  return (char *)program_invocation_short_name;
+ #elif HAVE_DECL_PROGRAM_INVOCATION_NAME
+   return __argp_basename(program_invocation_name);
+ #else /* !HAVE_DECL_PROGRAM_INVOCATION_NAME */

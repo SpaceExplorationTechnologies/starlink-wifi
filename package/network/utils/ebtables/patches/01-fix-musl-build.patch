@@ -1,0 +1,64 @@
+--- a/extensions/ebt_among.c
++++ b/extensions/ebt_among.c
+@@ -13,7 +13,7 @@
+ #include <ctype.h>
+ #include <unistd.h>
+ #include "../include/ebtables_u.h"
+-#include <netinet/ether.h>
++#include <linux/if_ether.h>
+ #include "../include/ethernetdb.h"
+ #include <linux/if_ether.h>
+ #include <linux/netfilter_bridge/ebt_among.h>
+--- a/extensions/ebt_arpreply.c
++++ b/extensions/ebt_arpreply.c
+@@ -12,7 +12,7 @@
+ #include <string.h>
+ #include <getopt.h>
+ #include "../include/ebtables_u.h"
+-#include <netinet/ether.h>
++#include <linux/if_ether.h>
+ #include <linux/netfilter_bridge/ebt_arpreply.h>
+ 
+ static int mac_supplied;
+--- a/extensions/ebt_ip6.c
++++ b/extensions/ebt_ip6.c
+@@ -18,6 +18,7 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include <getopt.h>
++#include <sys/types.h>
+ #include <netdb.h>
+ #include "../include/ebtables_u.h"
+ #include <linux/netfilter_bridge/ebt_ip6.h>
+--- a/extensions/ebt_limit.c
++++ b/extensions/ebt_limit.c
+@@ -13,6 +13,7 @@
+ #include <string.h>
+ #include <getopt.h>
+ #include <errno.h>
++#include <sys/types.h>
+ #include "../include/ebtables_u.h"
+ #include <linux/netfilter_bridge/ebt_limit.h>
+ 
+--- a/extensions/ebt_nat.c
++++ b/extensions/ebt_nat.c
+@@ -11,7 +11,7 @@
+ #include <string.h>
+ #include <getopt.h>
+ #include "../include/ebtables_u.h"
+-#include <netinet/ether.h>
++#include <linux/if_ether.h>
+ #include <linux/netfilter_bridge/ebt_nat.h>
+ 
+ static int to_source_supplied, to_dest_supplied;
+--- a/useful_functions.c
++++ b/useful_functions.c
+@@ -25,7 +25,7 @@
+ #include "include/ebtables_u.h"
+ #include "include/ethernetdb.h"
+ #include <stdio.h>
+-#include <netinet/ether.h>
++#include <linux/if_ether.h>
+ #include <string.h>
+ #include <stdlib.h>
+ #include <getopt.h>

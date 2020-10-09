@@ -1,0 +1,12 @@
+--- a/scripts/netifd-wireless.sh
++++ b/scripts/netifd-wireless.sh
+@@ -267,6 +267,9 @@ wireless_vif_parse_encryption() {
+ 				;;
+ 			esac
+ 		;;
++		*sae*)
++			auth_type=sae
++		;;
+ 	esac
+ }
+ 

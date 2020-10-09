@@ -1,0 +1,62 @@
+--- a/hostapd/ctrl_iface.c
++++ b/hostapd/ctrl_iface.c
+@@ -2738,6 +2738,26 @@ static int hostapd_ctrl_iface_remove_nei
+ 	return hostapd_neighbor_remove(hapd, bssid, &ssid);
+ }
+ 
++static int hostapd_ctrl_iface_signal_monitor(struct hostapd_data *hapd,
++					     char *cmd)
++{
++	const char *pos;
++	int threshold = 0, hysteresis = 0;
++
++	pos = os_strstr(cmd, "THRESHOLD=");
++	if (pos)
++		threshold = atoi(pos + 10);
++	pos = os_strstr(cmd, "HYSTERESIS=");
++	if (pos)
++		hysteresis = atoi(pos + 11);
++
++	if (hapd->driver->signal_monitor)
++		return hapd->driver->signal_monitor(hapd->drv_priv,
++						    threshold, hysteresis);
++
++	return -1;
++}
++
+ 
+ static int hostapd_ctrl_driver_flags(struct hostapd_iface *iface, char *buf,
+ 				     size_t buflen)
+@@ -3264,6 +3284,9 @@ static int hostapd_ctrl_iface_receive_pr
+ 		if (hostapd_dpp_pkex_remove(hapd, buf + 16) < 0)
+ 			reply_len = -1;
+ #endif /* CONFIG_DPP */
++	} else if (os_strncmp(buf, "SIGNAL_MONITOR", 14) == 0) {
++		if (hostapd_ctrl_iface_signal_monitor(hapd, buf + 14))
++			reply_len = -1;
+ 	} else {
+ 		os_memcpy(reply, "UNKNOWN COMMAND\n", 16);
+ 		reply_len = 16;
+--- a/hostapd/hostapd_cli.c
++++ b/hostapd/hostapd_cli.c
+@@ -1477,6 +1477,11 @@ static int hostapd_cli_cmd_poll_sta(stru
+ 	return hostapd_cli_cmd(ctrl, "POLL_STA", 1, argc, argv);
+ }
+ 
++static int hostapd_cli_cmd_signal_monitor(struct wpa_ctrl *ctrl, int argc,
++					  char *argv[])
++{
++	return hostapd_cli_cmd(ctrl, "SIGNAL_MONITOR", 0, argc, argv);
++}
+ 
+ struct hostapd_cli_cmd {
+ 	const char *cmd;
+@@ -1647,6 +1652,8 @@ static const struct hostapd_cli_cmd host
+ 	  "=Add/Delete/Show/Clear deny MAC ACL" },
+ 	{ "poll_sta", hostapd_cli_cmd_poll_sta, hostapd_complete_stations,
+ 	  "<addr> = poll a STA to check connectivity with a QoS null frame" },
++	{ "signal_monitor", hostapd_cli_cmd_signal_monitor, NULL,
++	  "= set signal monitor parameters" },
+ 	{ NULL, NULL, NULL, NULL }
+ };
+ 

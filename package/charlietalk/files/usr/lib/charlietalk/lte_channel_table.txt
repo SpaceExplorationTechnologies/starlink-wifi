@@ -1,0 +1,13 @@
+# This file contains LTE channel ranges (low and high) and
+# corresponding Wi-Fi channels which needs to be blocked.
+# Charlietalkd daemon will use this table as input to avoid
+# frequency co-existence between LTE and Wi-Fi.
+#
+# Below table is for LTE Band 7 and Bandwidth 20MHz
+#
+# LOWER_CHANNEL	UPPER_CHANNEL	channel1,channel2...,channel(n)
+2750    	2999		1,14
+3000    	3269		1,2,3,4,5,6
+3270    	3369		1,2,3,4,5,6,7,8
+3370    	3429		6,7,8
+3430    	3449		7,8,9,10,11,12,13,14

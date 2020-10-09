@@ -1,0 +1,68 @@
+--- a/tools/env/fw_env.c
++++ b/tools/env/fw_env.c
+@@ -701,6 +701,19 @@
+ 	return 0;
+ }
+ 
++int find_mtd_size(int fd)
++{
++	struct mtd_info_user mtdinfo;
++	int size = 0;
++
++	if (ioctl(fd, MEMGETINFO, &mtdinfo) == -1) {
++		return size;
++	}
++	size = mtdinfo.size;
++
++	return size;
++}
++
+ /*
+  * Read data from flash at an offset into a provided buffer. On NAND it skips
+  * bad blocks but makes sure it stays within ENVSECTORS (dev) starting from
+@@ -719,6 +732,7 @@
+ 	loff_t blockstart;	/* running start of the current block -
+ 				   MEMGETBADBLOCK needs 64 bits */
+ 	int rc;
++	int size;
+ 
+ 	blockstart = (offset / DEVESIZE (dev)) * DEVESIZE (dev);
+ 
+@@ -753,10 +767,14 @@
+ 		if (rc < 0)		/* block test failed */
+ 			return -1;
+ 
+-		if (blockstart + block_seek + readlen > top_of_range) {
++		if (rc)
++			top_of_range += readlen;
++
++		size = find_mtd_size(fd);
++		if ((blockstart + block_seek + readlen > top_of_range) || (size > 0 &&  top_of_range > size)) {
+ 			/* End of range is reached */
+ 			fprintf (stderr,
+-				 "Too few good blocks within range\n");
++				"Too few good blocks within range\n");
+ 			return -1;
+ 		}
+ 
+@@ -821,6 +839,7 @@
+ 	void *libubi = NULL;
+ #endif
+ 	int rc;
++	int size;
+ 
+ 	/*
+ 	 * For mtd devices only offset and size of the environment do matter
+@@ -915,7 +934,11 @@
+ 		if (rc < 0)		/* block test failed */
+ 			return rc;
+ 
+-		if (blockstart + erasesize > top_of_range) {
++		if(rc)
++			top_of_range += blocklen;
++
++		size = find_mtd_size(fd);
++		if ((blockstart + erasesize > top_of_range) || (size > 0 && top_of_range > size)) {
+ 			fprintf (stderr, "End of range reached, aborting\n");
+ 			return -1;
+ 		}

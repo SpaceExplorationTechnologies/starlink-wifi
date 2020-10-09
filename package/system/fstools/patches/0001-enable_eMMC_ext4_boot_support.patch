@@ -1,0 +1,298 @@
+From 4cd867fedc8a7593e7b26af8985d35ec6526d30e Mon Sep 17 00:00:00 2001
+From: Ram Chandra Jangir <rjangi@codeaurora.org>
+Date: Mon, 20 Jul 2015 20:04:48 +0530
+Subject: [PATCH] fstools: Enable eMMC(ext4) boot support in fstools
+
+This change enables eMMC +ext4 boot support in fstool,
+preinit script will trigger mount_root which will look
+for ext4 device and it will mount as rootfs_data, during
+firstboot it will format and mount ext4 partition
+
+Change-Id: I4acc2d4cde5cddd64f756b0aaba178752eb80941
+Signed-off-by: Ram Chandra Jangir <rjangi@codeaurora.org>
+---
+ .../fstools/patches/001-add_emmc_firstboot.patch   |  211 ++++++++++++++++++++
+ 1 file changed, 211 insertions(+)
+ create mode 100644 package/system/fstools/patches/001-add_emmc_firstboot.patch
+
+diff --git a/package/system/fstools/patches/001-add_emmc_firstboot.patch b/package/system/fstools/patches/001-add_emmc_firstboot.patch
+new file mode 100644
+index 0000000..3dcd658
+--- a/dev/null
++++ b/libfstools/ext4.c
+@@ -0,0 +1,168 @@
++/*
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ *
++ * Permission to use, copy, modify, and/or distribute this software for any
++ * purpose with or without fee is hereby granted, provided that the above
++ * copyright notice and this permission notice appear in all copies.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
++ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++*/
++
++
++#include <sys/mount.h>
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <asm/byteorder.h>
++#include <unistd.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <mtd/mtd-user.h>
++#include <glob.h>
++
++#include "libfstools.h"
++
++#include "volume.h"
++
++#define ext4_sysfs_path "/sys/block/mmcblk*/mmcblk*/uevent"
++#define PATH_MAX	128
++
++#define EXT_SB_OFF	0x400
++#define EXT_SB_KBOFF	(EXT_SB_OFF >> 10)
++#define EXT_SB_MAGIC	"\123\357"
++#define EXT_MAG_OFF	0x38
++
++struct ext4_priv {
++	char	*name;
++        char    *devname;
++};
++
++static struct driver ext4_driver;
++
++static int ext4_volume_init(struct volume *v)
++{
++	char buf[PATH_MAX];
++	struct ext4_priv *p;
++
++	p = (struct ext4_priv*)v->priv;
++	snprintf(buf, sizeof(buf), "/dev/%s",p->devname);
++
++	v->name = strdup(p->name);
++	v->type = 5;
++	v->blk = strdup(buf);
++	return 0;
++}
++
++static int ext4_find_index(char *dev,char *name)
++{
++	int j;
++	FILE *fp;
++	char tmp[PATH_MAX];
++	char partname[PATH_MAX];
++	glob_t gl;
++
++	if (glob(ext4_sysfs_path, GLOB_NOESCAPE | GLOB_MARK, NULL, &gl) < 0)
++		return -1;
++
++	for (j = 0; j < gl.gl_pathc; j++) {
++		if ((fp = fopen(gl.gl_pathv[j], "r"))) {
++			 while(fgets(tmp, sizeof(tmp), fp))  {
++				if(strstr(tmp, "DEVNAME"))  {
++					strcpy(partname,tmp+strlen("DEVNAME="));
++				}
++				if(strstr(tmp,name))  {
++					partname[sizeof(partname) - 1] = '\0';
++					j = strlen(partname) - 1;
++					while (j > 0 && partname[j] <= ' ')
++						partname[j--] = '\0';
++					strcpy(dev,partname);
++					fclose(fp);
++					globfree(&gl);
++					return 0;
++				}
++			}
++			fclose(fp);
++		}
++	}
++	globfree(&gl);
++	return -1;
++}
++
++static int check_for_mtd(const char *mtd)
++{
++	FILE *fp;
++	char dev[PATH_MAX];
++
++	if ((fp = fopen("/proc/mtd", "r"))) {
++		while (fgets(dev, sizeof(dev), fp)) {
++			if (strstr(dev, mtd)) {
++				fclose(fp);
++				return -1;
++			}
++		}
++	}
++	fclose(fp);
++	return 0;
++}
++
++static int ext4_volume_find(struct volume *v, char *name)
++{
++	char buf[PATH_MAX];
++	struct ext4_priv *p;
++
++	if (find_filesystem("ext4"))
++		return -1;
++
++	if (check_for_mtd(name))
++		return -1;
++
++	if(ext4_find_index(buf,name))
++		return -1;
++
++        p = calloc(1, sizeof(struct ext4_priv));
++        if (!p)
++                return -1;
++
++        v->priv = p;
++        v->drv = &ext4_driver;
++
++        p->devname = strdup(buf);
++        p->name = strdup(name);
++        return ext4_volume_init(v);
++}
++
++static int ext4_volume_identify(struct volume *v)
++{
++	char magic[32] = { 0 };
++	int off = (EXT_SB_KBOFF * 1024) + EXT_MAG_OFF;
++	int fd;
++
++	fd = open(v->blk, O_RDONLY);
++	if(fd == -1)
++		return -1;
++
++	lseek(fd, off, SEEK_SET);
++	read(fd, magic, sizeof(EXT_SB_MAGIC) - 1);
++	close(fd);
++
++	if (!memcmp(EXT_SB_MAGIC, magic, sizeof(EXT_SB_MAGIC) - 1)) {
++		return FS_EXT4FS;
++	}
++
++	fprintf(stderr, "ext4 is not ready - marker found\n");
++	return FS_DEADCODE;
++}
++
++static struct driver ext4_driver = {
++        .name = "ext4",
++        .find = ext4_volume_find,
++        .init = ext4_volume_init,
++        .identify = ext4_volume_identify,
++};
++DRIVER(ext4_driver);
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -11,6 +11,7 @@
+ 		libfstools/overlay.c
+ 		libfstools/volume.c
+ 		libfstools/mtd.c
++		libfstools/ext4.c
+ 		libfstools/mount.c
+ 		libfstools/ubi.c
+ 		libfstools/find.c)
+--- a/mount_root.c
++++ b/mount_root.c
+@@ -68,6 +68,7 @@
+
+ 	case FS_JFFS2:
+ 	case FS_UBIFS:
++	case FS_EXT4FS:
+ 		mount_overlay(data);
+ 		break;
+
+@@ -106,6 +107,7 @@
+
+ 	case FS_JFFS2:
+ 	case FS_UBIFS:
++	case FS_EXT4FS:
+ 		fs_state_set("/overlay", FS_STATE_READY);
+ 		break;
+ 	}
+--- a/libfstools/libfstools.h
++++ b/libfstools/libfstools.h
+@@ -26,6 +26,7 @@
+ 	FS_JFFS2,
+ 	FS_DEADCODE,
+ 	FS_UBIFS,
++	FS_EXT4FS,
+ };
+
+ enum fs_state {
+--- a/libfstools/overlay.c
++++ b/libfstools/overlay.c
+@@ -101,7 +101,7 @@
+ static int
+ overlay_mount(struct volume *v, char *fs)
+ {
+-	if (mkdir("/tmp/overlay", 0755)) {
++	if (mkdir("/tmp/overlay", 0755) && errno != EEXIST) {
+ 		ULOG_ERR("failed to mkdir /tmp/overlay: %s\n", strerror(errno));
+ 		return -1;
+ 	}
+@@ -196,6 +196,7 @@
+ jffs2_switch(struct volume *v)
+ {
+ 	char *mp;
++	char buf[32];
+ 	int ret = -1;
+
+ 	if (find_overlay_mount("overlayfs:/tmp/root"))
+@@ -212,6 +213,11 @@
+ 		return -1;
+ 	}
+
++	if(!strcmp((char *)(v->drv->name),"ext4")) {
++		snprintf(buf,sizeof(buf),"mkfs.ext4 %s",v->blk);
++		system(buf);
++	}
++
+ 	switch (volume_identify(v)) {
+ 	case FS_NONE:
+ 		ULOG_ERR("no jffs2 marker found\n");
+@@ -245,6 +251,15 @@
+ 			ret = -1;
+ 		}
+ 		break;
++	case FS_EXT4FS:
++		ret = overlay_mount(v, "ext4");
++		if (ret)
++			break;
++		if (mount_move("/tmp", "", "/overlay") || fopivot("/overlay", "/rom")) {
++			ULOG_ERR("switching to ext4 failed\n");
++			ret= -1;
++		}
++		break;
+ 	}
+
+ 	if (ret)
+@@ -270,6 +285,9 @@
+ 	case FS_UBIFS:
+ 		fstype = "ubifs";
+ 		break;
++	case FS_EXT4FS:
++		fstype = "ext4";
++		break;
+ 	}
+
+ 	volume_init(v);
+--- a/libfstools/find.c
++++ b/libfstools/find.c
+@@ -102,7 +102,8 @@
+
+ 			if (mtd_only &&
+ 			    strncmp(t, "jffs2", 5) &&
+-			    strncmp(t, "ubifs", 5)) {
++			    strncmp(t, "ubifs", 5) &&
++			    strncmp(t, "ext4", 4)) {
+ 				fclose(fp);
+ 				ULOG_ERR("block is mounted with wrong fs\n");
+ 				return NULL;

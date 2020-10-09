@@ -1,0 +1,39 @@
+--- a/nl80211.h
++++ b/nl80211.h
+@@ -2904,6 +2904,7 @@ enum nl80211_sta_bss_param {
+  * @NL80211_STA_INFO_RX_DURATION: aggregate PPDU duration for all frames
+  *	received from the station (u64, usec)
+  * @NL80211_STA_INFO_PAD: attribute used for padding for 64-bit alignment
++ * @NL80211_STA_INFO_ACK_SIGNAL: signal strength of the last ACK frame(u8, dBm)
+  * @NL80211_STA_INFO_ACK_SIGNAL_AVG: avg signal value of tx ack packets
+  * @__NL80211_STA_INFO_AFTER_LAST: internal
+  * @NL80211_STA_INFO_MAX: highest possible station info attribute
+@@ -2943,6 +2944,7 @@ enum nl80211_sta_info {
+ 	NL80211_STA_INFO_TID_STATS,
+ 	NL80211_STA_INFO_RX_DURATION,
+ 	NL80211_STA_INFO_PAD,
++	NL80211_STA_INFO_ACK_SIGNAL,
+ 	NL80211_STA_INFO_ACK_SIGNAL_AVG,
+ 
+ 	/* keep last */
+--- a/station.c
++++ b/station.c
+@@ -239,6 +239,7 @@ static int print_sta_handler(struct nl_m
+ 		[NL80211_STA_INFO_TID_STATS] = { .type = NLA_NESTED },
+ 		[NL80211_STA_INFO_BSS_PARAM] = { .type = NLA_NESTED },
+ 		[NL80211_STA_INFO_RX_DURATION] = { .type = NLA_U64 },
++		[NL80211_STA_INFO_ACK_SIGNAL] = {.type = NLA_U8 },
+ 		[NL80211_STA_INFO_ACK_SIGNAL_AVG] = { .type = NLA_U8 },
+ 	};
+ 	char *chain;
+@@ -341,6 +342,10 @@ static int print_sta_handler(struct nl_m
+ 		printf("\n\trx duration:\t%lld us",
+ 		       (unsigned long long)nla_get_u64(sinfo[NL80211_STA_INFO_RX_DURATION]));
+ 
++	if (sinfo[NL80211_STA_INFO_ACK_SIGNAL])
++		printf("\n\tlast ack signal:%d dBm",
++                       (int8_t)nla_get_u8(sinfo[NL80211_STA_INFO_ACK_SIGNAL]));
++
+ 	if (sinfo[NL80211_STA_INFO_ACK_SIGNAL_AVG])
+ 		printf("\n\tavg ack signal:\t%d dBm",
+ 		       (int8_t)nla_get_u8(sinfo[NL80211_STA_INFO_ACK_SIGNAL_AVG]));

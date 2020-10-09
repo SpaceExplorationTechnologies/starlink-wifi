@@ -1,0 +1,261 @@
+Index: util-linux-2.25.2/include/strutils.h
+===================================================================
+--- util-linux-2.25.2.orig/include/strutils.h	2014-10-24 14:51:20.310387897 +0530
++++ util-linux-2.25.2/include/strutils.h	2017-03-15 15:12:08.937057416 +0530
+@@ -36,15 +36,19 @@
+ 
+ extern int isdigit_string(const char *str);
+ 
++/*
+ #ifndef HAVE_MEMPCPY
+ extern void *mempcpy(void *restrict dest, const void *restrict src, size_t n);
+ #endif
++*/
+ #ifndef HAVE_STRNLEN
+ extern size_t strnlen(const char *s, size_t maxlen);
+ #endif
++/*
+ #ifndef HAVE_STRNDUP
+ extern char *strndup(const char *s, size_t n);
+ #endif
++*/
+ #ifndef HAVE_STRNCHR
+ extern char *strnchr(const char *s, size_t maxlen, int c);
+ #endif
+Index: util-linux-2.25.2/lib/mbsalign.c
+===================================================================
+--- util-linux-2.25.2.orig/lib/mbsalign.c	2014-09-16 18:07:06.141551709 +0530
++++ util-linux-2.25.2/lib/mbsalign.c	2017-03-15 16:56:05.802794383 +0530
+@@ -282,7 +282,7 @@
+ size_t
+ mbs_truncate(char *str, size_t *width)
+ {
+-	ssize_t bytes = strlen(str);
++	size_t bytes = strlen(str);
+ #ifdef HAVE_WIDECHAR
+ 	ssize_t sz = mbstowcs(NULL, str, 0);
+ 	wchar_t *wcs = NULL;
+@@ -299,13 +299,13 @@
+ 	*width = wc_truncate(wcs, *width);
+ 	bytes = wcstombs(str, wcs, bytes);
+ done:
+-	free(wcs);
++	if (wcs)
++		free(wcs);
+ #else
+ 	if (*width < bytes)
+ 		bytes = *width;
+ #endif
+-	if (bytes >= 0)
+-		str[bytes] = '\0';
++	str[bytes] = '\0';
+ 	return bytes;
+ }
+ 
+@@ -350,10 +350,10 @@
+   size_t n_cols = src_size - 1;
+   size_t n_used_bytes = n_cols; /* Not including NUL */
+   size_t n_spaces = 0, space_left;
++#ifdef HAVE_WIDECHAR
+   bool conversion = false;
+   bool wc_enabled = false;
+ 
+-#ifdef HAVE_WIDECHAR
+   /* In multi-byte locales convert to wide characters
+      to allow easy truncation. Also determine number
+      of screen columns used.  */
+@@ -407,9 +407,10 @@
+         n_cols = wc_truncate (str_wc, *width);
+         n_used_bytes = wcstombs (newstr, str_wc, src_size);
+     }
+-#endif
+ 
+ mbsalign_unibyte:
++#endif
++  flags++;
+ 
+   if (n_cols > *width) /* Unibyte truncation required.  */
+     {
+@@ -457,7 +458,9 @@
+       mbs_align_pad (dest, dest_end, end_spaces);
+     }
+ 
++#ifdef HAVE_WIDECHAR
+ mbsalign_cleanup:
++#endif
+ 
+   free (str_wc);
+   free (newstr);
+Index: util-linux-2.25.2/include/widechar.h
+===================================================================
+--- util-linux-2.25.2.orig/include/widechar.h	2012-11-29 20:48:33.965148031 +0530
++++ util-linux-2.25.2/include/widechar.h	2017-03-15 17:02:33.671393198 +0530
+@@ -12,7 +12,6 @@
+ # include <ctype.h>
+   /* Fallback for types */
+ # define wchar_t char
+-# define wint_t int
+ # define WEOF EOF
+   /* Fallback for input operations */
+ # define fgetwc fgetc
+Index: util-linux-2.25.2/lib/mbsalign.c
+===================================================================
+--- util-linux-2.25.2.orig/lib/mbsalign.c	2017-03-16 11:26:01.833243718 +0530
++++ util-linux-2.25.2/lib/mbsalign.c	2017-03-16 11:33:13.161620120 +0530
+@@ -29,7 +29,6 @@
+ #include "mbsalign.h"
+ #include "widechar.h"
+ 
+-#ifdef HAVE_WIDECHAR
+ /* Replace non printable chars.
+    Note \t and \n etc. are non printable.
+    Return 1 if replacement made, 0 otherwise.  */
+@@ -43,12 +42,9 @@
+  */
+ size_t mbs_safe_nwidth(const char *buf, size_t bufsz, size_t *sz)
+ {
+-	mbstate_t st;
+ 	const char *p = buf, *last = buf;
+ 	size_t width = 0, bytes = 0;
+ 
+-	memset(&st, 0, sizeof(st));
+-
+ 	if (p && *p && bufsz)
+ 		last = p + (bufsz - 1);
+ 
+@@ -59,9 +55,12 @@
+ 		}
+ #ifdef HAVE_WIDECHAR
+ 		else {
++			mbstate_t st;
+ 			wchar_t wc;
+ 			size_t len = mbrtowc(&wc, p, MB_CUR_MAX, &st);
+ 
++			memset(&st, 0, sizeof(st));
++
+ 			if (len == 0)
+ 				break;
+ 
+@@ -113,7 +112,6 @@
+  */
+ char *mbs_safe_encode_to_buffer(const char *s, size_t *width, char *buf)
+ {
+-	mbstate_t st;
+ 	const char *p = s;
+ 	char *r;
+ 	size_t sz = s ? strlen(s) : 0;
+@@ -121,8 +119,6 @@
+ 	if (!sz || !buf)
+ 		return NULL;
+ 
+-	memset(&st, 0, sizeof(st));
+-
+ 	r = buf;
+ 	*width = 0;
+ 
+@@ -135,9 +131,12 @@
+ 		}
+ #ifdef HAVE_WIDECHAR
+ 		else {
++			mbstate_t st;
+ 			wchar_t wc;
+ 			size_t len = mbrtowc(&wc, p, MB_CUR_MAX, &st);
+ 
++			memset(&st, 0, sizeof(st));
++
+ 			if (len == 0)
+ 				break;		/* end of string */
+ 
+@@ -177,7 +176,7 @@
+ 			*width += 4;
+ 		} else {
+ 			*r++ = *p++;
+-			*width++;
++			(*width)++;
+ 		}
+ #endif
+ 	}
+@@ -210,6 +209,7 @@
+ 	return mbs_safe_encode_to_buffer(s, width, buf);
+ }
+ 
++#ifdef HAVE_WIDECHAR
+ static bool
+ wc_ensure_printable (wchar_t *wchars)
+ {
+Index: util-linux-2.25.2/disk-utils/fdisk.c
+===================================================================
+--- util-linux-2.25.2.orig/disk-utils/fdisk.c	2014-10-24 14:51:20.308387877 +0530
++++ util-linux-2.25.2/disk-utils/fdisk.c	2017-03-16 11:45:21.930252089 +0530
+@@ -172,7 +172,7 @@
+ 
+ 	do {
+ 		int rc = get_user_reply(cxt, prompt, buf, bufsz);
+-		uint64_t num;
++		uint64_t num = 0;
+ 
+ 		if (rc)
+ 			return rc;
+Index: util-linux-2.25.2/text-utils/col.c
+===================================================================
+--- util-linux-2.25.2.orig/text-utils/col.c	2014-10-24 14:51:20.452389360 +0530
++++ util-linux-2.25.2/text-utils/col.c	2017-03-16 12:31:18.868137854 +0530
+@@ -146,7 +146,7 @@
+ 
+ int main(int argc, char **argv)
+ {
+-	register wint_t ch;
++	register wchar_t ch;
+ 	CHAR *c;
+ 	CSET cur_set;			/* current character set */
+ 	LINE *l;			/* current line */
+Index: util-linux-2.25.2/text-utils/colcrt.c
+===================================================================
+--- util-linux-2.25.2.orig/text-utils/colcrt.c	2014-10-24 14:51:20.452389360 +0530
++++ util-linux-2.25.2/text-utils/colcrt.c	2017-03-16 12:31:40.240156503 +0530
+@@ -147,7 +147,7 @@
+ }
+ 
+ void colcrt(FILE *f) {
+-	wint_t c;
++	wchar_t c;
+ 	wchar_t *cp, *dp;
+ 	int i, w;
+ 
+Index: util-linux-2.25.2/text-utils/colrm.c
+===================================================================
+--- util-linux-2.25.2.orig/text-utils/colrm.c	2014-10-24 14:51:20.452389360 +0530
++++ util-linux-2.25.2/text-utils/colrm.c	2017-03-16 12:32:14.604186479 +0530
+@@ -73,7 +73,7 @@
+ static int process_input(unsigned long first, unsigned long last)
+ {
+ 	unsigned long ct = 0;
+-	wint_t c;
++	wchar_t c;
+ 	unsigned long i;
+ 	int w;
+ 	int padding;
+Index: util-linux-2.25.2/text-utils/column.c
+===================================================================
+--- util-linux-2.25.2.orig/text-utils/column.c	2014-10-24 14:51:20.452389360 +0530
++++ util-linux-2.25.2/text-utils/column.c	2017-03-16 12:34:47.772319999 +0530
+@@ -65,6 +65,7 @@
+ #define mbs_to_wcs(s) xstrdup(s)
+ static char *mtsafe_strtok(char *, const char *, char **);
+ #define wcstok mtsafe_strtok
++#define wcspbrk strpbrk
+ #endif
+ 
+ #define DEFCOLS     25
+@@ -347,7 +348,11 @@
+ 	for (t = tbl, cnt = 0; cnt < entries; ++cnt, ++t) {
+ 		for (coloff = 0; coloff < t->cols - 1; ++coloff) {
+ 			fputws(t->list[coloff], stdout);
++#ifdef HAVE_WIDECHAR
+ 			wprintf(L"%*s", lens[coloff] - t->len[coloff], "");
++#else
++			printf("%*s", lens[coloff] - t->len[coloff], "");
++#endif
+ 			fputws(colsep, stdout);
+ 		}
+ 		if (coloff < t->cols) {

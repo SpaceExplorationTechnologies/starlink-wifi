@@ -1,0 +1,469 @@
+From 45ae649094af030a4e6365c9877f768189ef1459 Mon Sep 17 00:00:00 2001
+From: Gokul Sriram Palanisamy <gokulsri@codeaurora.org>
+Date: Tue, 22 Aug 2017 12:09:14 +0530
+Subject: [PATCH 5/5] ramparser: 64 bit support for hawkeye
+
+This change adds support for extracting cpu context information from
+64 bit coredumps for 8074(hawkeye) platforms
+
+Signed-off-by: Gokul Sriram Palanisamy <gokulsri@codeaurora.org>
+---
+ linux-ramdump-parser-v2/dmesglib.py         |  35 +++++++-
+ linux-ramdump-parser-v2/parsers/irqstate.py |  17 ++--
+ linux-ramdump-parser-v2/parsers/vmalloc.py  |  23 +++--
+ linux-ramdump-parser-v2/ramdump.py          | 130 +++++++++++++++-------------
+ 4 files changed, 131 insertions(+), 74 deletions(-)
+
+diff --git a/linux-ramdump-parser-v2/dmesglib.py b/linux-ramdump-parser-v2/dmesglib.py
+index 0751bed..2565483 100644
+--- a/linux-ramdump-parser-v2/dmesglib.py
++++ b/linux-ramdump-parser-v2/dmesglib.py
+@@ -44,10 +44,34 @@ class DmesgLib(object):
+             return idx + msg_len
+ 
+     def extract_dmesg_flat(self):
+-        addr = self.ramdump.read_word(self.ramdump.addr_lookup('log_buf'))
+-        size = self.ramdump.read_word(self.ramdump.addr_lookup('log_buf_len'))
+-        dmesg = self.ramdump.read_physical(self.ramdump.virt_to_phys(addr), size)
+-        self.outfile.write(cleanupString(dmesg.decode('ascii', 'ignore')) + '\n')
++        log_buf_addr = 0
++        log_buf_size = 0
++        log_buf_end = 0
++        log_ind = 0
++        i = 1
++        j = 0
++        dmesg_buf = ""
++        dmesg_out = self.ramdump.open_file('dmesg.txt')
++        log_buf_addr = self.ramdump.read_word(self.ramdump.addr_lookup('log_buf'))
++        log_buf_size = self.ramdump.read_word(self.ramdump.addr_lookup('log_buf_len'))
++        log_buf_end = self.ramdump.read_word(self.ramdump.addr_lookup('log_end'))
++        log_buf_mask = log_buf_size - 1
++
++        j = log_buf_end - 1
++        log_ind = j & log_buf_mask
++        dmesg_buf = '{0:c}'.format(self.ramdump.read_byte(log_buf_addr + log_ind))
++
++        while (1):
++           j = log_buf_end - 1 - i
++           if (j + log_buf_size  < log_buf_end):
++              break
++           log_ind = j & log_buf_mask
++           dmesg_buf = '{0:c}{1}'.format(self.ramdump.read_byte(log_buf_addr + log_ind), dmesg_buf)
++           i = i + 1
++
++        self.outfile.write('\n' + dmesg_buf + '\n')
++        dmesg_out.write('{0}\n'.format(dmesg_buf))
++        dmesg_out.close()
+ 
+     def extract_dmesg_binary(self):
+         dmesg_out = self.ramdump.open_file('dmesg.txt')
+@@ -77,6 +101,7 @@ class DmesgLib(object):
+         dmesg_out.close()
+ 
+     def extract_dmesg(self):
++        major, minor, patch = self.ramdump.kernel_version
+         if re.search('3.7.\d', self.ramdump.version) is not None:
+             self.extract_dmesg_binary()
+         elif re.search('3\.10\.\d', self.ramdump.version) is not None:
+@@ -85,5 +110,7 @@ class DmesgLib(object):
+             self.extract_dmesg_binary()
+         elif re.search('3\.18\.\d', self.ramdump.version) is not None:
+             self.extract_dmesg_binary()
++        elif (major, minor) >= (4, 4):
++            self.extract_dmesg_binary()
+         else:
+             self.extract_dmesg_flat()
+diff --git a/linux-ramdump-parser-v2/parsers/irqstate.py b/linux-ramdump-parser-v2/parsers/irqstate.py
+index 3fd3f9f..80c3590 100644
+--- a/linux-ramdump-parser-v2/parsers/irqstate.py
++++ b/linux-ramdump-parser-v2/parsers/irqstate.py
+@@ -9,6 +9,7 @@
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ 
++import re
+ from print_out import print_out_str
+ from parser_util import register_parser, RamParser
+ 
+@@ -74,8 +75,12 @@ class IrqParse(RamParser):
+ 
+     def radix_tree_lookup_element(self, ram_dump, root_addr, index):
+         rnode_offset = ram_dump.field_offset('struct radix_tree_root', 'rnode')
+-        rnode_height_offset = ram_dump.field_offset(
+-            'struct radix_tree_node', 'height')
++        if re.search('3\.18\.\d', self.ramdump.version) is not None or (ram_dump.kernel_version[0], ram_dump.kernel_version[1]) >= (4, 4):
++            rnode_height_offset = ram_dump.field_offset(
++                 'struct radix_tree_node', 'path')
++        else:
++            rnode_height_offset = ram_dump.field_offset(
++                 'struct radix_tree_node', 'height')
+         slots_offset = ram_dump.field_offset('struct radix_tree_node', 'slots')
+         pointer_size = ram_dump.sizeof('struct radix_tree_node *')
+ 
+@@ -96,7 +101,7 @@ class IrqParse(RamParser):
+         if height > len(height_to_maxindex):
+             return None
+ 
+-        if index > height_to_maxindex[height]:
++        if height is None or index > height_to_maxindex[height]:
+             return None
+ 
+         shift = (height - 1) * radix_tree_map_shift
+@@ -139,8 +144,8 @@ class IrqParse(RamParser):
+                 ram_dump, irq_desc_tree, i)
+             if irq_desc is None:
+                 continue
+-            irqnum = ram_dump.read_word(irq_desc + irq_num_offset)
+-            irqcount = ram_dump.read_word(irq_desc + irq_count_offset)
++            irqnum = ram_dump.read_u32(irq_desc + irq_num_offset)
++            irqcount = ram_dump.read_u32(irq_desc + irq_count_offset)
+             action = ram_dump.read_word(irq_desc + irq_action_offset)
+             kstat_irqs_addr = ram_dump.read_word(irq_desc + kstat_irqs_offset)
+             irq_stats_str = ''
+@@ -149,7 +154,7 @@ class IrqParse(RamParser):
+                 break
+ 
+             for j in ram_dump.iter_cpus():
+-                irq_statsn = ram_dump.read_int(kstat_irqs_addr, cpu=j)
++                irq_statsn = ram_dump.read_u32(kstat_irqs_addr, cpu=j)
+                 irq_stats_str = irq_stats_str + \
+                     '{0:10} '.format('{0}'.format(irq_statsn))
+ 
+diff --git a/linux-ramdump-parser-v2/parsers/vmalloc.py b/linux-ramdump-parser-v2/parsers/vmalloc.py
+index 54ff28e..e339288 100644
+--- a/linux-ramdump-parser-v2/parsers/vmalloc.py
++++ b/linux-ramdump-parser-v2/parsers/vmalloc.py
+@@ -41,7 +41,7 @@ class Vmalloc(RamParser):
+ 
+         addr = self.ramdump.read_word(vm + addr_offset)
+         caller = self.ramdump.read_word(vm + caller_offset)
+-        nr_pages = self.ramdump.read_word(vm + nr_pages_offset)
++        nr_pages = self.ramdump.read_u32(vm + nr_pages_offset)
+         phys_addr = self.ramdump.read_word(vm + phys_addr_offset)
+         flags = self.ramdump.read_word(vm + flags_offset)
+         size = self.ramdump.read_word(vm + size_offset)
+@@ -53,10 +53,18 @@ class Vmalloc(RamParser):
+ 
+         if (caller != 0):
+             a = self.ramdump.unwind_lookup(caller)
+-            if a is not None:
+-                symname, offset = a
+-                vmalloc_str = vmalloc_str + \
+-                    ' {0}+0x{1:x}'.format(symname, offset)
++            if a is not None and len(a) > 3:
++                symname, offset, mname, symtab_st_size = a
++                if (mname is not None and symtab_st_size is not None):
++                    vmalloc_str = vmalloc_str + \
++                        ' {0}+0x{1:x}/0x{3:x} [{2}.ko]'.format(symname, offset, mname, symtab_st_size)
++                elif (mname is None and symtab_st_size is not None):
++                    vmalloc_str = vmalloc_str + \
++                        ' {0}+0x{1:x}/0x(2:x)'.format(symname, offset, symtab_st_size)
++                else:
++                    vmalloc_str = vmalloc_str + \
++                        ' {0}+0x{1:x}'.format(symname, offset)
++
+ 
+         if (nr_pages != 0):
+             vmalloc_str = vmalloc_str + ' pages={0}'.format(nr_pages)
+@@ -110,11 +118,14 @@ class Vmalloc(RamParser):
+         vmalloc_out = self.ramdump.open_file('vmalloc.txt')
+         self.vmalloc_out = vmalloc_out
+ 
++        head = vmlist
+         while (vmlist is not None) and (vmlist != 0):
+             self.print_vm(vmlist)
+ 
+             vmlist = self.ramdump.read_word(vmlist + next_offset)
+ 
++            if(head == vmlist):
++                break
+         print_out_str('---wrote vmalloc to vmalloc.txt')
+         vmalloc_out.close()
+ 
+@@ -123,5 +134,7 @@ class Vmalloc(RamParser):
+         ver = self.ramdump.version
+         if re.search('3\.10\.\d', ver) is not None:
+             self.print_vmalloc_info_3_10(out_path)
++        elif (self.ramdump.Is_Hawkeye and (self.ramdump.kernel_version[0], self.ramdump.kernel_version[1]) >= (4, 4)):
++            self.print_vmalloc_info_3_10(out_path)
+         else:
+             self.print_vmalloc_info(out_path)
+diff --git a/linux-ramdump-parser-v2/ramdump.py b/linux-ramdump-parser-v2/ramdump.py
+index 1931a9a..fc02895 100755
+--- a/linux-ramdump-parser-v2/ramdump.py
++++ b/linux-ramdump-parser-v2/ramdump.py
+@@ -451,17 +451,17 @@ class RamDump():
+                     break
+ 
+         def mod_get_symbol(self, mod_list, mod_sec_addr, val):
+-            if (re.search('3.14.77', self.ramdump.version) is not None):
+-                kallsyms = self.ramdump.read_word(mod_list + self.ramdump.kallsyms_offset)
+-                module_symtab_count = self.ramdump.read_word(kallsyms + self.ramdump.module_symtab_count_offset)
++            if (re.search('3.14.77', self.ramdump.version) is not None or (self.ramdump.kernel_version[0], self.ramdump.kernel_version[1]) >= (4, 4)):
++                kallsyms = self.ramdump.read_word(mod_list + self.ramdump.kallsyms_offset);
++                module_symtab_count = self.ramdump.read_u32(kallsyms + self.ramdump.module_symtab_count_offset)
+                 module_strtab = self.ramdump.read_word(kallsyms + self.ramdump.module_strtab_offset)
+                 module_symtab = self.ramdump.read_word(kallsyms + self.ramdump.module_symtab_offset)
+             else:
+                 module_symtab_count = self.ramdump.read_word(mod_list + self.ramdump.module_symtab_count_offset)
+                 module_symtab = self.ramdump.read_word(mod_list + self.ramdump.module_symtab_offset)
+                 module_strtab = self.ramdump.read_word(mod_list + self.ramdump.module_strtab_offset)
+-            module_init_text_size = self.ramdump.read_word(mod_list + self.ramdump.module_init_text_size_offset)
+-            module_core_text_size = self.ramdump.read_word(mod_list + self.ramdump.module_core_text_size_offset)
++            module_init_text_size = self.ramdump.read_u32(mod_list + self.ramdump.module_init_text_size_offset)
++            module_core_text_size = self.ramdump.read_u32(mod_list + self.ramdump.module_core_text_size_offset)
+             name = self.mod_addr_name
+             best = 0
+             addr = self.mod_addr
+@@ -469,20 +469,24 @@ class RamDump():
+             strtab_name = None
+ 
+             if (val == 0):
+-                nextval = self.ramdump.read_word(mod_sec_addr + module_init_text_size)
++                nextval = self.ramdump.read_u32(mod_sec_addr + module_init_text_size)
+             else:
+-                nextval = self.ramdump.read_word(mod_sec_addr + module_core_text_size)
++                nextval = self.ramdump.read_u32(mod_sec_addr + module_core_text_size)
+ 
+             for i in range(1, module_symtab_count):
+                 module_symtab += self.ramdump.symtab_size
+-                symtab_st_shndx = self.ramdump.read_halfword(module_symtab + self.ramdump.symtab_st_shndx_offset);
+-                symtab_st_info = self.ramdump.read_byte(module_symtab + self.ramdump.symtab_st_info_offset);
++                symtab_st_shndx = self.ramdump.read_u16(module_symtab + self.ramdump.symtab_st_shndx_offset);
++                if (self.ramdump.isELF32()):
++                    symtab_st_info = self.ramdump.read_byte(module_symtab + self.ramdump.symtab_st_info_offset)
++                else:
++                    symtab_st_info = self.ramdump.read_u16(module_symtab + self.ramdump.symtab_st_info_offset);
++
+ 
+                 if (symtab_st_shndx != 0 and symtab_st_info != 'U'):
+                     module_best_symtab = module_symtab_orig + (best * self.ramdump.symtab_size)
+                     symtab_best_st_value = self.ramdump.read_word(module_best_symtab + self.ramdump.symtab_st_value_offset)
+                     symtab_st_value = self.ramdump.read_word(module_symtab + self.ramdump.symtab_st_value_offset)
+-                    symtab_st_name = self.ramdump.read_word(module_symtab + self.ramdump.symtab_st_name_offset)
++                    symtab_st_name = self.ramdump.read_u32(module_symtab + self.ramdump.symtab_st_name_offset)
+                     strtab_name = self.ramdump.read_cstring(module_strtab + symtab_st_name, 40)
+ 
+                 if (strtab_name):
+@@ -501,29 +505,27 @@ class RamDump():
+                 #return None
+             else:
+                 module_best_symtab = module_symtab_orig + (best * self.ramdump.symtab_size)
+-                symtab_best_st_name = self.ramdump.read_word(module_best_symtab + self.ramdump.symtab_st_name_offset)
++                symtab_best_st_name = self.ramdump.read_u32(module_best_symtab + self.ramdump.symtab_st_name_offset)
+                 symtab_best_st_value = self.ramdump.read_word(module_best_symtab + self.ramdump.symtab_st_value_offset)
+                 symtab_st_size = self.ramdump.read_word(module_best_symtab + self.ramdump.symtab_st_size_offset)
+                 offset = addr - symtab_best_st_value
+                 symbol = self.ramdump.read_cstring(module_strtab + symtab_best_st_name, 50)
+-                self.sym_name = symbol
+-                self.sym_off = offset
+-                self.symtab_st_size = symtab_st_size
+-
+ 
+         def mod_addr_func(self, mod_list):
+-            if((mod_list & 0xff000000) !=  0xbf000000):
++            if(self.ramdump.isELF64() and (mod_list & 0xfff0000000 != 0xbff0000000)):
++                return
++            elif(self.ramdump.isELF32() and (mod_list & 0xff000000 !=  0xbf000000)):
+                 return
+ 
+             name = self.ramdump.read_cstring(mod_list + self.ramdump.mod_name_offset, 30)
+ 
+-            if len(name) <= 1:
++            if name is None or len(name) <= 1:
+                 return
+ 
+             module_init_addr = self.ramdump.read_word(mod_list + self.ramdump.module_init_offset)
+-            module_init_size = self.ramdump.read_word(mod_list + self.ramdump.module_init_size_offset)
++            module_init_size = self.ramdump.read_u32(mod_list + self.ramdump.module_init_size_offset)
+             module_core_addr = self.ramdump.read_word(mod_list + self.ramdump.module_core_offset)
+-            module_core_size = self.ramdump.read_word(mod_list + self.ramdump.module_core_size_offset)
++            module_core_size = self.ramdump.read_u32(mod_list + self.ramdump.module_core_size_offset)
+ 
+             if ((module_init_size > 0) and (module_init_addr <= self.mod_addr) and (self.mod_addr < (module_init_addr + module_init_size))):
+                     self.mod_addr_name = name
+@@ -535,6 +537,7 @@ class RamDump():
+ 
+ 
+         def get_module_name_from_addr(self, addr):
++
+             if (self.ramdump.mod_start == 0 or self.ramdump.mod_start is None):
+                 print_out_str("cannot get the modules start addr");
+                 return None
+@@ -554,6 +557,8 @@ class RamDump():
+             else:
+                 return None
+ 
++
++
+         def arm_symbol_mapping(self, sym):
+             sym1="atd"
+             if len(sym)>=3:
+@@ -590,6 +595,7 @@ class RamDump():
+         self.thread_size = 8192
+         self.qtf_path = qtf_path
+         self.qtf = qtf
++        self.kernel_version = (0, 0, 0)
+         if ebi is not None:
+             # TODO sanity check to make sure the memory regions don't overlap
+             for file_path, start, end in ebi:
+@@ -626,14 +632,14 @@ class RamDump():
+         # extra 4k is needed for LPAE. If it's 0x5000 below
+         # PAGE_OFFSET + TEXT_OFFSET then we know we're using LPAE. For
+         # non-LPAE it should be 0x4000 below PAGE_OFFSET + TEXT_OFFSET
+-        swapper_pg_dir = self.addr_lookup('swapper_pg_dir')
+-        if swapper_pg_dir is None:
++        self.swapper_pg_dir = self.addr_lookup('swapper_pg_dir')
++        if self.swapper_pg_dir is None:
+             print_out_str('!!! Could not get the swapper page directory!')
+             print_out_str(
+                 '!!! Your vmlinux is probably wrong for these dumps')
+             print_out_str('!!! Exiting now')
+             sys.exit(1)
+-        self.swapper_pg_dir_addr =  swapper_pg_dir - self.page_offset
++        self.swapper_pg_dir_addr =  self.swapper_pg_dir - self.page_offset
+         self.kernel_text_offset = self.addr_lookup('stext') - self.page_offset
+         pg_dir_size = self.kernel_text_offset - self.swapper_pg_dir_addr
+         if self.arm64:
+@@ -700,7 +706,7 @@ class RamDump():
+         self.module_core_size_offset = self.field_offset('struct module','core_size')
+         self.module_init_text_size_offset = self.field_offset('struct module','init_text_size')
+         self.module_core_text_size_offset = self.field_offset('struct module','core_text_size')
+-        if (re.search('3.14.77', self.version) is not None):
++        if (re.search('3.14.77', self.version) is not None or (self.kernel_version[0], self.kernel_version[1]) >= (4, 4)):
+             self.kallsyms_offset = self.field_offset('struct module', 'kallsyms')
+             self.module_symtab_offset = self.field_offset('struct mod_kallsyms','symtab')
+             self.module_strtab_offset = self.field_offset('struct mod_kallsyms','strtab')
+@@ -709,13 +715,23 @@ class RamDump():
+             self.module_symtab_offset = self.field_offset('struct module','symtab')
+             self.module_strtab_offset = self.field_offset('struct module','strtab')
+             self.module_symtab_count_offset = self.field_offset('struct module','num_symtab')
+-        self.symtab_st_shndx_offset = self.field_offset('struct elf32_sym', 'st_shndx')
+-        self.symtab_st_value_offset = self.field_offset('struct elf32_sym', 'st_value')
+-        self.symtab_st_name_offset = self.field_offset('struct elf32_sym', 'st_name')
+-        self.symtab_st_info_offset = self.field_offset('struct elf32_sym', 'st_info')
+-        self.symtab_st_size_offset = self.field_offset('struct elf32_sym', 'st_size')
+-
+-        self.symtab_size = self.sizeof('struct elf32_sym')
++        if(self.isELF64()):
++            self.symtab_st_shndx_offset = self.field_offset('struct elf64_sym', 'st_shndx')
++            self.symtab_st_value_offset = self.field_offset('struct elf64_sym', 'st_value')
++            self.symtab_st_info_offset = self.field_offset('struct elf64_sym', 'st_info')
++            self.symtab_st_name_offset = self.field_offset('struct elf64_sym', 'st_name')
++            self.symtab_st_size_offset = self.field_offset('struct elf64_sym', 'st_size')
++        else:
++            self.symtab_st_shndx_offset = self.field_offset('struct elf32_sym', 'st_shndx')
++            self.symtab_st_value_offset = self.field_offset('struct elf32_sym', 'st_value')
++            self.symtab_st_name_offset = self.field_offset('struct elf32_sym', 'st_name')
++            self.symtab_st_info_offset = self.field_offset('struct elf32_sym', 'st_info')
++            self.symtab_st_size_offset = self.field_offset('struct elf32_sym', 'st_size')
++
++        if(self.isELF64()):
++            self.symtab_size = self.sizeof('struct elf64_sym')
++        else:
++            self.symtab_size = self.sizeof('struct elf32_sym')
+         self.next_mod_offset = self.field_offset('struct module','list')
+         self.mod_start = self.read_word('modules')
+ 
+@@ -798,6 +814,12 @@ class RamDump():
+                 print_out_str('!!! Could not match version! {0}'.format(b))
+                 return False
+             self.version = v.group(1)
++            match = re.search('(\d+)\.(\d+)\.(\d+)', self.version)
++            if match is not None:
++                self.kernel_version = tuple(map(int, match.groups()))
++            else:
++                print_out_str('!!! Could not extract version info! {0}'.format(self.version))
++
+             print_out_str('Linux Banner: ' + b.rstrip())
+             print_out_str('version = {0}'.format(self.version))
+             return True
+@@ -897,7 +919,7 @@ class RamDump():
+ 
+         startup_script.write(('title \"' + out_path + '\"\n').encode('ascii', 'ignore'))
+ 
+-        is_cortex_a53 = self.hw_id == 8916 or self.hw_id == 8939 or self.hw_id == 8936 or self.hw_id == 8074
++        is_cortex_a53 = self.hw_id == 8916 or self.hw_id == 8939 or self.hw_id == 8936
+ 
+         if self.arm64 and is_cortex_a53:
+             startup_script.write('sys.cpu CORTEXA53\n'.encode('ascii', 'ignore'))
+@@ -909,8 +931,9 @@ class RamDump():
+             ebi_path = os.path.abspath(ram[3])
+             startup_script.write('data.load.binary {0} 0x{1:x}\n'.format(
+                 ebi_path, ram[1]).encode('ascii', 'ignore'))
+-        if self.arm64:
+-            startup_script.write('Register.Set NS 1\n'.encode('ascii', 'ignore'))
++        if self.arm64 and self.Is_Hawkeye() == True:
++            #startup_script.write('Register.Set NS 1\n'.encode('ascii', 'ignore'))
++            startup_script.write('r.s M 0x05\n'.encode('ascii', 'ignore'))
+ 
+             if is_cortex_a53:
+                 startup_script.write('Data.Set SPR:0x30202 %Quad 0x00000012B5193519\n'.encode('ascii', 'ignore'))
+@@ -919,24 +942,20 @@ class RamDump():
+                 startup_script.write('Data.Set SPR:0x30100 %Quad 0x0000000034D5D91D\n'.encode('ascii', 'ignore'))
+             else:
+                 startup_script.write('Data.Set SPR:0x30202 %Quad 0x00000032B5193519\n'.encode('ascii', 'ignore'))
+-                startup_script.write('Data.Set SPR:0x30A20 %Quad 0x000000FF440C0400\n'.encode('ascii', 'ignore'))
+-                startup_script.write('Data.Set SPR:0x30A30 %Quad 0x0000000000000000\n'.encode('ascii', 'ignore'))
+-                startup_script.write('Data.Set SPR:0x30100 %Quad 0x0000000004C5D93D\n'.encode('ascii', 'ignore'))
++                #startup_script.write('Data.Set SPR:0x30A20 %Quad 0x000000FF440C0400\n'.encode('ascii', 'ignore'))
++                #startup_script.write('Data.Set SPR:0x30A30 %Quad 0x0000000000000000\n'.encode('ascii', 'ignore'))
++                #startup_script.write('Data.Set SPR:0x30100 %Quad 0x0000000004C5D93D\n'.encode('ascii', 'ignore'))
+ 
+-            startup_script.write('Register.Set CPSR 0x3C5\n'.encode('ascii', 'ignore'))
+-            startup_script.write('MMU.Delete\n'.encode('ascii', 'ignore'))
++            #startup_script.write('Register.Set CPSR 0x3C5\n'.encode('ascii', 'ignore'))
++            #startup_script.write('MMU.Delete\n'.encode('ascii', 'ignore'))
+             startup_script.write('MMU.SCAN PT 0xFFFFFF8000000000--0xFFFFFFFFFFFFFFFF\n'.encode('ascii', 'ignore'))
+             startup_script.write('mmu.on\n'.encode('ascii', 'ignore'))
+-            startup_script.write('mmu.pt.list 0xffffff8000000000\n'.encode('ascii', 'ignore'))
+-        elif self.Is_Hawkeye():
+-            startup_script.write('PER.Set.simple SPR:0x30200 %Quad 0x41204000\n'.encode('ascii', 'ignore'))
+-            startup_script.write('PER.Set.simple SPR:0x36200 %Quad 0x41204000\n'.encode('ascii', 'ignore'))
+-            if self.isELF32():
+-                startup_script.write('r.s M 0x13\n'.encode('ascii', 'ignore'))
+-            elif self.isELF64():
+-                startup_script.write('r.s M 0x05\n'.encode('ascii', 'ignore'))
+-            startup_script.write('mmu.on\n'.encode('ascii', 'ignore'))
+-            startup_script.write('mmu.scan\n'.encode('ascii', 'ignore'))
++            #startup_script.write('mmu.pt.list 0xffffff8000000000\n'.encode('ascii', 'ignore'))
++        elif self.Is_Hawkeye() and self.isELF32():
++                startup_script.write('PER.Set.simple SPR:0x30200 %Quad 0x41204000\n'.encode('ascii', 'ignore'))
++                startup_script.write('PER.Set.simple SPR:0x36200 %Quad 0x41204000\n'.encode('ascii', 'ignore'))
++                startup_script.write('mmu.on\n'.encode('ascii', 'ignore'))
++                startup_script.write('mmu.scan\n'.encode('ascii', 'ignore'))
+         else:
+             startup_script.write(
+                 'PER.S.F C15:0x2 %L 0x{0:x}\n'.format(self.mmu.ttbr).encode('ascii', 'ignore'))
+@@ -957,17 +976,6 @@ class RamDump():
+                  'task.config C:\\T32\\demo\\arm64\\kernel\\linux\\linux-3.x\\linux3.t32\n'.encode('ascii', 'ignore'))
+             startup_script.write(
+                  'menu.reprogram C:\\T32\\demo\\arm64\\kernel\\linux\\linux-3.x\\linux.men\n'.encode('ascii', 'ignore'))
+-        elif self.Is_Hawkeye():
+-            if self.isELF32():
+-                startup_script.write(
+-                    'task.config c:\\t32\\demo\\arm\\kernel\\linux\\linux-3.x\\linux3.t32\n'.encode('ascii', 'ignore'))
+-                startup_script.write(
+-                    'menu.reprogram c:\\t32\\demo\\arm\\kernel\\linux\\linux-3.x\\linux.men\n'.encode('ascii', 'ignore'))
+-            elif self.isELF64():
+-                startup_script.write(
+-                    'task.config c:\\t32\\demo\\arm\\kernel\\linux\\linux-3.x\\linux3.t32\n'.encode('ascii', 'ignore'))
+-                startup_script.write(
+-                    'menu.reprogram c:\\t32\\demo\\arm\\kernel\\linux\\linux-3.x\\linux.men\n'.encode('ascii', 'ignore'))
+         else:
+             startup_script.write(
+                 'task.config c:\\t32\\demo\\arm\\kernel\\linux\\linux.t32\n'.encode('ascii', 'ignore'))
+@@ -1191,6 +1199,10 @@ class RamDump():
+         if (addr is None):
+             return ('(Invalid address)', 0x0, None)
+ 
++        if(self.isELF64() and check_modules == 1 and (0xffffffbffc000000 <= addr < 0xffffffbffe000000)):
++            return self.unwind.get_module_name_from_addr(addr)
++        elif(self.isELF32() and check_modules == 1 and (0xbf000000 <= addr < 0xbfe00000)):
++            return self.unwind.get_module_name_from_addr(addr)
+         if (check_modules == 1 and (0xbf000000 <= addr < 0xbfe00000)):
+             return self.unwind.get_module_name_from_addr(addr)
+ 
+-- 
+1.9.1
+

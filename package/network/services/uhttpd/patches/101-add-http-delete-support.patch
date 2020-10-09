@@ -1,0 +1,46 @@
+diff --git a/client.c b/client.c
+index 37d12a2..75a0139 100644
+--- a/client.c
++++ b/client.c
+@@ -41,6 +41,7 @@ const char * const http_methods[] = {
+ 	[UH_HTTP_MSG_HEAD] = "HEAD",
+ 	[UH_HTTP_MSG_OPTIONS] = "OPTIONS",
+ 	[UH_HTTP_MSG_PUT] = "PUT",
++	[UH_HTTP_MSG_DELETE] = "DELETE",
+ };
+ 
+ void uh_http_header(struct client *cl, int code, const char *summary)
+diff --git a/ubus.c b/ubus.c
+index c226731..a3df412 100644
+--- a/ubus.c
++++ b/ubus.c
+@@ -139,7 +139,7 @@ static void uh_ubus_add_cors_headers(struct client *cl)
+ 	{
+ 		char *hdr = (char *) blobmsg_data(tb[HDR_ACCESS_CONTROL_REQUEST_METHOD]);
+ 
+-		if (strcmp(hdr, "POST") && strcmp(hdr, "OPTIONS") && strcmp(hdr, "PUT"))
++		if (strcmp(hdr, "POST") && strcmp(hdr, "OPTIONS") && strcmp(hdr, "PUT") && strcmp(hdr, "DELETE"))
+ 			return;
+ 	}
+ 
+@@ -150,7 +150,7 @@ static void uh_ubus_add_cors_headers(struct client *cl)
+ 		ustream_printf(cl->us, "Access-Control-Allow-Headers: %s\r\n",
+ 		               blobmsg_data(tb[HDR_ACCESS_CONTROL_REQUEST_HEADERS]));
+ 
+-	ustream_printf(cl->us, "Access-Control-Allow-Methods: POST, OPTIONS, PUT\r\n");
++	ustream_printf(cl->us, "Access-Control-Allow-Methods: POST, OPTIONS, PUT, DELETE\r\n");
+ 	ustream_printf(cl->us, "Access-Control-Allow-Credentials: true\r\n");
+ }
+ 
+diff --git a/uhttpd.h b/uhttpd.h
+index d5392c0..eb1e4f4 100644
+--- a/uhttpd.h
++++ b/uhttpd.h
+@@ -93,6 +93,7 @@ enum http_method {
+ 	UH_HTTP_MSG_HEAD,
+ 	UH_HTTP_MSG_OPTIONS,
+ 	UH_HTTP_MSG_PUT,
++	UH_HTTP_MSG_DELETE,
+ };
+ 
+ enum http_version { 

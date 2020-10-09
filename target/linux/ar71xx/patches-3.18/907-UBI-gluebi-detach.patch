@@ -1,0 +1,110 @@
+Index: linux-3.18/drivers/mtd/mtd_blkdevs.c
+===================================================================
+--- linux-3.18.orig/drivers/mtd/mtd_blkdevs.c	2014-03-31 05:40:15.000000000 +0200
++++ linux-3.18/drivers/mtd/mtd_blkdevs.c	2015-11-17 17:52:57.349974510 +0100
+@@ -479,12 +479,11 @@
+ 	/* If the device is currently open, tell trans driver to close it,
+ 		then put mtd device, and don't touch it again */
+ 	mutex_lock(&old->lock);
+-	if (old->open) {
+-		if (old->tr->release)
+-			old->tr->release(old);
+-		__put_mtd_device(old->mtd);
+-	}
++	if (old->open && old->tr->release )
++		old->tr->release(old);
+ 
++	if(old->mtd->usecount > 0)
++		__put_mtd_device(old->mtd);
+ 	old->mtd = NULL;
+ 
+ 	mutex_unlock(&old->lock);
+Index: linux-3.18/drivers/mtd/ubi/cdev.c
+===================================================================
+--- linux-3.18.orig/drivers/mtd/ubi/cdev.c	2014-03-31 05:40:15.000000000 +0200
++++ linux-3.18/drivers/mtd/ubi/cdev.c	2015-11-17 17:52:43.666016431 +0100
+@@ -1010,7 +1010,11 @@
+ 			err = -EFAULT;
+ 			break;
+ 		}
+-
++#ifdef CONFIG_MTD_UBI_GLUEBI
++		err = gluebi_unregister(ubi_num);
++		if (err)
++			break;
++#endif
+ 		mutex_lock(&ubi_devices_mutex);
+ 		err = ubi_detach_mtd_dev(ubi_num, 0);
+ 		mutex_unlock(&ubi_devices_mutex);
+Index: linux-3.18/drivers/mtd/ubi/gluebi.c
+===================================================================
+--- linux-3.18.orig/drivers/mtd/ubi/gluebi.c	2014-03-31 05:40:15.000000000 +0200
++++ linux-3.18/drivers/mtd/ubi/gluebi.c	2015-11-17 17:52:48.314002191 +0100
+@@ -403,6 +403,52 @@
+ }
+ 
+ /**
++ * gluebi_unregister - unregister all fake MTD devices for volumes on
++ * selected UBI device.
++ * @ubi_num: UBI device number
++ *
++ * This function is called when an UBI device is detached and it removes
++ * corresponding fake MTD devices. Returns zero in case of success and a
++ * negative error code in case of failure.
++ */
++int gluebi_unregister (int ubi_num)
++{
++	int err = 0;
++	struct mtd_info *mtd;
++	struct gluebi_device *gluebi, *g;
++
++	for(;;) {
++		g = NULL;
++		mutex_lock(&devices_mutex);
++		list_for_each_entry(gluebi, &gluebi_devices, list) {
++			if (gluebi->ubi_num == ubi_num && gluebi->refcnt <= 1) {
++				g = gluebi;
++				list_del(&gluebi->list);
++				break;
++			}
++		}
++		if (g == NULL) {
++			mutex_unlock(&devices_mutex);
++			break;
++		}
++		mutex_unlock(&devices_mutex);
++		mtd = &g->mtd;
++		err = mtd_device_unregister(mtd);
++		if (err) {
++			err_msg("cannot remove fake MTD device %d, UBI device %d, volume %d, error %d",
++				mtd->index, g->ubi_num, g->vol_id, err);
++			mutex_lock(&devices_mutex);
++			list_add_tail(&g->list, &gluebi_devices);
++			mutex_unlock(&devices_mutex);
++			return err;
++			}
++		kfree(mtd->name);
++		kfree(g);
++	}
++	return 0;
++}
++
++/**
+  * gluebi_updated - UBI volume was updated notifier.
+  * @vi: volume info structure
+  *
+Index: linux-3.18/drivers/mtd/ubi/ubi.h
+===================================================================
+--- linux-3.18.orig/drivers/mtd/ubi/ubi.h	2014-03-31 05:40:15.000000000 +0200
++++ linux-3.18/drivers/mtd/ubi/ubi.h	2015-11-17 17:52:52.769988541 +0100
+@@ -863,6 +863,10 @@
+ int ubi_update_fastmap(struct ubi_device *ubi);
+ int ubi_scan_fastmap(struct ubi_device *ubi, struct ubi_attach_info *ai,
+ 		     int fm_anchor);
++/* gluebi.c */
++#ifdef CONFIG_MTD_UBI_GLUEBI
++int gluebi_unregister (int ubi_num);
++#endif
+ 
+ /*
+  * ubi_rb_for_each_entry - walk an RB-tree.

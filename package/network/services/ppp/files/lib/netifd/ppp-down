@@ -1,0 +1,42 @@
+#!/bin/sh
+PPP_IPPARAM="$6"
+
+skip_idle_on_demand_mode()
+{
+	#don't skip updating if it is a real down event
+	local is_up=$(ifconfig $IFNAME |grep UP |grep RUNNING)
+	[ -z "$is_up" ] && return 1
+
+	. /lib/functions.sh
+	. /lib/functions/network.sh
+
+	local demand
+	config_load network
+	config_get demand $PPP_IPPARAM demand
+
+	#don't skip updating if ppp is not in demand mode
+	[ -z "$demand" ] && return 1
+
+	#now ppp is in demand mode, and ppp interface is still up
+	#so it is not a real down event, just call the on-demand-down
+	#script, if it exists and skip the real down event operations.
+	[ -x /lib/netifd/offload/on-demand-down ] && {
+		/lib/netifd/offload/on-demand-down
+	}
+
+	return 0
+}
+
+#skip fake down event in demand mode
+skip_idle_on_demand_mode && return 0
+
+. /lib/netifd/netifd-proto.sh
+proto_init_update "$IFNAME" 0
+proto_send_update "$PPP_IPPARAM"
+
+[ -d /etc/ppp/ip-down.d ] && {
+	for SCRIPT in /etc/ppp/ip-down.d/*
+	do
+		[ -x "$SCRIPT" ] && "$SCRIPT" "$@"
+	done
+}

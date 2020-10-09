@@ -1,0 +1,13 @@
+diff --git a/scripts/netifd-wireless.sh b/scripts/netifd-wireless.sh
+index 8c0ff78..aaa3a1c 100644
+--- a/scripts/netifd-wireless.sh
++++ b/scripts/netifd-wireless.sh
+@@ -235,6 +235,8 @@ wireless_vif_parse_encryption() {
+ 		;;
+ 		*wep*)
+ 			auth_type=wep
++			wpa=0
++			wpa_pairwise=
+ 			case "$encryption" in
+ 				*shared*)
+ 					auth_mode_open=0

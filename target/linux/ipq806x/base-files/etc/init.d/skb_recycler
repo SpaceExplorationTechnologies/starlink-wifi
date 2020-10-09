@@ -1,0 +1,49 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2015 Linux Foundation. All rights reserved.
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
+
+START=40
+USE_PROCD=1
+
+validate_skb_recycler_section() {
+	uci_validate_section skb_recycler skb "${1}" \
+		'max_skbs:uinteger' \
+		'max_spare_skbs:uinteger'
+
+	return $?
+}
+
+skb_recycler_config() {
+	local cfg="$1"
+
+	local max_skbs max_spare_skbs
+
+	validate_skb_recycler_section "${1}" || {
+		echo "validation failed"
+		return 1
+	}
+
+	[ -n "$max_skbs" ] && echo "$max_skbs" > /proc/net/skb_recycler/max_skbs
+	[ -n "$max_spare_skbs" ] && echo "$max_spare_skbs" > /proc/net/skb_recycler/max_spare_skbs
+}
+
+reload_service() {
+	config_load skb_recycler
+	config_foreach skb_recycler_config skb
+}
+
+start_service() {
+	reload_service
+}

@@ -1,0 +1,25 @@
+Index: iproute2-4.0.0/include/namespace.h
+===================================================================
+--- iproute2-4.0.0.orig/include/namespace.h	2015-04-13 21:25:11.000000000 +0530
++++ iproute2-4.0.0/include/namespace.h	2016-06-20 12:21:44.289743984 +0530
+@@ -1,6 +1,7 @@
+ #ifndef __NAMESPACE_H__
+ #define __NAMESPACE_H__ 1
+ 
++#include <unistd.h>
+ #include <sched.h>
+ #include <sys/mount.h>
+ #include <sys/syscall.h>
+Index: iproute2-4.0.0/tc/m_simple.c
+===================================================================
+--- iproute2-4.0.0.orig/tc/m_simple.c	2015-04-13 21:25:11.000000000 +0530
++++ iproute2-4.0.0/tc/m_simple.c	2016-06-20 12:22:23.209955778 +0530
+@@ -138,7 +138,7 @@
+ 	}
+ 
+ 	if (strlen(simpdata) > (SIMP_MAX_DATA - 1)) {
+-		fprintf(stderr, "simple: Illegal string len %ld <%s> \n",
++		fprintf(stderr, "simple: Illegal string len %u <%s> \n",
+ 			strlen(simpdata), simpdata);
+ 		return -1;
+ 	}

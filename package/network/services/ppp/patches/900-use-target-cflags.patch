@@ -1,0 +1,22 @@
+--- a/pppd/plugins/pptp/Makefile.linux
++++ b/pppd/plugins/pptp/Makefile.linux
+@@ -20,7 +20,7 @@ all: pptp.so
+ 	$(CC) $(CFLAGS) -c -o $@ $<
+ 
+ pptp.so: dirutil.o orckit_quirks.o pptp.o pptp_callmgr.o pptp_ctrl.o pptp_quirks.o util.o vector.o
+-	$(CC) -o pptp.so -shared dirutil.o orckit_quirks.o pptp.o pptp_callmgr.o pptp_ctrl.o pptp_quirks.o util.o vector.o
++	$(CC) $(CFLAGS) -o pptp.so -shared dirutil.o orckit_quirks.o pptp.o pptp_callmgr.o pptp_ctrl.o pptp_quirks.o util.o vector.o
+ 
+ install: all
+ 	$(INSTALL) -d -m 755 $(LIBDIR)
+--- a/pppd/plugins/rp-pppoe/Makefile.linux
++++ b/pppd/plugins/rp-pppoe/Makefile.linux
+@@ -39,7 +39,7 @@ debug.o: debug.c
+ 	$(CC) $(CFLAGS) -c -o debug.o debug.c
+ 
+ rp-pppoe.so: plugin.o discovery.o if.o common.o
+-	$(CC) -o rp-pppoe.so -shared plugin.o discovery.o if.o common.o
++	$(CC) $(CFLAGS) -o rp-pppoe.so -shared plugin.o discovery.o if.o common.o
+ 
+ install: all
+ 	$(INSTALL) -d -m 755 $(LIBDIR)

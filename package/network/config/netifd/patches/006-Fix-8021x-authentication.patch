@@ -1,0 +1,29 @@
+diff --git a/scripts/netifd-wireless.sh b/scripts/netifd-wireless.sh
+index 659284b..cf5b266 100644
+--- a/scripts/netifd-wireless.sh
++++ b/scripts/netifd-wireless.sh
+@@ -195,6 +195,8 @@ wireless_vif_parse_encryption() {
+ 	auth_type=none
+ 	wpa=0
+ 	wpa_pairwise=
++	eapol_key_index_workaround=0
++
+ 	case "$encryption" in
+ 		*tkip+aes|*tkip+ccmp|*aes+tkip|*ccmp+tkip) wpa_pairwise="CCMP TKIP";;
+ 		*aes|*ccmp| psk2 | wpa2) wpa_pairwise="CCMP";;
+@@ -240,8 +242,14 @@ wireless_vif_parse_encryption() {
+ 		*psk*)
+ 			auth_type=psk
+ 		;;
+-		*wpa*|*8021x*)
++		*wpa*)
++			auth_type=eap
++			eapol_key_index_workaround=1
++		;;
++		*8021x*)
+ 			auth_type=eap
++			eapol_version=2
++			eap_server=0
+ 		;;
+ 		*wep*)
+ 			auth_type=wep

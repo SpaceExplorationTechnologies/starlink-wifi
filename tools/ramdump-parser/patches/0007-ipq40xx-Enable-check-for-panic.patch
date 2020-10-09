@@ -1,0 +1,76 @@
+From ba81e9e3a1968afc977e3ecb81098fce0b6b6975 Mon Sep 17 00:00:00 2001
+From: Natesh babu <nrameg@codeaurora.org>
+Date: Mon, 11 Apr 2016 18:42:11 +0530
+Subject: [PATCH] ipq40xx Enable check for panic
+
+Signed-off-by: Natesh babu <nrameg@codeaurora.org>
+---
+ linux-ramdump-parser-v2/parsers/ddrcompare.py | 12 +++++++-----
+ linux-ramdump-parser-v2/parsers/roareadiff.py |  2 ++
+ linux-ramdump-parser-v2/parsers/taskdump.py   |  8 +++++---
+ 3 files changed, 14 insertions(+), 8 deletions(-)
+
+diff --git a/linux-ramdump-parser-v2/parsers/ddrcompare.py b/linux-ramdump-parser-v2/parsers/ddrcompare.py
+index 52a7afd..9d6e94b 100644
+--- a/linux-ramdump-parser-v2/parsers/ddrcompare.py
++++ b/linux-ramdump-parser-v2/parsers/ddrcompare.py
+@@ -179,10 +179,12 @@ class DDRCompare(RamParser) :
+             self.output_file.write("----------------------------------------\n")
+ 
+     def parse(self):
+-        self.output_file = self.ramdump.open_file('DDRCacheCompare.txt')
++        #self.output_file = self.ramdump.open_file('DDRCacheCompare.txt')
+ 
+-        self.compare_magic()
+-        self.corruptionchecker()
++        #self.compare_magic()
++        #self.corruptionchecker()
+ 
+-        self.output_file.close()
+-        print_out_str("--- Wrote the output to DDRCacheCompare.txt")
++        #self.output_file.close()
++        #print_out_str("--- Wrote the output to DDRCacheCompare.txt")
++        print_out_str("--- DDRCacheCompare disabled")
++        return
+diff --git a/linux-ramdump-parser-v2/parsers/roareadiff.py b/linux-ramdump-parser-v2/parsers/roareadiff.py
+index cd04574..20a0c27 100644
+--- a/linux-ramdump-parser-v2/parsers/roareadiff.py
++++ b/linux-ramdump-parser-v2/parsers/roareadiff.py
+@@ -26,6 +26,8 @@ PF_W = 2
+ class ROData(RamParser):
+ 
+     def parse(self):
++        print_out_str('check rodata disabled')
++        return
+         stext = self.ramdump.addr_lookup('stext')
+         etext = self.ramdump.addr_lookup('_etext')
+ 
+diff --git a/linux-ramdump-parser-v2/parsers/taskdump.py b/linux-ramdump-parser-v2/parsers/taskdump.py
+index 83555bd..1f4f783 100644
+--- a/linux-ramdump-parser-v2/parsers/taskdump.py
++++ b/linux-ramdump-parser-v2/parsers/taskdump.py
+@@ -10,6 +10,7 @@
+ # GNU General Public License for more details.
+ 
+ import string
++import re
+ from print_out import print_out_str
+ from parser_util import register_parser, RamParser, cleanupString
+ 
+@@ -31,9 +32,10 @@ def find_panic(ramdump, addr_stack, thread_task_name):
+             lr = ramdump.read_word(i + 4)
+             spx = i + 4
+             fp = 0
+-        l = ramdump.unwind_lookup(pc)
+-        if l is not None:
+-            s, offset = l
++
++        l = ramdump.unwind_lookup(pc,0,0)
++        if l is not None and len(l) > 3:
++            s, offset, foo, symtab_st_size = l
+             if s == 'panic':
+                 print_out_str('Faulting process found! Name {0})'.format(thread_task_name))
+                 ramdump.unwind.unwind_backtrace(spx, fp, pc, lr, '')
+-- 
+1.9.1
+

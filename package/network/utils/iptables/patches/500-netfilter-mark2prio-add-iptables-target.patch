@@ -1,0 +1,67 @@
+From f9127918b7b06fa6d41f57baa312622e6d0d82e0 Mon Sep 17 00:00:00 2001
+From: Matthew McClintock <mmcclint@codeaurora.org>
+Date: Wed, 26 Mar 2014 17:15:09 -0500
+Subject: [PATCH] netfilter: mark2prio: add iptables target
+
+This target unconditionally copies mark to priority
+
+Signed-off-by: Matthew McClintock <mmcclint@codeaurora.org>
+---
+ extensions/libxt_mark2prio.c | 46 ++++++++++++++++++++++++++++++++
+ 1 file changed, 46 insertions(+)
+ create mode 100644 extensions/libxt_mark2prio.c
+
+diff --git a/extensions/libxt_mark2prio.c b/extensions/libxt_mark2prio.c
+new file mode 100644
+index 0000000..e76fcc9
+--- /dev/null
++++ libxt_mark2prio.c
+@@ -0,0 +1,46 @@
++/*
++ * Copyright (c) 2013,2016 The Linux Foundation. All rights reserved.
++ *
++ * Permission to use, copy, modify, and/or distribute this software for any
++ * purpose with or without fee is hereby granted, provided that the above
++ * copyright notice and this permission notice appear in all copies.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
++ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ */
++
++#include <stdbool.h>
++#include <stdio.h>
++#include <string.h>
++#include <stdlib.h>
++#include <getopt.h>
++#include <xtables.h>
++#include <linux/version.h>
++
++static struct xtables_target mark2prio_targets[] = {
++	{
++		.name		= "mark2prio",
++		.version	= XTABLES_VERSION,
++		.family		= NFPROTO_IPV4,
++		.size		= 0,
++		.userspacesize	= 0,
++	},
++	{
++		.name		= "mark2prio",
++		.version	= XTABLES_VERSION,
++		.family		= NFPROTO_IPV6,
++		.size		= 0,
++		.userspacesize	= 0,
++	},
++};
++
++void _init(void)
++{
++	xtables_register_targets(mark2prio_targets,
++				ARRAY_SIZE(mark2prio_targets));
++}
+1.8.4.2
+

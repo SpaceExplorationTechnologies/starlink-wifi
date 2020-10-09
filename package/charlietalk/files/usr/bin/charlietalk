@@ -1,0 +1,82 @@
+#!/bin/sh /etc/rc.common
+
+configure_firewall_zone() {
+	local zone_id=$1
+	local disabled=$2
+	local is_found
+
+	config_get zone_name "$zone_id" name
+	if [ "$zone_name" == "wan" ]; then {
+		config_get network_name "$zone_id" network
+		if [ -n "$network_name" ]; then {
+			echo $network_name | grep -q "usb"
+			is_found=$?
+			if [ $is_found -ne 0 ] && [ $disabled -eq 0 ]; then {
+				uci add_list firewall.$zone_id.network=usb
+				uci add_list firewall.$zone_id.network=usb6
+				uci commit
+			}
+			elif [ $is_found -eq 0 ] && [ $disabled -ne 0 ]; then {
+				uci del_list firewall.$zone_id.network=usb
+				uci del_list firewall.$zone_id.network=usb6
+				uci commit
+			}
+			fi
+			break
+		}
+		fi
+	}
+	fi
+}
+
+configure_usb_interface() {
+	local disabled=$1
+	config_load network && {
+		config_get ifname usb ifname
+		if [ -z "$ifname" ] && [ $disabled -eq 0 ]; then {
+			uci set network.usb='interface'
+			uci set network.usb.ifname='usb0'
+			uci set network.usb.proto='dhcp'
+			uci set network.usb6='interface'
+			uci set network.usb6.ifname='@usb'
+			uci set network.usb6.proto='dhcpv6'
+			uci commit
+		}
+		elif [ -n "$ifname" ] && [ $disabled -ne 0 ]; then {
+			uci delete network.usb
+			uci delete network.usb6
+			uci commit
+		}
+		fi
+	}
+}
+
+start() {
+	local SERVICE_DAEMONIZE=1
+	local SERVICE_WRITE_PID=1
+	local disabled
+
+	config_load charlietalk && {
+		config_get_bool disabled usb0 'disabled' '1'
+		configure_usb_interface $disabled
+		config_load firewall && {
+			config_foreach configure_firewall_zone zone $disabled
+		}
+		[ $disabled -eq 0 ] || {
+			return 1
+		}
+		service_start /usr/bin/charlietalkd
+		sleep 1
+	}
+}
+
+stop() {
+	config_load charlietalk && {
+		config_get_bool disabled usb0 'disabled' '1'
+		configure_usb_interface $disabled
+		config_load firewall && {
+			config_foreach configure_firewall_zone zone $disabled
+		}
+		service_stop /usr/bin/charlietalkd
+	}
+}

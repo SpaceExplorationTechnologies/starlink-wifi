@@ -1,0 +1,50 @@
+diff -Nur a/system.c netifd-2015-12-16/system.c
+--- a/system.c	2018-04-24 16:57:17.058955779 -0700
++++ netifd-2015-12-16/system.c	2018-04-24 16:57:34.818956227 -0700
+@@ -28,6 +28,7 @@
+ 	[TUNNEL_ATTR_LINK] = { .name = "link", .type = BLOBMSG_TYPE_STRING },
+ 	[TUNNEL_ATTR_FMRS] = { .name = "fmrs", .type = BLOBMSG_TYPE_ARRAY },
+ 	[TUNNEL_ATTR_INFO] = { .name = "info", .type = BLOBMSG_TYPE_STRING },
++	[TUNNEL_ATTR_DRAFT03] = { .name = "draft03", .type = BLOBMSG_TYPE_INT32 },
+ };
+ 
+ const struct uci_blob_param_list tunnel_attr_list = {
+diff -Nur a/system.h netifd-2015-12-16/system.h
+--- a/system.h	2018-04-24 16:57:17.058955779 -0700
++++ netifd-2015-12-16/system.h	2018-04-24 16:57:34.818956227 -0700
+@@ -34,6 +34,7 @@
+ 	TUNNEL_ATTR_LINK,
+ 	TUNNEL_ATTR_FMRS,
+ 	TUNNEL_ATTR_INFO,
++	TUNNEL_ATTR_DRAFT03,
+ 	__TUNNEL_ATTR_MAX
+ };
+ 
+diff -Nur a/system-linux.c netifd-2015-12-16/system-linux.c
+--- a/system-linux.c	2018-04-24 16:57:17.058955779 -0700
++++ netifd-2015-12-16/system-linux.c	2018-04-24 16:58:25.762957510 -0700
+@@ -2445,6 +2445,13 @@
+ 			return -EINVAL;
+ 	}
+ 
++	unsigned int draft03 = 0;
++	if ((cur = tb[TUNNEL_ATTR_DRAFT03])) {
++		draft03 = blobmsg_get_u32(cur);
++		if (ttl > 255)
++			return -EINVAL;
++	}
++
+ 	unsigned int link = 0;
+ 	if ((cur = tb[TUNNEL_ATTR_LINK])) {
+ 		struct interface *iface = vlist_find(&interfaces, blobmsg_data(cur), iface, node);
+@@ -2518,6 +2525,10 @@
+ 		nla_put_u8(nlm, IFLA_IPTUN_PROTO, IPPROTO_IPIP);
+ 		nla_put_u8(nlm, IFLA_IPTUN_TTL, (ttl) ? ttl : 64);
+ 		nla_put_u8(nlm, IFLA_IPTUN_ENCAP_LIMIT, 4);
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
++		if (draft03)
++			nla_put_u8(nlm, IFLA_IPTUN_DRAFT03, 1);
++#endif
+ 
+ 		struct in6_addr in6buf;
+ 		if ((cur = tb[TUNNEL_ATTR_LOCAL])) {

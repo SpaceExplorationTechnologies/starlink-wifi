@@ -1,0 +1,83 @@
+From c444a7fd8138a49b37930c24665e78eae644c895 Mon Sep 17 00:00:00 2001
+From: Gokul Sriram Palanisamy <gokulsri@codeaurora.org>
+Date: Mon, 21 Aug 2017 15:18:00 +0530
+Subject: [PATCH 3/5] ramparser: add initial hawkeye support
+
+initial code for hawkeye platform
+
+Signed-off-by: Gokul Sriram Palanisamy <gokulsri@codeaurora.org>
+---
+ linux-ramdump-parser-v2/boards.py              | 11 +++++++++++
+ linux-ramdump-parser-v2/parsers/debug_image.py |  9 +++++++++
+ linux-ramdump-parser-v2/ramdump.py             |  6 ++++++
+ 3 files changed, 26 insertions(+)
+
+diff --git a/linux-ramdump-parser-v2/boards.py b/linux-ramdump-parser-v2/boards.py
+index 64aaf0f..71198ed 100755
+--- a/linux-ramdump-parser-v2/boards.py
++++ b/linux-ramdump-parser-v2/boards.py
+@@ -216,6 +216,16 @@ class Board4018(Board):
+         self.phys_offset = 0x80000000
+         self.imem_start =  0x86000000
+ 
++class Board8074(Board):
++    def __init__(self, socid, smem_addr):
++        super(Board8074, self).__init__()
++        #self.socid = socid
++        self.board_num = 8074
++        self.cpu = 'CORTEXA7'
++        self.ram_start = 0x40000000
++        self.phys_offset = 0x41000000
++        self.imem_start =  0x08600658
++
+ boards = []
+ boards.append(Board8916(socid=206, smem_addr=0xe200000))
+ boards.append(Board8916(socid=206, smem_addr=0x6300000))
+@@ -355,6 +365,7 @@ boards.append(Board8625(socid=135, board_num=8625))
+ 
+ boards.append(Board8994(socid=207))
+ boards.append(Board4018(socid=272, smem_addr=0x87e00000))
++boards.append(Board8074(socid=293, smem_addr=0x87e00000))
+ 
+ def get_supported_boards():
+     """ Called by other part of the code to get a list of boards """
+diff --git a/linux-ramdump-parser-v2/parsers/debug_image.py b/linux-ramdump-parser-v2/parsers/debug_image.py
+index 5cead7c..6f33a4e 100644
+--- a/linux-ramdump-parser-v2/parsers/debug_image.py
++++ b/linux-ramdump-parser-v2/parsers/debug_image.py
+@@ -200,6 +200,15 @@ class DebugImage(RamParser):
+             client_name = "Dump"
+             regs.parse_cpu_ctx(3, client_start, client_end, 1, self.ramdump)
+             return
++
++        if self.ramdump.Is_Hawkeye():
++            #regs = DebugImage_v3()
++            #client_start = 0x08600000
++            #client_end = 0x6000
++            #client_name = "Dump"
++            #regs.parse_cpu_ctx(3, client_start, client_end, 1, self.ramdump)
++            return
++
+         # use the mem_dump_data variable to detect if debug image feature was compiled in,
+         # and memdump data variable for debug image v2 feature, rather than relying on
+         # configuration option.
+diff --git a/linux-ramdump-parser-v2/ramdump.py b/linux-ramdump-parser-v2/ramdump.py
+index 036d564..b892c03 100755
+--- a/linux-ramdump-parser-v2/ramdump.py
++++ b/linux-ramdump-parser-v2/ramdump.py
+@@ -1319,6 +1319,12 @@ class RamDump():
+         else:
+             return False
+ 
++    def Is_Hawkeye(self):
++        if (self.hw_id == 8074):
++            return True
++        else:
++            return False
++
+     def hexdump(self, address, length, virtual=True, file_object=None):
+         """Does a hexdump (in the format of `xxd'). `length' is in bytes. If
+         given, will write to `file_object', otherwise will write to
+-- 
+1.9.1
+

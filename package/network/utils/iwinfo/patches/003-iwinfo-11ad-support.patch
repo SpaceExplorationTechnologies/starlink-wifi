@@ -1,0 +1,68 @@
+--- a/include/iwinfo.h
++++ b/include/iwinfo.h
+@@ -28,6 +28,7 @@
+ #define IWINFO_80211_G       (1 << 2)
+ #define IWINFO_80211_N       (1 << 3)
+ #define IWINFO_80211_AC      (1 << 4)
++#define IWINFO_80211_AD      (1 << 5)
+ 
+ #define IWINFO_CIPHER_NONE   (1 << 0)
+ #define IWINFO_CIPHER_WEP40  (1 << 1)
+--- a/iwinfo_cli.c
++++ b/iwinfo_cli.c
+@@ -273,7 +273,8 @@ static char * format_hwmodes(int modes)
+ 			(modes & IWINFO_80211_B) ? "b" : "",
+ 			(modes & IWINFO_80211_G) ? "g" : "",
+ 			(modes & IWINFO_80211_N) ? "n" : "",
+-			(modes & IWINFO_80211_AC) ? "ac" : "");
++			(modes & IWINFO_80211_AC) ? "ac" : "",
++			(modes & IWINFO_80211_AD) ? "/ad" : "");
+ 
+ 	return buf;
+ }
+--- a/iwinfo_lua.c
++++ b/iwinfo_lua.c
+@@ -502,6 +502,9 @@ static int iwinfo_L_hwmodelist(lua_State
+ 		lua_pushboolean(L, hwmodes & IWINFO_80211_AC);
+ 		lua_setfield(L, -2, "ac");
+ 
++		lua_pushboolean(L, hwmodes & IWINFO_80211_AD);
++		lua_setfield(L, -2, "ad");
++
+ 		return 1;
+ 	}
+ 
+--- a/iwinfo_nl80211.c
++++ b/iwinfo_nl80211.c
+@@ -508,6 +508,8 @@ static int nl80211_freq2channel(int freq
+ 		return (freq - 2407) / 5;
+ 	else if (freq >= 4910 && freq <= 4980)
+ 		return (freq - 4000) / 5;
++	else if (freq > 58319 && freq < 64801)
++		return (freq - 56160) / 2160;
+ 	else
+ 		return (freq - 5000) / 5;
+ }
+@@ -521,6 +523,10 @@ static int nl80211_channel2freq(int chan
+ 		else if (channel < 14)
+ 			return (channel * 5) + 2407;
+ 	}
++	else if ((channel < 5) && (band[0] == 'a' && band[1] == 'd'))
++	{
++		return (channel * 2160) + 56160;
++	}
+ 	else
+ 	{
+ 		if (channel >= 182 && channel <= 196)
+@@ -2483,6 +2489,11 @@ static int nl80211_get_modelist_cb(struc
+ 					m->hw |= IWINFO_80211_B;
+ 					m->hw |= IWINFO_80211_G;
+ 				}
++				else if(nla_get_u32(freqs[NL80211_FREQUENCY_ATTR_FREQ]) >= 58320 &&
++					nla_get_u32(freqs[NL80211_FREQUENCY_ATTR_FREQ]) <= 62640)
++				{
++					m->hw |= IWINFO_80211_AD;
++				}
+ 				else if (bands[NL80211_BAND_ATTR_VHT_CAPA])
+ 				{
+ 					vht_caps = nla_get_u32(bands[NL80211_BAND_ATTR_VHT_CAPA]);

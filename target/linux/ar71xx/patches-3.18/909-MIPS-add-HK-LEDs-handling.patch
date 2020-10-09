@@ -1,0 +1,32 @@
+Index: linux-3.18.29/arch/mips/ath79/mach-cus531.c
+===================================================================
+--- linux-3.18.29.orig/arch/mips/ath79/mach-cus531.c	2016-09-23 10:06:24.188417814 +0200
++++ linux-3.18.29/arch/mips/ath79/mach-cus531.c	2016-09-23 11:01:18.136479653 +0200
+@@ -229,8 +229,12 @@
+ 	ath79_gpio_output_select(CUS531MP3_GPIO_LED_WAN,
+ 				 QCA953X_GPIO_OUT_MUX_LED_LINK5);
+ 
++#ifdef CONFIG_ATH79_GPIO_WLAN_LED_CTRL
++	ath79_gpio_direction_select(CUS531MP3_GPIO_LED_WLAN, false);
++#else
+ 	/* set WLAN LED pin */
+ 	ath79_wmac_set_led_pin(CUS531MP3_GPIO_LED_WLAN);
++#endif
+ 
+ 	/* Disable JTAG for BT Coex pin */
+ 	ath79_gpio_function_enable(AR934X_GPIO_FUNC_JTAG_DISABLE);
+Index: linux-3.18.29/arch/mips/ath79/Kconfig
+===================================================================
+--- linux-3.18.29.orig/arch/mips/ath79/Kconfig	2016-09-23 10:21:28.648434794 +0200
++++ linux-3.18.29/arch/mips/ath79/Kconfig	2016-09-23 10:57:00.696474820 +0200
+@@ -1556,4 +1556,10 @@
+ config PCI_AR724X
+ 	def_bool n
+ 
++config ATH79_GPIO_WLAN_LED_CTRL
++	bool "Enable possibility to control GPIO WLAN LED by user"
++	help
++	  Say 'Y' here if you want your kernel to support the
++	  GPIO WLAN LED control for Qualcomm Atheros board.
++
+ endif

@@ -1,0 +1,43 @@
+diff -Nur a/extensions/rtsp/nf_conntrack_rtsp.c xtables-addons-2.10/extensions/rtsp/nf_conntrack_rtsp.c
+--- a/extensions/rtsp/nf_conntrack_rtsp.c	2016-06-21 18:21:53.197987629 -0700
++++ xtables-addons-2.10/extensions/rtsp/nf_conntrack_rtsp.c	2016-06-21 18:26:02.333980254 -0700
+@@ -269,13 +269,23 @@
+ 	struct net *net;
+ 	struct nf_conn *ct = NULL;
+ 	int i;
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0)
++	spinlock_t *lockp;
++#endif
+ 
+ 	net = nf_ct_net(ct);
+ 
+-	/*remove all established ct*/
++#if LINUX_VERSION_CODE < KERNEL_VERSION(3,18,0)
+ 	spin_lock_bh(&nf_conntrack_lock);
++#endif
++
+ 	for (i = 0; i < nf_conntrack_htable_size; i++)
+ 	{
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0)
++		lockp = &nf_conntrack_locks[i % CONNTRACK_LOCKS];
++		spin_lock_bh(lockp);
++#endif
++
+ 		hlist_nulls_for_each_entry(h, n, &net->ct.hash[i], hnnode)
+ 		{
+ 			ct = nf_ct_tuplehash_to_ctrack(h);
+@@ -284,8 +294,14 @@
+ 				mod_timer_pending(&ct->timeout, jiffies);
+ 			}
+ 		}
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0)
++		spin_unlock_bh(lockp);
++#endif
++
+ 	}
++#if LINUX_VERSION_CODE < KERNEL_VERSION(3,18,0)
+ 	spin_unlock_bh(&nf_conntrack_lock);
++#endif
+ 
+     /*remove all unestablished expect*/
+ 	nf_ct_remove_expectations(master_ct);

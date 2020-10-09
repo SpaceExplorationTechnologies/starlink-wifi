@@ -1,0 +1,52 @@
+From 42a72ba6c202c7a23b2cb8f7edee7a336586fee4 Mon Sep 17 00:00:00 2001
+From: Natesh babu <nrameg@codeaurora.org>
+Date: Tue, 5 Apr 2016 14:56:20 +0530
+Subject: [PATCH] ipq40xx: Fix the errors on Ramdump TOT
+
+when Ramdump parser TOT is reset to change id -
+ad517ab5884135ec720a7b587af47eee7ea087ea
+we will get the below error because of missing symbol "get_debug_flags:
+ Traceback (most recent call last):
+  File "ramparse.py", line 130, in <module>
+    for p in parser_util.get_parsers():
+  File "C:\Users\c_nrameg\Desktop\TOP\linux-ramdump-parser-v2\parser_util.py", l
+ine 107, in get_parsers
+    __import__(modname)
+  File "C:\Users\c_nrameg\Desktop\TOP\linux-ramdump-parser-v2\parsers\pageallocc
+orruption.py", line 14, in <module>
+    from mm import pfn_to_page, page_buddy , page_address ,get_debug_flags
+ImportError: cannot import name get_debug_flags
+
+Signed-off-by: Natesh babu <nrameg@codeaurora.org>
+---
+ linux-ramdump-parser-v2/mm.py | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/linux-ramdump-parser-v2/mm.py b/linux-ramdump-parser-v2/mm.py
+index fc2bc0a..da12b30 100644
+--- a/linux-ramdump-parser-v2/mm.py
++++ b/linux-ramdump-parser-v2/mm.py
+@@ -9,6 +9,8 @@
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ 
++import bitops
++
+ 
+ def page_buddy(ramdump, page):
+     mapcount_offset = ramdump.field_offset('struct page', '_mapcount')
+@@ -17,6 +19,11 @@ def page_buddy(ramdump, page):
+     return val == 0xffffff80
+ 
+ 
++def get_debug_flags(ramdump, page):
++    debug_flag_offset = ramdump.field_offset('struct page', 'debug_flags')
++    flagval = ramdump.read_word(page + debug_flag_offset)
++    return flagval
++
+ def page_zonenum(page_flags):
+     # save this in a variable somewhere...
+     return (page_flags >> 26) & 3
+-- 
+1.9.1
+

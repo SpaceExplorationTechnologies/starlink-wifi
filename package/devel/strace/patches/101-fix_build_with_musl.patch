@@ -1,0 +1,32 @@
+--- a/resource.c
++++ b/resource.c
+@@ -31,6 +31,7 @@
+ #include "defs.h"
+ #include <sys/resource.h>
+ #include <sys/times.h>
++#include <sys/sysinfo.h>
+ #include <linux/kernel.h>
+ 
+ static const struct xlat resources[] = {
+--- a/signal.c
++++ b/signal.c
+@@ -830,7 +830,7 @@
+ {
+ #if defined(ARM)
+ 	if (entering(tcp)) {
+-		struct sigcontext_struct sc;
++		struct sigcontext sc;
+ 		sigset_t sigm;
+ 		if (umove(tcp, arm_regs.ARM_sp, &sc) < 0)
+ 			return 0;
+--- a/syscall.c
++++ b/syscall.c
+@@ -72,7 +72,7 @@
+ # include <elf.h>
+ #endif
+ 
+-#if defined(AARCH64)
++#if defined(AARCH64) || defined (ARM)
+ # include <asm/ptrace.h>
+ #endif
+ 

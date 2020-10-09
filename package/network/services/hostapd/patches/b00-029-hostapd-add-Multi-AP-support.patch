@@ -1,0 +1,286 @@
+--- a/hostapd/config_file.c
++++ b/hostapd/config_file.c
+@@ -4092,6 +4092,8 @@ static int hostapd_config_fill(struct ho
+ 			return 1;
+ 		}
+ #endif /* CONFIG_OWE */
++	} else if (os_strcmp(buf, "map_enabled") == 0) {
++		bss->map_enabled = atoi(pos);
+ 	} else {
+ 		wpa_printf(MSG_ERROR,
+ 			   "Line %d: unknown configuration item '%s'",
+--- a/hostapd/hostapd.conf
++++ b/hostapd/hostapd.conf
+@@ -438,6 +438,10 @@ wmm_ac_vo_txop_limit=47
+ wmm_ac_vo_acm=0
+ # Note: for IEEE 802.11b mode: cWmin=3 cWmax=4 burst=102
+ 
++#Advertise Multi-AP capabilities in (Re)Assoc repsonse frame.
++#default:0
++#map_enabled=1 to enable Multi-AP.
++
+ # Static WEP key configuration
+ #
+ # The key number to use when transmitting.
+--- a/src/ap/ap_config.h
++++ b/src/ap/ap_config.h
+@@ -682,6 +682,7 @@ struct hostapd_bss_config {
+ 	char owe_transition_ifname[IFNAMSIZ + 1];
+ 	int *owe_groups;
+ #endif /* CONFIG_OWE */
++	int map_enabled;
+ };
+ 
+ /**
+--- a/src/ap/ieee802_11.c
++++ b/src/ap/ieee802_11.c
+@@ -62,6 +62,27 @@ prepare_auth_resp_fils(struct hostapd_da
+ 		       int *is_pub);
+ #endif /* CONFIG_FILS */
+ 
++u8 * hostapd_eid_map(struct hostapd_data *hapd, u8 *eid)
++{
++	u8 *pos = eid;
++	struct map_information_element *map =
++		(struct map_information_element *) (pos + 2);
++
++	eid[0] = WLAN_EID_VENDOR_SPECIFIC;
++	eid[1] = 7; /* len */
++	map->oui[0] = 0x50; /* Wi-Fi Alliance specific OUI 50-6F-9A */
++	map->oui[1] = 0x6F;
++	map->oui[2] = 0x9A;
++	map->oui_type = MAP_OUI_TYPE;
++	map->sub_elem_id = MAP_SUB_ELEM_TYPE;
++	map->sub_elem_len = 0x1;
++	map->sub_elem_val = BACKHAUL_BSS | FRONTHAUL_BSS;
++
++	pos = (u8 *) (map + 1);
++
++	return pos;
++}
++
+ u8 * hostapd_eid_supp_rates(struct hostapd_data *hapd, u8 *eid)
+ {
+ 	u8 *pos = eid;
+@@ -2207,6 +2228,22 @@ static u16 check_wmm(struct hostapd_data
+ 	return WLAN_STATUS_SUCCESS;
+ }
+ 
++static u16 hostapd_validate_map_ie(struct hostapd_data *hapd, struct sta_info *sta,
++		const u8 *map_ie, size_t map_ie_len)
++{
++	sta->flags &= ~WLAN_STA_MAP;
++
++	if (map_ie) {
++		struct map_information_element *map =
++			(struct map_information_element *)map_ie;
++
++		if (map->sub_elem_id != MAP_SUB_ELEM_TYPE)
++			return WLAN_STATUS_UNSPECIFIED_FAILURE;
++		sta->flags |= WLAN_STA_MAP;
++
++	}
++	return WLAN_STATUS_SUCCESS;
++}
+ 
+ static u16 copy_supp_rates(struct hostapd_data *hapd, struct sta_info *sta,
+ 			   struct ieee802_11_elems *elems)
+@@ -2463,6 +2500,12 @@ static u16 check_assoc_ies(struct hostap
+ 	resp = copy_supp_rates(hapd, sta, &elems);
+ 	if (resp != WLAN_STATUS_SUCCESS)
+ 		return resp;
++	if (hapd->conf->map_enabled) {
++		resp = hostapd_validate_map_ie(hapd, sta, elems.map, elems.map_len);
++		if (resp != WLAN_STATUS_SUCCESS)
++			return resp;
++	}
++
+ #ifdef CONFIG_IEEE80211N
+ 	resp = copy_sta_ht_capab(hapd, sta, elems.ht_capabilities);
+ 	if (resp != WLAN_STATUS_SUCCESS)
+@@ -2988,6 +3031,9 @@ static u16 send_assoc_resp(struct hostap
+ 	}
+ #endif /* CONFIG_WPS */
+ 
++	if (hapd->conf->map_enabled)
++		p = hostapd_eid_map(hapd, p);
++
+ #ifdef CONFIG_P2P
+ 	if (sta && sta->p2p_ie && hapd->p2p_group) {
+ 		struct wpabuf *p2p_resp_ie;
+@@ -3347,7 +3393,7 @@ static void handle_assoc(struct hostapd_
+ 			hostapd_logger(hapd, mgmt->sa,
+ 				       HOSTAPD_MODULE_IEEE80211,
+ 				       HOSTAPD_LEVEL_INFO,
+-				       "Station tried to associate before authentication (aid=%d flags=0x%x)",
++				       "Station tried to associate before authentication (aid=%d flags=0x%lx)",
+ 				       sta ? sta->aid : -1,
+ 				       sta ? sta->flags : 0);
+ 			send_deauth(hapd, mgmt->sa,
+@@ -4231,7 +4277,7 @@ static void handle_assoc_cb(struct hosta
+ 		sta->flags |= WLAN_STA_WDS;
+ 	}
+ 
+-	if (sta->flags & WLAN_STA_WDS) {
++	if (sta->flags & WLAN_STA_WDS || sta->flags & WLAN_STA_MAP) {
+ 		int ret;
+ 		char ifname_wds[IFNAMSIZ + 1];
+ 
+--- a/src/ap/sta_info.c
++++ b/src/ap/sta_info.c
+@@ -166,7 +166,7 @@ void ap_free_sta(struct hostapd_data *ha
+ 	/* just in case */
+ 	ap_sta_set_authorized(hapd, sta, 0);
+ 
+-	if (sta->flags & WLAN_STA_WDS)
++	if (sta->flags & WLAN_STA_WDS || sta->flags & WLAN_STA_MAP)
+ 		hostapd_set_wds_sta(hapd, NULL, sta->addr, sta->aid, 0);
+ 
+ 	if (sta->ipaddr)
+@@ -407,7 +407,7 @@ void ap_handle_timer(void *eloop_ctx, vo
+ 	unsigned long next_time = 0;
+ 	int reason;
+ 
+-	wpa_printf(MSG_DEBUG, "%s: %s: " MACSTR " flags=0x%x timeout_next=%d",
++	wpa_printf(MSG_DEBUG, "%s: %s: " MACSTR " flags=0x%lx timeout_next=%d",
+ 		   hapd->conf->iface, __func__, MAC2STR(sta->addr), sta->flags,
+ 		   sta->timeout_next);
+ 	if (sta->timeout_next == STA_REMOVE) {
+--- a/src/ap/sta_info.h
++++ b/src/ap/sta_info.h
+@@ -16,29 +16,30 @@
+ #include "common/ieee802_11_defs.h"
+ 
+ /* STA flags */
+-#define WLAN_STA_AUTH BIT(0)
+-#define WLAN_STA_ASSOC BIT(1)
+-#define WLAN_STA_AUTHORIZED BIT(5)
+-#define WLAN_STA_PENDING_POLL BIT(6) /* pending activity poll not ACKed */
+-#define WLAN_STA_SHORT_PREAMBLE BIT(7)
+-#define WLAN_STA_PREAUTH BIT(8)
+-#define WLAN_STA_WMM BIT(9)
+-#define WLAN_STA_MFP BIT(10)
+-#define WLAN_STA_HT BIT(11)
+-#define WLAN_STA_WPS BIT(12)
+-#define WLAN_STA_MAYBE_WPS BIT(13)
+-#define WLAN_STA_WDS BIT(14)
+-#define WLAN_STA_ASSOC_REQ_OK BIT(15)
+-#define WLAN_STA_WPS2 BIT(16)
+-#define WLAN_STA_GAS BIT(17)
+-#define WLAN_STA_VHT BIT(18)
+-#define WLAN_STA_WNM_SLEEP_MODE BIT(19)
+-#define WLAN_STA_VHT_OPMODE_ENABLED BIT(20)
+-#define WLAN_STA_VENDOR_VHT BIT(21)
+-#define WLAN_STA_PENDING_FILS_ERP BIT(22)
+-#define WLAN_STA_PENDING_DISASSOC_CB BIT(29)
+-#define WLAN_STA_PENDING_DEAUTH_CB BIT(30)
+-#define WLAN_STA_NONERP BIT(31)
++#define WLAN_STA_AUTH BIT_ULL(0)
++#define WLAN_STA_ASSOC BIT_ULL(1)
++#define WLAN_STA_AUTHORIZED BIT_ULL(5)
++#define WLAN_STA_PENDING_POLL BIT_ULL(6) /* pending activity poll not ACKed */
++#define WLAN_STA_SHORT_PREAMBLE BIT_ULL(7)
++#define WLAN_STA_PREAUTH BIT_ULL(8)
++#define WLAN_STA_WMM BIT_ULL(9)
++#define WLAN_STA_MFP BIT_ULL(10)
++#define WLAN_STA_HT BIT_ULL(11)
++#define WLAN_STA_WPS BIT_ULL(12)
++#define WLAN_STA_MAYBE_WPS BIT_ULL(13)
++#define WLAN_STA_WDS BIT_ULL(14)
++#define WLAN_STA_ASSOC_REQ_OK BIT_ULL(15)
++#define WLAN_STA_WPS2 BIT_ULL(16)
++#define WLAN_STA_GAS BIT_ULL(17)
++#define WLAN_STA_VHT BIT_ULL(18)
++#define WLAN_STA_WNM_SLEEP_MODE BIT_ULL(19)
++#define WLAN_STA_VHT_OPMODE_ENABLED BIT_ULL(20)
++#define WLAN_STA_VENDOR_VHT BIT_ULL(21)
++#define WLAN_STA_PENDING_FILS_ERP BIT_ULL(22)
++#define WLAN_STA_PENDING_DISASSOC_CB BIT_ULL(29)
++#define WLAN_STA_PENDING_DEAUTH_CB BIT_ULL(30)
++#define WLAN_STA_NONERP BIT_ULL(31)
++#define WLAN_STA_MAP BIT_ULL(32)
+ 
+ /* Maximum number of supported rates (from both Supported Rates and Extended
+  * Supported Rates IEs). */
+@@ -68,7 +69,7 @@ struct sta_info {
+ 	struct dl_list ip6addr; /* list head for struct ip6addr */
+ 	u16 aid; /* STA's unique AID (1 .. 2007) or 0 if not yet assigned */
+ 	u16 disconnect_reason_code; /* RADIUS server override */
+-	u32 flags; /* Bitfield of WLAN_STA_* */
++	u64 flags; /* Bitfield of WLAN_STA_* */
+ 	u16 capability;
+ 	u16 listen_interval; /* or beacon_int for APs */
+ 	u8 supported_rates[WLAN_SUPP_RATES_MAX];
+--- a/src/common/ieee802_11_common.c
++++ b/src/common/ieee802_11_common.c
+@@ -126,6 +126,10 @@ static int ieee802_11_parse_vendor_speci
+ 			elems->roaming_cons_sel = pos;
+ 			elems->roaming_cons_sel_len = elen;
+ 			break;
++		case MAP_OUI_TYPE:
++			elems->map = pos;
++			elems->map_len = elen;
++			break;
+ 		default:
+ 			wpa_printf(MSG_MSGDUMP, "Unknown WFA "
+ 				   "information element ignored "
+--- a/src/common/ieee802_11_common.h
++++ b/src/common/ieee802_11_common.h
+@@ -84,6 +84,7 @@ struct ieee802_11_elems {
+ 	const u8 *power_capab;
+ 	const u8 *roaming_cons_sel;
+ 	const u8 *password_id;
++	const u8 *map;
+ 
+ 	u8 ssid_len;
+ 	u8 supp_rates_len;
+@@ -130,6 +131,7 @@ struct ieee802_11_elems {
+ 	u8 power_capab_len;
+ 	u8 roaming_cons_sel_len;
+ 	u8 password_id_len;
++	u8 map_len;
+ 
+ 	struct mb_ies_info mb_ies;
+ };
+--- a/src/common/ieee802_11_defs.h
++++ b/src/common/ieee802_11_defs.h
+@@ -1201,6 +1201,29 @@ struct ieee80211_ampe_ie {
+ #define OWE_IE_VENDOR_TYPE 0x506f9a1c
+ #define OWE_OUI_TYPE 28
+ 
++#define MAP_OUI_TYPE 0x1B
++#define MAP_SUB_ELEM_TYPE 0x06
++#define BACKHAUL_BSS 0x40
++#define FRONTHAUL_BSS 0x20
++
++/*MAP Information Element (used in (Re)Association Request frames)
++ */
++struct map_information_element {
++	/* Element ID: 221 (0xdd); Length: 7 */
++	u8 oui[3]; /* 50:6F:9A */
++	u8 oui_type; /* 0x1B */
++	u8 sub_elem_id; /* 0x06 */
++	u8 sub_elem_len; /* 1 */
++	u8 sub_elem_val; /* BIT(7):Backhaul STA
++			  * BIT(6):Backhaul BSS
++			  * BIT(5):Fronthaul BSS
++			  * BIT(3) to BIT(0) reserved
++			  */
++
++} STRUCT_PACKED;
++
++
++
+ #define WMM_OUI_TYPE 2
+ #define WMM_OUI_SUBTYPE_INFORMATION_ELEMENT 0
+ #define WMM_OUI_SUBTYPE_PARAMETER_ELEMENT 1
+--- a/src/utils/common.h
++++ b/src/utils/common.h
+@@ -424,6 +424,7 @@ void perror(const char *s);
+ 
+ #ifndef BIT
+ #define BIT(x) (1U << (x))
++#define BIT_ULL(x) (1ULL << (x))
+ #endif
+ 
+ /*

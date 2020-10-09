@@ -1,0 +1,28 @@
+diff --git a/include/netlink-private/types.h b/include/netlink-private/types.h
+index 42eb07f..6b6f91b 100644
+--- a/include/netlink-private/types.h
++++ b/include/netlink-private/types.h
+@@ -809,6 +809,11 @@ struct rtnl_plug
+ 	uint32_t        limit;
+ };
+ 
++struct rtnl_blackhole_qdisc
++{
++	uint32_t	flags;
++};
++
+ struct flnl_request
+ {
+ 	NLHDR_COMMON
+diff --git a/lib/route/qdisc/blackhole.c b/lib/route/qdisc/blackhole.c
+index 339cf78..cce96a4 100644
+--- a/lib/route/qdisc/blackhole.c
++++ b/lib/route/qdisc/blackhole.c
+@@ -22,6 +22,7 @@
+ static struct rtnl_tc_ops blackhole_ops = {
+ 	.to_kind		= "blackhole",
+ 	.to_type		= RTNL_TC_TYPE_QDISC,
++	.to_size		= sizeof(struct rtnl_blackhole_qdisc),
+ };
+ 
+ static void __init blackhole_init(void)

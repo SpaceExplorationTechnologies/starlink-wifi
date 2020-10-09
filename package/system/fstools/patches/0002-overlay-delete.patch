@@ -1,0 +1,26 @@
+Index: fstools-2016-01-10/libfstools/overlay.c
+===================================================================
+--- fstools-2016-01-10.orig/libfstools/overlay.c	2016-07-01 15:28:10.675297806 +0530
++++ fstools-2016-01-10/libfstools/overlay.c	2016-07-01 15:32:40.471299290 +0530
+@@ -344,6 +344,7 @@
+ int mount_overlay(struct volume *v)
+ {
+ 	char *mp;
++	struct stat st;
+ 
+ 	if (!v)
+ 		return -1;
+@@ -371,7 +372,12 @@
+ 		}
+ 	case FS_STATE_PENDING:
+ 		ULOG_INFO("overlay filesystem has not been fully initialized yet\n");
+-		overlay_delete("/tmp/overlay", true);
++		//For configuration preservati, Sysupgrade in Coconut will extract
++		//the config tarball will be extracted before reboot. So, to support
++		//that, delete overlay only if the tarball is present.
++		if (stat("/tmp/overlay/sysupgrade.tgz", &st) != -1) {
++			overlay_delete("/tmp/overlay", true);
++		}
+ 		break;
+ 	case FS_STATE_READY:
+ 		break;

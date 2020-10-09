@@ -1,0 +1,116 @@
+From fbca955ac5b5d2896331f486451f2c429599e577 Mon Sep 17 00:00:00 2001
+From: Natesh babu <nrameg@codeaurora.org>
+Date: Fri, 8 Apr 2016 15:03:27 +0530
+Subject: [PATCH] ipq40xx: Ramdump parser print dmesg
+
+Signed-off-by: Natesh babu <nrameg@codeaurora.org>
+---
+ linux-ramdump-parser-v2/dmesglib.py | 20 ++++++++++++++------
+ linux-ramdump-parser-v2/mmu.py      |  2 +-
+ linux-ramdump-parser-v2/ramdump.py  |  9 ++++++++-
+ 3 files changed, 23 insertions(+), 8 deletions(-)
+
+diff --git a/linux-ramdump-parser-v2/dmesglib.py b/linux-ramdump-parser-v2/dmesglib.py
+index d480ae7..0751bed 100644
+--- a/linux-ramdump-parser-v2/dmesglib.py
++++ b/linux-ramdump-parser-v2/dmesglib.py
+@@ -13,6 +13,7 @@ import re
+ import string
+ 
+ from parser_util import cleanupString
++from print_out import print_out_str
+ 
+ class DmesgLib(object):
+ 
+@@ -22,7 +23,7 @@ class DmesgLib(object):
+         self.outfile = outfile
+ 
+     def log_from_idx(self, idx, logbuf):
+-        len_offset = self.ramdump.field_offset('struct log', 'len')
++        len_offset = self.ramdump.field_offset('struct printk_log', 'len')
+ 
+         msg = logbuf + idx
+         msg_len = self.ramdump.read_u16(msg + len_offset)
+@@ -32,7 +33,7 @@ class DmesgLib(object):
+             return msg
+ 
+     def log_next(self, idx, logbuf):
+-        len_offset = self.ramdump.field_offset('struct log', 'len')
++        len_offset = self.ramdump.field_offset('struct printk_log', 'len')
+         msg = idx
+ 
+         msg_len = self.ramdump.read_u16(msg + len_offset)
+@@ -49,13 +50,14 @@ class DmesgLib(object):
+         self.outfile.write(cleanupString(dmesg.decode('ascii', 'ignore')) + '\n')
+ 
+     def extract_dmesg_binary(self):
++        dmesg_out = self.ramdump.open_file('dmesg.txt')
+         first_idx_addr = self.ramdump.addr_lookup('log_first_idx')
+         last_idx_addr = self.ramdump.addr_lookup('log_next_idx')
+         logbuf_addr = self.ramdump.read_word(self.ramdump.addr_lookup('log_buf'))
+-        time_offset = self.ramdump.field_offset('struct log', 'ts_nsec')
+-        len_offset = self.ramdump.field_offset('struct log', 'len')
+-        text_len_offset = self.ramdump.field_offset('struct log', 'text_len')
+-        log_size = self.ramdump.sizeof('struct log')
++        time_offset = self.ramdump.field_offset('struct printk_log', 'ts_nsec')
++        len_offset = self.ramdump.field_offset('struct printk_log', 'len')
++        text_len_offset = self.ramdump.field_offset('struct printk_log', 'text_len')
++        log_size = self.ramdump.sizeof('struct printk_log')
+ 
+         first_idx = self.ramdump.read_u32(first_idx_addr)
+         last_idx = self.ramdump.read_u32(last_idx_addr)
+@@ -70,12 +72,18 @@ class DmesgLib(object):
+                 f = '[{0:>5}.{1:0>6d}] {2}\n'.format(
+                     timestamp / 1000000000, (timestamp % 1000000000) / 1000, partial)
+                 self.outfile.write(f)
++                dmesg_out.write(f)
+             curr_idx = self.log_next(curr_idx, logbuf_addr)
++        dmesg_out.close()
+ 
+     def extract_dmesg(self):
+         if re.search('3.7.\d', self.ramdump.version) is not None:
+             self.extract_dmesg_binary()
+         elif re.search('3\.10\.\d', self.ramdump.version) is not None:
+             self.extract_dmesg_binary()
++        elif re.search('3\.14\.\d', self.ramdump.version) is not None:
++            self.extract_dmesg_binary()
++        elif re.search('3\.18\.\d', self.ramdump.version) is not None:
++            self.extract_dmesg_binary()
+         else:
+             self.extract_dmesg_flat()
+diff --git a/linux-ramdump-parser-v2/mmu.py b/linux-ramdump-parser-v2/mmu.py
+index 0fa1d2b..0647d12 100644
+--- a/linux-ramdump-parser-v2/mmu.py
++++ b/linux-ramdump-parser-v2/mmu.py
+@@ -81,7 +81,7 @@ class Armv7MMU(MMU):
+         self.secondary_page_tables = [
+             [0 for col in range(256)] for row in range(4096)]
+ 
+-        msm_ttbr0 = self.ramdump.phys_offset + 0x4000
++        msm_ttbr0 = self.ramdump.phys_offset + self.ramdump.swapper_pg_dir_addr
+         self.ttbr = msm_ttbr0
+         virt_address = 0x0
+         gb_i = 0
+diff --git a/linux-ramdump-parser-v2/ramdump.py b/linux-ramdump-parser-v2/ramdump.py
+index eebc6ea..126ef46 100755
+--- a/linux-ramdump-parser-v2/ramdump.py
++++ b/linux-ramdump-parser-v2/ramdump.py
+@@ -492,7 +492,14 @@ class RamDump():
+         # extra 4k is needed for LPAE. If it's 0x5000 below
+         # PAGE_OFFSET + TEXT_OFFSET then we know we're using LPAE. For
+         # non-LPAE it should be 0x4000 below PAGE_OFFSET + TEXT_OFFSET
+-        self.swapper_pg_dir_addr = self.addr_lookup('swapper_pg_dir') - self.page_offset
++        swapper_pg_dir = self.addr_lookup('swapper_pg_dir')
++        if swapper_pg_dir is None:
++            print_out_str('!!! Could not get the swapper page directory!')
++            print_out_str(
++                '!!! Your vmlinux is probably wrong for these dumps')
++            print_out_str('!!! Exiting now')
++            sys.exit(1)
++        self.swapper_pg_dir_addr =  swapper_pg_dir - self.page_offset
+         self.kernel_text_offset = self.addr_lookup('stext') - self.page_offset
+         pg_dir_size = self.kernel_text_offset - self.swapper_pg_dir_addr
+         if self.arm64:
+-- 
+1.9.1
+

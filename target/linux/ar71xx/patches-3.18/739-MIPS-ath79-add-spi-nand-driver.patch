@@ -1,0 +1,75 @@
+--- a/drivers/mtd/nand/Kconfig
++++ b/drivers/mtd/nand/Kconfig
+@@ -530,4 +530,12 @@ config MTD_NAND_AR934X_HW_ECC
+ 	bool "Hardware ECC support for the AR934X NAND Controller (EXPERIMENTAL)"
+ 	depends on MTD_NAND_AR934X
+ 
++config MTD_NAND_ATH79
++	tristate "Nand flash support for Qualcomm-Atheros SoCs 71xx & 9xxx"
++	default n
++	depends on MTD_NAND && (SOC_AR724X || SOC_AR934X)
++	help
++	  Enables the driver for NAND flash controller on Qualcomm-Atheros System on Chips
++	  This controller is used on families AR71xx and AR9xxx.
++
+ endif # MTD_NAND
+--- a/drivers/mtd/nand/Makefile
++++ b/drivers/mtd/nand/Makefile
+@@ -53,5 +53,6 @@ obj-$(CONFIG_MTD_NAND_JZ4740)		+= jz4740_nand.o
+ obj-$(CONFIG_MTD_NAND_GPMI_NAND)	+= gpmi-nand/
+ obj-$(CONFIG_MTD_NAND_XWAY)		+= xway_nand.o
+ obj-$(CONFIG_MTD_NAND_BCM47XXNFLASH)	+= bcm47xxnflash/
++obj-$(CONFIG_MTD_NAND_ATH79)		+= ath79_spinand.o
+ 
+ nand-objs := nand_base.o nand_bbt.o
+--- a/include/linux/mtd/nand.h
++++ b/include/linux/mtd/nand.h
+@@ -632,6 +632,8 @@ struct nand_chip {
+ #define NAND_MFR_MICRON		0x2c
+ #define NAND_MFR_AMD		0x01
+ #define NAND_MFR_MACRONIX	0xc2
++#define NAND_MFR_GIGADEVICE	0xc8
++#define NAND_MFR_WINBOND	0xef
+ #define NAND_MFR_EON		0x92
+ #define NAND_MFR_SANDISK	0x45
+ #define NAND_MFR_INTEL		0x89
+--- a/drivers/mtd/nand/nand_ids.c
++++ b/drivers/mtd/nand/nand_ids.c
+@@ -44,6 +44,28 @@ struct nand_flash_dev nand_flash_ids[] = {
+ 		{ .id = {0x98, 0xde, 0x94, 0x82, 0x76, 0x56, 0x04, 0x20} },
+ 		  SZ_8K, SZ_8K, SZ_2M, 0, 8, 640, NAND_ECC_INFO(40, SZ_1K) },
+ 
++	{"GD5F1GQ4U 1G 3.3V 8-bit",
++		{ .id = {0xc8, 0xb1} },
++		  SZ_2K, SZ_128, SZ_128K, 0, 2, 128, NAND_ECC_INFO(4, SZ_512) },
++	{"GD5F2GQ4U 2G 3.3V 8-bit",
++		{ .id = {0xc8, 0xb2} },
++		  SZ_2K, SZ_256, SZ_128K, 0, 2, 128, NAND_ECC_INFO(4, SZ_512) },
++	{"GD5F1GQ4R 1G 1.8V 8-bit",
++		{ .id = {0xc8, 0xa1} },
++		  SZ_2K, SZ_128, SZ_128K, 0, 2, 128, NAND_ECC_INFO(4, SZ_512) },
++	{"GD5F2GQ4R 2G 1.8V 8-bit",
++		{ .id = {0xc8, 0xa2} },
++		  SZ_2K, SZ_256, SZ_128K, 0, 2, 128, NAND_ECC_INFO(4, SZ_512) },
++	{"MX35LF1G4EAB 1G 3.3V 8-bit",
++		{ .id = {0xc2, 0x12} },
++		  SZ_2K, SZ_128, SZ_128K, 0, 2, 64, NAND_ECC_INFO(4, SZ_512) },
++	{"MX35LF2G4EAB 2G 3.3V 8-bit",
++		{ .id = {0xc2, 0x22} },
++		  SZ_2K, SZ_256, SZ_128K, 0, 2, 64, NAND_ECC_INFO(4, SZ_512) },
++	{"W25N01GV 1G 3.3V 8-bit",
++		{ .id = {0xef, 0xaa} },
++		  SZ_2K, SZ_128, SZ_128K, 0, 2, 64, NAND_ECC_INFO(4, SZ_512) },
++
+ 	LEGACY_ID_NAND("NAND 4MiB 5V 8-bit",   0x6B, 4, SZ_8K, SP_OPTIONS),
+ 	LEGACY_ID_NAND("NAND 4MiB 3,3V 8-bit", 0xE3, 4, SZ_8K, SP_OPTIONS),
+ 	LEGACY_ID_NAND("NAND 4MiB 3,3V 8-bit", 0xE5, 4, SZ_8K, SP_OPTIONS),
+@@ -171,6 +190,8 @@ struct nand_manufacturers nand_manuf_ids[] = {
+ 	{NAND_MFR_EON, "Eon"},
+ 	{NAND_MFR_SANDISK, "SanDisk"},
+ 	{NAND_MFR_INTEL, "Intel"},
++	{NAND_MFR_GIGADEVICE, "Giga Device"},
++	{NAND_MFR_WINBOND, "Winbond"},
+ 	{0x0, "Unknown"}
+ };
+ 

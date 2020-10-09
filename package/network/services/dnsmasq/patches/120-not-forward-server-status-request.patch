@@ -1,0 +1,24 @@
+diff -uNr a/src/dns-protocol.h b/src/dns-protocol.h
+--- a/src/dns-protocol.h	2013-05-16 13:59:34.000000000 +0800
++++ b/src/dns-protocol.h	2013-05-16 13:59:26.000000000 +0800
+@@ -33,6 +33,7 @@
+ #define REFUSED		5		/* query refused */
+ 
+ #define QUERY           0               /* opcode */
++#define SERVER_STATUS   2               /* opcode */
+ 
+ #define C_IN            1               /* the arpa internet */
+ #define C_CHAOS         3               /* for chaos net (MIT) */
+diff -uNr a/src/forward.c b/src/forward.c
+--- a/src/forward.c	2013-05-16 14:00:45.000000000 +0800
++++ b/src/forward.c	2013-05-16 11:42:47.000000000 +0800
+@@ -1079,7 +1079,8 @@
+   
+   if (n < (int)sizeof(struct dns_header) || 
+       (msg.msg_flags & MSG_TRUNC) ||
+-      (header->hb3 & HB3_QR))
++      (header->hb3 & HB3_QR) ||
++      (OPCODE(header) == SERVER_STATUS))
+     return;
+   
+   source_addr.sa.sa_family = listen->family;

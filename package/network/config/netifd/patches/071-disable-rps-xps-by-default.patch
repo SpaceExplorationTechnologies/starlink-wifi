@@ -1,0 +1,13 @@
+diff --git a/device.c b/device.c
+index 0aa37b6..4790f77 100644
+--- a/device.c
++++ b/device.c
+@@ -29,7 +29,7 @@
+ #include "config.h"
+ 
+ static struct avl_tree devices;
+-static bool default_ps = true;
++static bool default_ps = false;
+ 
+ static const struct blobmsg_policy dev_attrs[__DEV_ATTR_MAX] = {
+ 	[DEV_ATTR_TYPE] = { .name = "type", .type = BLOBMSG_TYPE_STRING },

@@ -1,0 +1,163 @@
+--- a/hostapd/ctrl_iface.c
++++ b/hostapd/ctrl_iface.c
+@@ -141,10 +141,53 @@ static char *get_option(char *opt, char
+ 		return NULL;
+ }
+ 
++static void adjust_vht_center_freq(struct hostapd_config *conf)
++{
++	switch (conf->vht_oper_chwidth) {
++		case VHT_CHANWIDTH_USE_HT:
++			if (conf->secondary_channel == 1 &&
++				conf->vht_oper_centr_freq_seg0_idx != conf->channel + 2)
++					conf->vht_oper_centr_freq_seg0_idx = conf->channel + 2;
++
++			else if (conf->secondary_channel == -1 &&
++				conf->vht_oper_centr_freq_seg0_idx != conf->channel - 2)
++					conf->vht_oper_centr_freq_seg0_idx = conf->channel - 2;
++
++			else if (conf->vht_oper_centr_freq_seg0_idx != conf->channel)
++					conf->vht_oper_centr_freq_seg0_idx = conf->channel;
++			break;
++		case VHT_CHANWIDTH_80MHZ:
++			if(conf->channel <= 48)
++				conf->vht_oper_centr_freq_seg0_idx = 42;
++			else if(conf->channel <= 64)
++				conf->vht_oper_centr_freq_seg0_idx = 58;
++			else if(conf->channel <= 112)
++				conf->vht_oper_centr_freq_seg0_idx = 106;
++			else if(conf->channel <= 128)
++				conf->vht_oper_centr_freq_seg0_idx = 122;
++			else if(conf->channel <= 144)
++				conf->vht_oper_centr_freq_seg0_idx = 138;
++			else if(conf->channel <= 161)
++				conf->vht_oper_centr_freq_seg0_idx = 155;
++			break;
++		case VHT_CHANWIDTH_160MHZ:
++			if(conf->channel <= 64)
++				conf->vht_oper_centr_freq_seg0_idx = 50;
++			else if(conf->channel <= 128)
++				conf->vht_oper_centr_freq_seg0_idx = 114;
++			break;
++		default:
++			break;
++        }
++}
++
+ static struct hostapd_config *hostapd_ctrl_iface_config_read(const char *fname)
+ {
+ 	struct hostapd_config *conf;
+ 	char *opt, *val;
++	u8   chan_width;
++	u8   vht_chan_width;
++	int ieee80211ac;
+ 
+ 	conf = hostapd_config_read(fname);
+ 	if (!conf)
+@@ -156,20 +199,58 @@ static struct hostapd_config *hostapd_ct
+ 
+ 		if ((val = get_option(opt, "channel=")))
+ 			conf->channel = atoi(val);
+-		else if ((val = get_option(opt, "ht_capab=")))
+-			conf->ht_capab = atoi(val);
+-		else if ((val = get_option(opt, "ht_capab_mask=")))
+-			conf->ht_capab &= atoi(val);
+ 		else if ((val = get_option(opt, "sec_chan=")))
+ 			conf->secondary_channel = atoi(val);
+ 		else if ((val = get_option(opt, "hw_mode=")))
+ 			conf->hw_mode = atoi(val);
++		else if ((val = get_option(opt, "width=")))
++			chan_width = atoi(val);
++		else if ((val = get_option(opt, "vht=")))
++			ieee80211ac = atoi(val);
++		else if ((val = get_option(opt, "ht_capab=")))
++			conf->ht_capab = atoi(val);
++		else if ((val = get_option(opt, "ht_capab_mask=")))
++			conf->ht_capab &= atoi(val);
+ 		else if ((val = get_option(opt, "ieee80211n=")))
+ 			conf->ieee80211n = atoi(val);
+ 		else
+ 			break;
+ 	}
+ 
++	if (ieee80211ac) {
++		conf->ieee80211n = 1;
++		conf->ieee80211ac = 1;
++		switch(chan_width) {
++			case CHAN_WIDTH_80:
++				vht_chan_width = VHT_CHANWIDTH_80MHZ;
++				break;
++			case CHAN_WIDTH_80P80:
++				vht_chan_width = VHT_CHANWIDTH_80P80MHZ;
++				break;
++			case CHAN_WIDTH_160:
++				vht_chan_width = VHT_CHANWIDTH_160MHZ;
++				break;
++			case CHAN_WIDTH_20_NOHT:
++			case CHAN_WIDTH_20:
++			case CHAN_WIDTH_40:
++			default:
++				vht_chan_width = VHT_CHANWIDTH_USE_HT;
++				break;
++		}
++		if (vht_chan_width != conf->vht_oper_chwidth) {
++			conf->vht_oper_chwidth = vht_chan_width;
++		}
++	} else {
++		conf->ieee80211ac = 0;
++		conf->vht_oper_chwidth = 0;
++		if (chan_width == CHAN_WIDTH_20_NOHT)
++			conf->ieee80211n = 0;
++		else
++			conf->ieee80211n = 1;
++	}
++
++	adjust_vht_center_freq(conf);
++
+ 	return conf;
+ }
+ 
+--- a/wpa_supplicant/wpa_supplicant.c
++++ b/wpa_supplicant/wpa_supplicant.c
+@@ -144,6 +144,7 @@ static int hostapd_reload(struct wpa_sup
+ 	char buf[256];
+ 	size_t len = sizeof(buf);
+ 	enum hostapd_hw_mode hw_mode;
++	struct wpa_signal_info si;
+ 	u8 channel;
+ 	int sec_chan = 0;
+ 	int ret;
+@@ -160,18 +161,22 @@ static int hostapd_reload(struct wpa_sup
+ 	}
+ 
+ 	hw_mode = ieee80211_freq_to_chan(bss->freq, &channel);
+-	if (asprintf(&cmd, "UPDATE channel=%d sec_chan=%d hw_mode=%d",
+-		     channel, sec_chan, hw_mode) < 0)
++	ret = wpa_drv_signal_poll(wpa_s, &si);
++	if (ret || !channel)
+ 		return -1;
+-
+-	ret = wpa_ctrl_request(wpa_s->hostapd, cmd, os_strlen(cmd), buf, &len, NULL);
+-	free(cmd);
+-
+-	if (ret < 0) {
+-		wpa_printf(MSG_ERROR, "\nFailed to reload hostapd AP interfaces\n");
+-		return -1;
+-	}
+-	return 0;
++        if (asprintf(&cmd, "UPDATE channel=%d sec_chan=%d hw_mode=%d width=%d vht=%d",
++                     channel, sec_chan, hw_mode, si.chanwidth,
++                     wpa_s->ieee80211ac) < 0)
++                return -1;
++
++        ret = wpa_ctrl_request(wpa_s->hostapd, cmd, os_strlen(cmd), buf, &len, NULL);
++        free(cmd);
++
++        if (ret < 0) {
++                wpa_printf(MSG_ERROR, "\nFailed to reload hostapd AP interfaces\n");
++                return -1;
++        }
++        return 0;
+ }
+ 
+ /* Configure default/group WEP keys for static WEP */

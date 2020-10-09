@@ -1,0 +1,131 @@
+--- a/arch/mips/ath79/Kconfig
++++ b/arch/mips/ath79/Kconfig
+@@ -135,6 +135,98 @@ config ATH79_MACH_AP96
+ 	select ATH79_DEV_M25P80
+ 	select ATH79_DEV_USB
+ 
++config ATH79_MACH_CUS531
++	bool "Qualcomm Atheros CUS531 reference board"
++	select SOC_QCA953X
++	select ATH79_DEV_GPIO_BUTTONS
++	select ATH79_DEV_LEDS_GPIO
++	select ATH79_DEV_SPI
++	select ATH79_DEV_I2C
++	select ATH79_DEV_USB
++	select ATH79_DEV_WMAC
++	select ATH79_DEV_ETH
++	select ATH79_DEV_M25P80
++	help
++	  Say 'Y' here if you want your kernel to support the
++	  Qualcomm Atheros CUS531 reference board.
++
++config ATH79_MACH_CUS531_DUAL
++	bool "Qualcomm Atheros CUS531 dual reference board"
++	select SOC_QCA953X
++	select ATH79_DEV_GPIO_BUTTONS
++	select ATH79_DEV_LEDS_GPIO
++	select ATH79_DEV_SPI
++	select ATH79_DEV_I2C
++	select ATH79_DEV_USB
++	select ATH79_DEV_WMAC
++	select ATH79_DEV_ETH
++	select ATH79_DEV_M25P80
++	help
++	  Say 'Y' here if you want your kernel to support the
++	  Qualcomm Atheros CUS531 dual reference board.
++
++config ATH79_MACH_CUS531_NAND
++	bool "Qualcomm Atheros CUS531 nand reference board"
++	select SOC_QCA953X
++	select ATH79_DEV_GPIO_BUTTONS
++	select ATH79_DEV_LEDS_GPIO
++	select ATH79_DEV_SPI
++	select ATH79_DEV_I2C
++	select ATH79_DEV_NAND
++	select ATH79_DEV_USB
++	select ATH79_DEV_WMAC
++	select ATH79_DEV_ETH
++	select ATH79_DEV_M25P80
++	help
++	  Say 'Y' here if you want your kernel to support the
++	  Qualcomm Atheros CUS531 nand reference board.
++
++config ATH79_MACH_CUS531MP3
++	bool "Qualcomm Atheros CUS531 MP3 reference board"
++	select SOC_QCA953X
++	select ATH79_DEV_GPIO_BUTTONS
++	select ATH79_DEV_LEDS_GPIO
++	select ATH79_DEV_SPI
++	select ATH79_DEV_I2C
++	select ATH79_DEV_USB
++	select ATH79_DEV_WMAC
++	select ATH79_DEV_ETH
++	select ATH79_DEV_M25P80
++	help
++	  Say 'Y' here if you want your kernel to support the
++	  Qualcomm Atheros CUS531 MP3 reference board.
++
++config ATH79_MACH_CUS531MP3_DUAL
++	bool "Qualcomm Atheros CUS531 MP3 dual reference board"
++	select SOC_QCA953X
++	select ATH79_DEV_GPIO_BUTTONS
++	select ATH79_DEV_LEDS_GPIO
++	select ATH79_DEV_SPI
++	select ATH79_DEV_I2C
++	select ATH79_DEV_USB
++	select ATH79_DEV_WMAC
++	select ATH79_DEV_ETH
++	select ATH79_DEV_M25P80
++	help
++	  Say 'Y' here if you want your kernel to support the
++	  Qualcomm Atheros CUS531 MP3 dual reference board.
++
++config ATH79_MACH_CUS531MP3_NAND
++	bool "Qualcomm Atheros CUS531 MP3 nand reference board"
++	select SOC_QCA953X
++	select ATH79_DEV_GPIO_BUTTONS
++	select ATH79_DEV_LEDS_GPIO
++	select ATH79_DEV_SPI
++	select ATH79_DEV_I2C
++	select ATH79_DEV_NAND
++	select ATH79_DEV_USB
++	select ATH79_DEV_WMAC
++	select ATH79_DEV_ETH
++	select ATH79_DEV_M25P80
++	help
++	  Say 'Y' here if you want your kernel to support the
++	  Qualcomm Atheros CUS531 MP3 nand reference board.
++
+ config ATH79_MACH_DB120
+ 	bool "Atheros DB120 reference board"
+ 	select SOC_AR934X
+--- a/arch/mips/ath79/Makefile
++++ b/arch/mips/ath79/Makefile
+@@ -54,6 +54,12 @@ obj-$(CONFIG_ATH79_MACH_ARCHER_C7)	+= mach-archer-c7.o
+ obj-$(CONFIG_ATH79_MACH_AW_NR580)	+= mach-aw-nr580.o
+ obj-$(CONFIG_ATH79_MACH_BHU_BXU2000N2_A)+= mach-bhu-bxu2000n2-a.o
+ obj-$(CONFIG_ATH79_MACH_CAP4200AG)	+= mach-cap4200ag.o
++obj-$(CONFIG_ATH79_MACH_CUS531)		+= mach-cus531.o
++obj-$(CONFIG_ATH79_MACH_CUS531_DUAL)	+= mach-cus531.o
++obj-$(CONFIG_ATH79_MACH_CUS531_NAND)	+= mach-cus531.o
++obj-$(CONFIG_ATH79_MACH_CUS531MP3)	+= mach-cus531.o
++obj-$(CONFIG_ATH79_MACH_CUS531MP3_DUAL) += mach-cus531.o
++obj-$(CONFIG_ATH79_MACH_CUS531MP3_NAND) += mach-cus531.o
+ obj-$(CONFIG_ATH79_MACH_CPE510)		+= mach-cpe510.o
+ obj-$(CONFIG_ATH79_MACH_DB120)		+= mach-db120.o
+ obj-$(CONFIG_ATH79_MACH_DLAN_PRO_500_WP)	+= mach-dlan-pro-500-wp.o
+--- a/arch/mips/ath79/machtypes.h
++++ b/arch/mips/ath79/machtypes.h
+@@ -37,6 +37,12 @@ enum ath79_mach_type {
+ 	ATH79_MACH_BHU_BXU2000N2_A1,	/* BHU BXU2000n-2 A1 */
+ 	ATH79_MACH_CAP4200AG,		/* Senao CAP4200AG */
+ 	ATH79_MACH_CARAMBOLA2,		/* 8devices Carambola2 */
++	ATH79_MACH_CUS531,		/* Qualcomm Atheros CUS531 board */
++	ATH79_MACH_CUS531_DUAL,		/* Qualcomm Atheros CUS531 dual board */
++	ATH79_MACH_CUS531_NAND,		/* Qualcomm Atheros CUS531 nand board */
++	ATH79_MACH_CUS531MP3,		/* Qualcomm Atheros CUS531 MP3 board */
++	ATH79_MACH_CUS531MP3_DUAL,	/* Qualcomm Atheros CUS531 MP3 dual board */
++	ATH79_MACH_CUS531MP3_NAND,	/* Qualcomm Atheros CUS531 MP3 nand board */
+ 	ATH79_MACH_CPE510,		/* TP-LINK CPE510 */
+ 	ATH79_MACH_DB120,		/* Atheros DB120 reference board */
+ 	ATH79_MACH_PB44,		/* Atheros PB44 reference board */

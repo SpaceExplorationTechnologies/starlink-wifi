@@ -1,0 +1,178 @@
+From 7068dca124f2301f431521b5056443439bae81c9 Mon Sep 17 00:00:00 2001
+From: Natesh Babu <nrameg@codeaurora.org>
+Date: Mon, 21 Aug 2017 14:21:20 +0530
+Subject: [PATCH] ipq40xx: Enable debug image parsing
+
+Signed-off-by: Natesh Babu <nrameg@codeaurora.org>
+---
+ linux-ramdump-parser-v2/ramdump.py | 135 ++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 132 insertions(+), 3 deletions(-)
+
+diff --git a/linux-ramdump-parser-v2/ramdump.py b/linux-ramdump-parser-v2/ramdump.py
+index 3269b9f..bc08207 100755
+--- a/linux-ramdump-parser-v2/ramdump.py
++++ b/linux-ramdump-parser-v2/ramdump.py
+@@ -422,14 +422,25 @@ class RamDump():
+                 if frame.pc is None:
+                     break
+ 
++                modname = None
++                symname = None
++                symtab_st_size = None
+                 r = self.ramdump.unwind_lookup(frame.pc)
+                 if r is None:
+                     symname = 'UNKNOWN'
+                     offset = 0x0
++                if r is not None and len(r) > 3:
++                    symname, offset, modname, symtab_st_size = r
++
++                if (modname is not None and symtab_st_size is not None):
++                    pstring = (
++                        extra_str + '[<0x{0:x}>] {1}+0x{2:x}/0x{4:x} [{3}.ko]'.format(frame.pc, symname, offset, modname, symtab_st_size))
++                elif (modname is None and symtab_st_size is not None):
++                    pstring = (
++                        extra_str + '[<0x{0:x}>] {1}+0x{2:x}/0x{3:x}'.format(frame.pc, symname, offset, symtab_st_size))
+                 else:
+-                    symname, offset = r
+-                pstring = (
+-                    extra_str + '[<{0:x}>] {1}+0x{2:x}'.format(frame.pc, symname, offset))
++                    pstring = (
++                        extra_str + '[<0x{0:x}>] {1}+0x{2:x}'.format(frame.pc, symname, offset))
+                 if out_file:
+                     out_file.write(pstring + '\n')
+                 else:
+@@ -439,6 +450,104 @@ class RamDump():
+                 if urc < 0:
+                     break
+ 
++        def mod_get_symbol(self, mod_list, mod_sec_addr, val):
++            module_symtab_count = self.ramdump.read_word(mod_list + self.ramdump.module_symtab_count_offset)
++            module_init_text_size = self.ramdump.read_word(mod_list + self.ramdump.module_init_text_size_offset)
++            module_core_text_size = self.ramdump.read_word(mod_list + self.ramdump.module_core_text_size_offset)
++            module_symtab = self.ramdump.read_word(mod_list + self.ramdump.module_symtab_offset)
++            module_strtab = self.ramdump.read_word(mod_list + self.ramdump.module_strtab_offset)
++            name = self.mod_addr_name
++            best = 0
++            addr = self.mod_addr
++            module_symtab_orig = module_symtab
++            strtab_name = None
++
++            if (val == 0):
++                nextval = self.ramdump.read_word(mod_sec_addr + module_init_text_size)
++            else:
++                nextval = self.ramdump.read_word(mod_sec_addr + module_core_text_size)
++
++            for i in range(1, module_symtab_count):
++                module_symtab += self.ramdump.symtab_size
++                symtab_st_shndx = self.ramdump.read_halfword(module_symtab + self.ramdump.symtab_st_shndx_offset);
++                symtab_st_info = self.ramdump.read_byte(module_symtab + self.ramdump.symtab_st_info_offset);
++
++                if (symtab_st_shndx != 0 and symtab_st_info != 'U'):
++                    module_best_symtab = module_symtab_orig + (best * self.ramdump.symtab_size)
++                    symtab_best_st_value = self.ramdump.read_word(module_best_symtab + self.ramdump.symtab_st_value_offset)
++                    symtab_st_value = self.ramdump.read_word(module_symtab + self.ramdump.symtab_st_value_offset)
++                    symtab_st_name = self.ramdump.read_word(module_symtab + self.ramdump.symtab_st_name_offset)
++                    strtab_name = self.ramdump.read_cstring(module_strtab + symtab_st_name, 40)
++
++                if (strtab_name):
++                    if (symtab_st_value <= addr and symtab_st_value > symtab_best_st_value and
++                        strtab_name[0] != '\0' and self.arm_symbol_mapping(strtab_name) == 0):
++                        best = i
++
++                    if (symtab_st_value > addr and symtab_st_value < nextval and strtab_name[0] != '\0'
++                       and self.arm_symbol_mapping(strtab_name) == 0):
++                       nextval = symtab_st_value
++
++            if (best == 0):
++                self.sym_name = "UNKNOWN"
++                self.sym_off = 0
++                #print_out_str('not able to resolve addr 0x{0} in module section'.format(addr))
++                #return None
++            else:
++                module_best_symtab = module_symtab_orig + (best * self.ramdump.symtab_size)
++                symtab_best_st_name = self.ramdump.read_word(module_best_symtab + self.ramdump.symtab_st_name_offset)
++                symtab_best_st_value = self.ramdump.read_word(module_best_symtab + self.ramdump.symtab_st_value_offset)
++                symtab_st_size = self.ramdump.read_word(module_best_symtab + self.ramdump.symtab_st_size_offset)
++                offset = addr - symtab_best_st_value
++                symbol = self.ramdump.read_cstring(module_strtab + symtab_best_st_name, 50)
++                self.sym_name = symbol
++                self.sym_off = offset
++                self.symtab_st_size = symtab_st_size
++
++
++        def mod_addr_func(self, mod_list):
++            if((mod_list & 0xff000000) !=  0xbf000000):
++                return
++
++            name = self.ramdump.read_cstring(mod_list + self.ramdump.mod_name_offset, 30)
++
++            if len(name) <= 1:
++                return
++
++            module_init_addr = self.ramdump.read_word(mod_list + self.ramdump.module_init_offset)
++            module_init_size = self.ramdump.read_word(mod_list + self.ramdump.module_init_size_offset)
++            module_core_addr = self.ramdump.read_word(mod_list + self.ramdump.module_core_offset)
++            module_core_size = self.ramdump.read_word(mod_list + self.ramdump.module_core_size_offset)
++
++            if ((module_init_size > 0) and (module_init_addr <= self.mod_addr) and (self.mod_addr < (module_init_addr + module_init_size))):
++                    self.mod_addr_name = name
++                    self.mod_get_symbol(mod_list, module_init_addr, 0)
++            else:
++                if (module_core_addr <= self.mod_addr and self.mod_addr < (module_core_addr + module_core_size)):
++                    self.mod_addr_name = name
++                    self.mod_get_symbol(mod_list, module_core_addr, 1)
++
++
++        def get_module_name_from_addr(self, addr):
++            if (self.ramdump.mod_start == 0 or self.ramdump.mod_start is None):
++                print_out_str("cannot get the modules start addr");
++                return None
++
++            self.mod_addr = addr
++            self.mod_addr_name = None
++            self.sym_name = None
++            self.sym_off = 0
++            self.symtab_st_size = 0
++
++            list_walker = llist.ListWalker(self.ramdump, self.ramdump.mod_start, self.ramdump.next_mod_offset)
++            list_walker.walk(self.ramdump.mod_start, self.mod_addr_func)
++
++            #if (self.sym_name is not None and self.sym_off != 0 and self.mod_addr_name is not None):
++            if (self.sym_name is not None and self.mod_addr_name is not None):
++                return(self.sym_name, self.sym_off, self.mod_addr_name, self.symtab_st_size)
++            else:
++                return None
++
+         def arm_symbol_mapping(self, sym):
+             sym1="atd"
+             if len(sym)>=3:
+@@ -578,6 +687,26 @@ class RamDump():
+             print_out_str('!!! Some features may be disabled!')
+         self.unwind = self.Unwinder(self)
+ 
++        self.mod_name_offset = self.field_offset('struct module', 'name')
++        self.module_init_offset = self.field_offset('struct module','module_init')
++        self.module_core_offset = self.field_offset('struct module','module_core')
++        self.module_init_size_offset = self.field_offset('struct module','init_size')
++        self.module_core_size_offset = self.field_offset('struct module','core_size')
++        self.module_init_text_size_offset = self.field_offset('struct module','init_text_size')
++        self.module_core_text_size_offset = self.field_offset('struct module','core_text_size')
++        self.module_symtab_offset = self.field_offset('struct module','symtab')
++        self.module_strtab_offset = self.field_offset('struct module','strtab')
++        self.module_symtab_count_offset = self.field_offset('struct module','num_symtab')
++        self.symtab_st_shndx_offset = self.field_offset('struct elf32_sym', 'st_shndx')
++        self.symtab_st_value_offset = self.field_offset('struct elf32_sym', 'st_value')
++        self.symtab_st_name_offset = self.field_offset('struct elf32_sym', 'st_name')
++        self.symtab_st_info_offset = self.field_offset('struct elf32_sym', 'st_info')
++        self.symtab_st_size_offset = self.field_offset('struct elf32_sym', 'st_size')
++
++        self.symtab_size = self.sizeof('struct elf32_sym')
++        self.next_mod_offset = self.field_offset('struct module','list')
++        self.mod_start = self.read_word('modules')
++
+     def __del__(self):
+         self.gdbmi.close()
+ 
+-- 
+1.9.1
+

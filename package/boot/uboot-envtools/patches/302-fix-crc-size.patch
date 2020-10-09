@@ -1,0 +1,14 @@
+Index: u-boot-2014.10/tools/env/fw_env.c
+===================================================================
+--- u-boot-2014.10.orig/tools/env/fw_env.c	2017-07-11 11:49:35.752059875 +0530
++++ u-boot-2014.10/tools/env/fw_env.c	2017-07-11 11:50:38.813204847 +0530
+@@ -130,7 +130,8 @@
+ #endif
+ static inline ulong getenvsize (void)
+ {
+-	ulong rc = CUR_ENVSIZE - sizeof(long);
++	/* Current ipq807x u-boot is 32-bit compiled, so crc should be 4 bytes long */
++	ulong rc = CUR_ENVSIZE - sizeof(int);
+ 
+ 	if (HaveRedundEnv)
+ 		rc -= sizeof (char);

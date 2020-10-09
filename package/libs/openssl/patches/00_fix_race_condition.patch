@@ -1,0 +1,13 @@
+Index: openssl-1.0.2n/Makefile.org
+===================================================================
+--- openssl-1.0.2n.orig/Makefile.org	2018-03-27 18:58:39.238629333 +0530
++++ openssl-1.0.2n/Makefile.org	2018-03-27 19:01:15.074851440 +0530
+@@ -349,7 +349,7 @@
+ 		libs="$$libs -l$$i"; \
+ 	done
+ 
+-build-shared: do_$(SHLIB_TARGET) link-shared
++build-shared: do_$(SHLIB_TARGET)
+ 
+ do_$(SHLIB_TARGET):
+ 	@ set -e; libs='-L. $(SHLIBDEPS)'; for i in $(SHLIBDIRS); do \

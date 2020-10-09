@@ -1,0 +1,27 @@
+Index: linux-3.18/drivers/tty/serial/ar933x_uart.c
+===================================================================
+--- linux-3.18.orig/drivers/tty/serial/ar933x_uart.c	2015-11-03 13:45:15.256300618 +0100
++++ linux-3.18/drivers/tty/serial/ar933x_uart.c	2015-11-03 13:47:19.471920084 +0100
+@@ -190,7 +190,6 @@
+ 	div = (2 << 16) * (scale + 1);
+ 	t = clk;
+ 	t *= step;
+-	t += (div / 2);
+ 	do_div(t, div);
+ 
+ 	return t;
+@@ -220,12 +219,12 @@
+ 		tstep = baud * (tscale + 1);
+ 		tstep *= (2 << 16);
+ 		do_div(tstep, clk);
+-
+ 		if (tstep > AR933X_UART_MAX_STEP)
+ 			break;
+ 
+ 		diff = abs(ar933x_uart_get_baud(clk, tscale, tstep) - baud);
+-		if (diff < min_diff) {
++		//Optimal value for step should be between 1310-13107
++		if (diff < min_diff && tstep >= 1310 && tstep <= 13107) {
+ 			min_diff = diff;
+ 			*scale = tscale;
+ 			*step = tstep;

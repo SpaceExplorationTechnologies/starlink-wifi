@@ -1,0 +1,95 @@
+diff -Nur netifd-2015-12-16/system-dummy.c b/system-dummy.c
+--- netifd-2015-12-16/system-dummy.c	2017-12-01 15:45:02.066292741 -0800
++++ b/system-dummy.c	2017-12-01 15:45:59.338291046 -0800
+@@ -130,6 +130,12 @@
+ }
+ 
+ struct device *
++system_if_apply_vlan_real(struct device *dev, int mtu)
++{
++	return NULL;
++}
++
++struct device *
+ system_if_get_parent(struct device *dev)
+ {
+ 	return NULL;
+diff -Nur netifd-2015-12-16/system.h b/system.h
+--- netifd-2015-12-16/system.h	2017-12-01 15:45:02.070292741 -0800
++++ b/system.h	2017-12-01 15:45:59.338291046 -0800
+@@ -137,6 +137,7 @@
+ int system_if_dump_info(struct device *dev, struct blob_buf *b);
+ int system_if_dump_stats(struct device *dev, struct blob_buf *b);
+ struct device *system_if_get_parent(struct device *dev);
++struct device *system_if_apply_vlan_real(struct device *dev, int mtu);
+ bool system_if_force_external(const char *ifname);
+ void system_if_apply_settings(struct device *dev, struct device_settings *s,
+ 			      unsigned int apply_mask);
+diff -Nur netifd-2015-12-16/system-linux.c b/system-linux.c
+--- netifd-2015-12-16/system-linux.c	2017-12-01 15:45:02.070292741 -0800
++++ b/system-linux.c	2017-12-01 15:48:28.178286639 -0800
+@@ -1132,10 +1132,10 @@
+ 	nlmsg_append(msg, &iim, sizeof(iim), 0);
+ 	nla_put_string(msg, IFLA_IFNAME, vlandev->ifname);
+ 	nla_put_u32(msg, IFLA_LINK, dev->ifindex);
+-	
++
+ 	if (!(linkinfo = nla_nest_start(msg, IFLA_LINKINFO)))
+ 		goto nla_put_failure;
+-	
++
+ 	nla_put_string(msg, IFLA_INFO_KIND, "vlan");
+ 
+ 	if (!(data = nla_nest_start(msg, IFLA_INFO_DATA)))
+@@ -1465,6 +1465,39 @@
+ 	return device_get(devname, true);
+ }
+ 
++struct device *
++system_if_apply_vlan_real(struct device *dev, int mtu)
++{
++	char buf[64];
++	int len, pmtu;
++	struct device *parentdev;
++	FILE *f;
++
++	/* Check if it is a vlan device. */
++	snprintf(buf, sizeof(buf), "/proc/net/vlan/%s", dev->ifname);
++	if (access(buf, F_OK) == -1)
++		return NULL;
++
++	/* Get the vlan real device. */
++	parentdev = system_if_get_parent(dev);
++
++	/* Check if real device's mtu is less than new mtu. */
++	snprintf(buf, sizeof(buf), "/sys/class/net/%s/mtu", parentdev->ifname);
++	f = fopen(buf, "r");
++	if (!f)
++		return NULL;
++
++	len = fread(buf, 1, sizeof(buf) - 1, f);
++	fclose(f);
++
++	buf[len] = 0;
++	pmtu= strtoul(buf, NULL, 0);
++	if (!pmtu || pmtu >= (mtu + 4))
++		return NULL;
++
++	return parentdev;
++}
++
+ static bool
+ read_string_file(int dir_fd, const char *file, char *buf, int len)
+ {
+@@ -2350,9 +2383,9 @@
+ 		if (ret == 0)
+ 			ret = ifr.ifr_mtu;
+ 	} else {
+-		struct device * parent = system_if_get_parent(dev);
++		struct device * parent = system_if_apply_vlan_real(dev, mtu);
+ 		if (parent)
+-			system_update_ipv4_mtu(parent, mtu);
++			system_update_ipv4_mtu(parent, mtu + 4);
+ 
+ 		ifr.ifr_mtu = mtu;
+ 		ret = ioctl(sock_ioctl, SIOCSIFMTU, &ifr);

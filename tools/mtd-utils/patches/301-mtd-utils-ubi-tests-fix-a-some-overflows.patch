@@ -1,0 +1,56 @@
+From e76eeca21de23ae884e415a12809ac683960cbca Mon Sep 17 00:00:00 2001
+From: Dongsheng Yang <yangds.fnst@cn.fujitsu.com>
+Date: Mon, 29 Jun 2015 16:49:19 +0800
+Subject: [PATCH] mtd-utils: ubi-tests: fix a some overflows
+
+Signed-off-by: Dongsheng Yang <yangds.fnst@cn.fujitsu.com>
+Reviewed-by: Richard Weinberger <richard@nod.at>
+Signed-off-by: Brian Norris <computersforpeace@gmail.com>
+---
+ tests/ubi-tests/mkvol_bad.c   |    2 +-
+ tests/ubi-tests/mkvol_basic.c |    2 +-
+ tests/ubi-tests/rsvol.c       |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/tests/ubi-tests/mkvol_bad.c b/tests/ubi-tests/mkvol_bad.c
+index 27f4795..486fbab 100644
+--- a/tests/ubi-tests/mkvol_bad.c
++++ b/tests/ubi-tests/mkvol_bad.c
+@@ -106,7 +106,7 @@ static int test_mkvol(void)
+ 		return -1;
+ 
+ 	req.alignment = dev_info.leb_size - dev_info.min_io_size;
+-	req.bytes = (dev_info.leb_size - dev_info.leb_size % req.alignment) *
++	req.bytes = (long long)(dev_info.leb_size - dev_info.leb_size % req.alignment) *
+ 		    dev_info.avail_lebs + 1;
+ 	ret = ubi_mkvol(libubi, node, &req);
+ 	if (check_failed(ret, ENOSPC, "ubi_mkvol", "bytes = %lld", req.bytes))
+diff --git a/tests/ubi-tests/mkvol_basic.c b/tests/ubi-tests/mkvol_basic.c
+index cda7241..2ff6ac1 100644
+--- a/tests/ubi-tests/mkvol_basic.c
++++ b/tests/ubi-tests/mkvol_basic.c
+@@ -55,7 +55,7 @@ static int mkvol_alignment(void)
+ 
+ 		/* Bear in mind alignment reduces EB size */
+ 		ebsz = dev_info.leb_size - dev_info.leb_size % req.alignment;
+-		req.bytes = dev_info.avail_lebs * ebsz;
++		req.bytes = (long long)dev_info.avail_lebs * ebsz;
+ 
+ 		req.vol_type = UBI_DYNAMIC_VOLUME;
+ 		req.name = name;
+diff --git a/tests/ubi-tests/rsvol.c b/tests/ubi-tests/rsvol.c
+index 60badb0..732bcaa 100644
+--- a/tests/ubi-tests/rsvol.c
++++ b/tests/ubi-tests/rsvol.c
+@@ -169,7 +169,7 @@ static int test_rsvol1(struct ubi_vol_info *vol_info)
+ 	}
+ 
+ 	if (ubi_rsvol(libubi, node, vol_info->vol_id,
+-		      vol_info->leb_size * dev_info.avail_lebs)) {
++		      (long long)vol_info->leb_size * dev_info.avail_lebs)) {
+ 		failed("ubi_rsvol");
+ 		return -1;
+ 	}
+-- 
+1.7.9.5
+

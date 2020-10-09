@@ -1,0 +1,10 @@
+#!/bin/sh
+# Copyright (c) 2013 The Linux Foundation. All rights reserved.
+
+tunnel_if="$1"
+
+[ -e "/tmp/server.$tunnel_if" ] && {
+	for svr in $(cat /tmp/server.$tunnel_if); do
+		ip route del blackhole $svr metric 1000
+	done
+}

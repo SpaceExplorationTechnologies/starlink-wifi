@@ -1,0 +1,6 @@
+#!/bin/sh
+
+/etc/init.d/lldpd enabled && {
+	/etc/init.d/lldpd stop
+	/etc/init.d/lldpd disable
+}

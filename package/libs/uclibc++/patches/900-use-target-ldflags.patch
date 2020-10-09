@@ -1,0 +1,11 @@
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -8,6 +8,8 @@ ifneq ($(DODEBUG),y)
+ LDFLAGS += -Wl,-s
+ endif
+ 
++LDFLAGS += $(CPU_LDFLAGS)
++
+ SRCS =	$(wildcard *.cpp)
+ SRCS += abi/abi.cpp
+ SRCS := $(filter-out support.cpp,$(SRCS))

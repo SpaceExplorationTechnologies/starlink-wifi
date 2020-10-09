@@ -1,0 +1,11 @@
+--- a/Makefile
++++ b/Makefile
+@@ -18,7 +18,7 @@ OBJS = iw.o genl.o event.o info.o phy.o
+ 	mesh.o mpath.o mpp.o scan.o reg.o version.o \
+ 	reason.o status.o link.o offch.o ps.o cqm.o \
+ 	bitrate.o vendor.o mgmt.o \
+-	ap.o
++	ap.o connect.o
+ OBJS += sections.o
+ 
+ OBJS-$(HWSIM) += hwsim.o

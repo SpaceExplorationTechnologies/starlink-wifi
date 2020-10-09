@@ -1,0 +1,219 @@
+Index: linux-3.18/arch/mips/ath79/common.h
+===================================================================
+--- linux-3.18.orig/arch/mips/ath79/common.h	2015-11-12 16:30:48.664400204 +0000
++++ linux-3.18/arch/mips/ath79/common.h	2015-11-12 16:30:48.796400207 +0000
+@@ -27,6 +27,7 @@
+ void ath79_gpio_function_enable(u32 mask);
+ void ath79_gpio_function_disable(u32 mask);
+ void ath79_gpio_function_setup(u32 set, u32 clear);
++void ath79_gpio_input_select(unsigned gpio, u8 val);
+ void ath79_gpio_output_select(unsigned gpio, u8 val);
+ int ath79_gpio_direction_select(unsigned gpio, bool oe);
+ void ath79_gpio_init(void);
+Index: linux-3.18/arch/mips/ath79/dev-common.c
+===================================================================
+--- linux-3.18.orig/arch/mips/ath79/dev-common.c	2015-11-12 16:30:48.408400200 +0000
++++ linux-3.18/arch/mips/ath79/dev-common.c	2015-11-12 16:34:13.564404051 +0000
+@@ -67,6 +67,19 @@
+ 	},
+ };
+ 
++static struct resource ar934x_uart1_resources[] = {
++	{
++		.start  = AR934X_UART1_BASE,
++		.end    = AR934X_UART1_BASE + AR934X_UART1_SIZE - 1,
++		.flags  = IORESOURCE_MEM,
++	},
++	{
++		.start  = ATH79_MISC_IRQ(6),
++		.end    = ATH79_MISC_IRQ(6),
++		.flags  = IORESOURCE_IRQ,
++	},
++};
++
+ static struct platform_device ar933x_uart_device = {
+ 	.name		= "ar933x-uart",
+ 	.id		= -1,
+@@ -74,6 +87,13 @@
+ 	.num_resources	= ARRAY_SIZE(ar933x_uart_resources),
+ };
+ 
++static struct platform_device ar934x_uart1_device = {
++	.name		= "ar933x-uart",
++	.id		= -1,
++	.resource	= ar934x_uart1_resources,
++	.num_resources	= ARRAY_SIZE(ar934x_uart1_resources),
++};
++
+ void __init ath79_register_uart(void)
+ {
+ 	unsigned long uart_clk_rate;
+@@ -97,6 +117,10 @@
+ 	    soc_is_qca955x()) {
+ 		ath79_uart_data[0].uartclk = uart_clk_rate;
+ 		platform_device_register(&ath79_uart_device);
++		if (soc_is_ar934x()) {
++			/* Also register uart1 */
++			platform_device_register(&ar934x_uart1_device);
++		}
+ 	} else if (soc_is_ar933x()) {
+ 		platform_device_register(&ar933x_uart_device);
+ 	} else {
+Index: linux-3.18/arch/mips/ath79/gpio.c
+===================================================================
+--- linux-3.18.orig/arch/mips/ath79/gpio.c	2015-11-12 16:30:48.664400204 +0000
++++ linux-3.18/arch/mips/ath79/gpio.c	2015-11-12 16:30:48.796400207 +0000
+@@ -204,6 +204,34 @@
+ 	ath79_gpio_function_setup(0, mask);
+ }
+ 
++void __init ath79_gpio_input_select(unsigned gpio, u8 val)
++{
++	void __iomem *base = ath79_gpio_base;
++	unsigned long flags;
++	unsigned int reg;
++	u32 t, s;
++
++	BUG_ON(!soc_is_ar934x() && !soc_is_qca953x());
++
++	if (gpio >= AR934X_GPIO_COUNT)
++		return;
++
++	reg = AR934X_GPIO_REG_IN_ENABLE0 + 4 * (val / 4);
++	s = 8 * (val % 4);
++
++	spin_lock_irqsave(&ath79_gpio_lock, flags);
++
++	t = __raw_readl(base + reg);
++	t &= ~(0xff << s);
++	t |= gpio << s;
++	__raw_writel(t, base + reg);
++
++	/* flush write */
++	(void) __raw_readl(base + reg);
++
++	spin_unlock_irqrestore(&ath79_gpio_lock, flags);
++}
++
+ void __init ath79_gpio_output_select(unsigned gpio, u8 val)
+ {
+ 	void __iomem *base = ath79_gpio_base;
+Index: linux-3.18/arch/mips/include/asm/mach-ath79/ar71xx_regs.h
+===================================================================
+--- linux-3.18.orig/arch/mips/include/asm/mach-ath79/ar71xx_regs.h	2015-11-12 16:30:48.664400204 +0000
++++ linux-3.18/arch/mips/include/asm/mach-ath79/ar71xx_regs.h	2015-11-12 16:39:23.624409872 +0000
+@@ -104,6 +104,8 @@
+ #define AR934X_NFC_SIZE		0xb8
+ #define AR934X_SRIF_BASE	(AR71XX_APB_BASE + 0x00116000)
+ #define AR934X_SRIF_SIZE	0x1000
++#define AR934X_UART1_BASE	(AR71XX_APB_BASE + 0x00500000)
++#define AR934X_UART1_SIZE	0x14
+ 
+ #define QCA953X_GMAC_BASE	(AR71XX_APB_BASE + 0x00070000)
+ #define QCA953X_GMAC_SIZE	0x14
+@@ -299,6 +301,7 @@
+ #define AR934X_PLL_CPU_DDR_CLK_CTRL_AHBCLK_FROM_DDRPLL	BIT(24)
+ 
+ #define AR934X_PLL_SWITCH_CLOCK_CONTROL_MDIO_CLK_SEL	BIT(6)
++#define AR934X_PLL_SWITCH_CLOCK_CONTROL_UART1_CLK_SEL	BIT(7)
+ 
+ #define QCA953X_PLL_CPU_CONFIG_REG		0x00
+ #define QCA953X_PLL_DDR_CONFIG_REG		0x04
+@@ -748,6 +751,12 @@
+ #define AR934X_GPIO_REG_OUT_FUNC3	0x38
+ #define AR934X_GPIO_REG_OUT_FUNC4	0x3c
+ #define AR934X_GPIO_REG_OUT_FUNC5	0x40
++#define AR934X_GPIO_REG_IN_ENABLE0  0x44
++#define AR934X_GPIO_REG_IN_ENABLE1  0x48
++#define AR934X_GPIO_REG_IN_ENABLE2  0x4C
++#define AR934X_GPIO_REG_IN_ENABLE3  0x50
++#define AR934X_GPIO_REG_IN_ENABLE4  0x54
++#define AR934X_GPIO_REG_IN_ENABLE9  0x68
+ #define AR934X_GPIO_REG_FUNC		0x6c
+ 
+ #define QCA953X_GPIO_REG_OUT_FUNC0	0x2c
+@@ -885,7 +894,11 @@
+ #define AR934X_GPIO_FUNC_JTAG_DISABLE		BIT(1)
+ 
+ #define AR934X_GPIO_OUT_GPIO		0
+-#define AR934X_GPIO_OUT_SPI_CS1	7
++#define AR934X_GPIO_OUT_SPI_CS1		7
++#define AR934X_GPIO_OUT_MUX_SPI_CS0	9
++#define AR934X_GPIO_OUT_MUX_SPI_CLK	10
++#define AR934X_GPIO_OUT_MUX_SPI_MOSI	11
++
+ #define AR934X_GPIO_OUT_LED_LINK0	41
+ #define AR934X_GPIO_OUT_LED_LINK1	42
+ #define AR934X_GPIO_OUT_LED_LINK2	43
+@@ -893,6 +906,12 @@
+ #define AR934X_GPIO_OUT_LED_LINK4	45
+ #define AR934X_GPIO_OUT_EXT_LNA0	46
+ #define AR934X_GPIO_OUT_EXT_LNA1	47
++#define AR934X_GPIO_OUT_MUX_UART1_TD	79
++#define AR934X_GPIO_OUT_MUX_UART1_RTS	80
++
++#define AR934X_GPIO_IN_MUX_SPI_MISO	0
++#define AR934X_GPIO_IN_MUX_UART1_RD	38
++#define AR934X_GPIO_IN_MUX_UART1_CTS	39
+ 
+ /*
+  * MII_CTRL block
+Index: linux-3.18/arch/mips/include/asm/mach-ath79/ar933x_uart.h
+===================================================================
+--- linux-3.18.orig/arch/mips/include/asm/mach-ath79/ar933x_uart.h	2014-03-31 04:40:15.000000000 +0100
++++ linux-3.18/arch/mips/include/asm/mach-ath79/ar933x_uart.h	2015-11-12 16:30:48.796400207 +0000
+@@ -36,9 +36,12 @@
+ #define	  AR933X_UART_CS_IF_MODE_DCE	2
+ #define AR933X_UART_CS_FLOW_CTRL_S	4
+ #define AR933X_UART_CS_FLOW_CTRL_M	0x3
++#define AR933X_UART_CS_FLOW_CTRL_NONE		0
++#define AR933X_UART_CS_FLOW_CTRL_HW		2
++#define AR933X_UART_CS_FLOW_CTRL_HW_INV	3
+ #define AR933X_UART_CS_DMA_EN		BIT(6)
+-#define AR933X_UART_CS_TX_READY_ORIDE	BIT(7)
+-#define AR933X_UART_CS_RX_READY_ORIDE	BIT(8)
++#define AR933X_UART_CS_RX_READY_ORIDE	BIT(7)
++#define AR933X_UART_CS_TX_READY_ORIDE	BIT(8)
+ #define AR933X_UART_CS_TX_READY		BIT(9)
+ #define AR933X_UART_CS_RX_BREAK		BIT(10)
+ #define AR933X_UART_CS_TX_BREAK		BIT(11)
+Index: linux-3.18/drivers/tty/serial/ar933x_uart.c
+===================================================================
+--- linux-3.18.orig/drivers/tty/serial/ar933x_uart.c	2014-03-31 04:40:15.000000000 +0100
++++ linux-3.18/drivers/tty/serial/ar933x_uart.c	2015-11-12 16:30:48.796400207 +0000
+@@ -132,7 +132,9 @@
+ 
+ static unsigned int ar933x_uart_get_mctrl(struct uart_port *port)
+ {
+-	return TIOCM_CAR;
++	struct ar933x_uart_port *up = (struct ar933x_uart_port *) port;
++	int cts = ar933x_uart_read(up, AR933X_UART_CS_REG) & AR933X_UART_CS_TX_READY;
++	return TIOCM_CAR | TIOCM_DSR | (cts ? TIOCM_CTS : 0);
+ }
+ 
+ static void ar933x_uart_set_mctrl(struct uart_port *port, unsigned int mctrl)
+@@ -292,6 +294,24 @@
+ 	ar933x_uart_rmw_set(up, AR933X_UART_CS_REG,
+ 			    AR933X_UART_CS_HOST_INT_EN);
+ 
++	/* set up flow control */
++	if (new->c_cflag & CRTSCTS) {
++		/* clear overrides */
++		ar933x_uart_rmw_clear(up, AR933X_UART_CS_REG,
++				      AR933X_UART_CS_TX_READY_ORIDE | AR933X_UART_CS_RX_READY_ORIDE);
++		/* enable hardware flow control */
++		ar933x_uart_rmw(up, AR933X_UART_CS_REG,
++				AR933X_UART_CS_FLOW_CTRL_M << AR933X_UART_CS_FLOW_CTRL_S,
++				AR933X_UART_CS_FLOW_CTRL_HW << AR933X_UART_CS_FLOW_CTRL_S);
++	} else {
++		/* disable hardware flow control */
++		ar933x_uart_rmw_clear(up, AR933X_UART_CS_REG,
++				      AR933X_UART_CS_FLOW_CTRL_M << AR933X_UART_CS_FLOW_CTRL_S);
++		/* enable overrides */
++		ar933x_uart_rmw_set(up, AR933X_UART_CS_REG,
++				    AR933X_UART_CS_TX_READY_ORIDE | AR933X_UART_CS_RX_READY_ORIDE);
++	}
++
+ 	/* reenable the UART */
+ 	ar933x_uart_rmw(up, AR933X_UART_CS_REG,
+ 			AR933X_UART_CS_IF_MODE_M << AR933X_UART_CS_IF_MODE_S,

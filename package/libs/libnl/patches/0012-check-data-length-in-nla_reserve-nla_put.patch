@@ -1,0 +1,40 @@
+From f01b03b81ab86d2b4c0f874a438ff672d9fcc191 Mon Sep 17 00:00:00 2001
+From: Paul Stewart <pstew@google.com>
+Date: Fri, 28 Oct 2016 16:31:40 -0700
+Subject: [PATCH] libnl: Check data length in nla_reserve / nla_put
+
+libnl: Check data length in nla_reserve / nla_put
+
+Ensure predictable behavior when negative values are passed
+to these methods.
+
+Bug: 32255299
+Change-Id: I14d2e4a65e5b208554821f9d3ed4e3244464dfd6
+Test: Recompile (integration tests will also run)
+(cherry picked from commit f01b03b81ab86d2b4c0f874a438ff672d9fcc191)
+
+
+diff --git a/lib/attr.c b/lib/attr.c
+index 298fbb1..8394330 100644
+--- a/lib/attr.c
++++ b/lib/attr.c
+@@ -460,6 +460,9 @@ struct nlattr *nla_reserve(struct nl_msg *msg, int attrtype, int attrlen)
+ 	struct nlattr *nla;
+ 	int tlen;
+ 	
++	if (attrlen < 0)
++		return NULL;
++
+ 	tlen = NLMSG_ALIGN(msg->nm_nlh->nlmsg_len) + nla_total_size(attrlen);
+ 
+ 	if ((tlen + msg->nm_nlh->nlmsg_len) > msg->nm_size)
+@@ -500,6 +500,9 @@ int nla_put(struct nl_msg *msg, int attrtype, int datalen, const void *data)
+ {
+ 	struct nlattr *nla;
+ 
++	if (datalen < 0)
++		return -NLE_RANGE;
++
+ 	nla = nla_reserve(msg, attrtype, datalen);
+ 	if (!nla)
+ 		return -NLE_NOMEM;

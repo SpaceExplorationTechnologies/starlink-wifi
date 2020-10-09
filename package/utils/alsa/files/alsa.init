@@ -1,0 +1,51 @@
+#!/bin/sh /etc/rc.common
+# Copyright (c) 2013 The Linux Foundation. All rights reserved.
+
+START=65
+
+config_alsa_control() {
+	local control=$1
+	local cardid=${2/card/}
+
+	config_load sound
+
+	local controlcard
+	config_get controlcard "$1" card
+	[ "$controlcard" = $2 ] || return 0
+
+	local controlname
+	local controlvalue
+	config_get controlname $1 name
+	config_get controlvalue $1 value
+
+	eval "amixer -c '$cardid' set '$controlname' '$controlvalue'"
+
+	return 0
+}
+
+config_alsa_card() {
+	local card=$1
+
+	config_load sound
+
+	local type
+	config_get type "$1" type
+	[ "$type" = "alsa" ] || return 0
+
+	config_foreach config_alsa_control sound-control "$card"
+
+	return 0
+}
+
+start() {
+	[ -f /etc/config/sound ] || exit 0
+	config_load sound
+
+	local card
+	config_foreach config_alsa_card sound-device
+
+}
+
+stop() {
+	true
+}

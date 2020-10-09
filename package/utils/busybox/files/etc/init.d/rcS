@@ -1,0 +1,26 @@
+#!/bin/sh
+mkdir -p /proc && mount -t proc none /proc
+mkdir -p /sys && mount -t sysfs none /sys
+mount -t debugfs none /sys/kernel/debug/
+udevd --daemon
+udevadm trigger
+
+# load modules
+for m in /lib/modules/$(uname -r)/*; do
+	modprobe $(basename $m .ko)
+done
+
+# setup udhcpc client scropt
+[ ! -f /usr/share/udhcpc/default.script ] && {
+	mkdir -p /usr/share/udhcpc
+	echo "#!/bin/sh" > /usr/share/udhcpc/default.script
+	echo "ifconfig \$interface \$ip" >> /usr/share/udhcpc/default.script
+	chmod +x /usr/share/udhcpc/default.script
+}
+
+# setup default root password
+[ ! -f /etc/password ] && {
+	echo root:x:0:0:root:/root:/bin/ash > /etc/passwd
+}
+
+watchdog -t 5 -T 10 /dev/watchdog

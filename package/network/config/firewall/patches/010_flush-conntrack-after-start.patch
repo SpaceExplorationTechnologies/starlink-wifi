@@ -1,0 +1,49 @@
+diff -Nur a/main.c b/main.c
+--- a/main.c	2015-02-23 10:53:23.637635797 -0800
++++ b/main.c	2015-02-23 10:54:12.349637024 -0800
+@@ -238,6 +238,7 @@
+ 	enum fw3_family family;
+ 	enum fw3_table table;
+ 	struct fw3_ipt_handle *handle;
++	FILE *ct;
+ 
+ 	if (!print_family)
+ 		fw3_create_ipsets(cfg_state);
+@@ -306,6 +307,14 @@
+ 		}
+ 	}
+ 
++	if ((ct = fopen("/proc/net/nf_conntrack", "w")) != NULL)
++	{
++		info(" * Flushing conntrack table ...");
++
++		fwrite("f\n", 2, 1, ct);
++		fclose(ct);
++	}
++
+ 	return rv;
+ }
+ 
+@@ -313,6 +322,7 @@
+ static int
+ reload(void)
+ {
++	FILE *ct;
+ 	int rv = 1;
+ 	enum fw3_family family;
+ 	enum fw3_table table;
+@@ -392,6 +402,14 @@
+ 		fw3_write_statefile(cfg_state);
+ 	}
+ 
++	if ((ct = fopen("/proc/net/nf_conntrack", "w")) != NULL)
++	{
++		info(" * Flushing conntrack table ...");
++
++		fwrite("f\n", 2, 1, ct);
++		fclose(ct);
++	}
++
+ 	return rv;
+ }
+ 

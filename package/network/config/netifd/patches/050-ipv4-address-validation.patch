@@ -1,0 +1,28 @@
+--- a/utils.c
++++ b/utils.c
+@@ -114,6 +114,7 @@ int
+ parse_ip_and_netmask(int af, const char *str, void *addr, unsigned int *netmask)
+ {
+ 	char *astr = alloca(strlen(str) + 1);
++	int ret = 0;
+ 
+ 	strcpy(astr, str);
+ 	if (!split_netmask(astr, netmask, af == AF_INET6))
+@@ -127,7 +128,16 @@ parse_ip_and_netmask(int af, const char
+ 			return 0;
+ 	}
+ 
+-	return inet_pton(af, astr, addr);
++	ret = inet_pton(af, astr, addr);
++	if ((ret > 0) && (af == AF_INET)) {
++                struct in_addr *ip4_addr = (struct in_addr *)addr;
++                uint32_t host_addr = ntohl(ip4_addr->s_addr);
++
++                if (!IN_CLASSA(host_addr) && !IN_CLASSB(host_addr) && !IN_CLASSC(host_addr)) {
++                        ret = 0;
++                }
++        }
++        return ret;
+ }
+ 
+ char *

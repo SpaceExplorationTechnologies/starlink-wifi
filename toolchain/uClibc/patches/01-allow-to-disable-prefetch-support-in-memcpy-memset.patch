@@ -1,0 +1,44 @@
+diff --git a/extra/Configs/Config.mips b/extra/Configs/Config.mips
+index e0b62dd..919e80c 100644
+--- a/extra/Configs/Config.mips
++++ b/extra/Configs/Config.mips
+@@ -31,3 +31,10 @@ config CONFIG_MIPS_N64_ABI
+ 	bool "N64 ABI"
+ 
+ endchoice
++
++config UCLIBC_USE_MIPS_PREFETCH
++	bool "Use MIPS prefetch optimization for memcpy/memset"
++	default y
++	help
++	  You get better performance when you use Prefetch.
++	  https://gcc.gnu.org/projects/prefetch.html#mips
+diff --git a/libc/string/mips/memcpy.S b/libc/string/mips/memcpy.S
+index 59f9f0a..3825875 100644
+--- a/libc/string/mips/memcpy.S
++++ b/libc/string/mips/memcpy.S
+@@ -39,7 +39,7 @@
+ 
+ #if (_MIPS_ISA == _MIPS_ISA_MIPS4) || (_MIPS_ISA == _MIPS_ISA_MIPS5) || \
+     (_MIPS_ISA == _MIPS_ISA_MIPS32) || (_MIPS_ISA == _MIPS_ISA_MIPS64)
+-# ifndef DISABLE_PREFETCH
++# ifdef __UCLIBC_USE_MIPS_PREFETCH__
+ #  define USE_PREFETCH
+ # endif
+ #endif
+diff --git a/libc/string/mips/memset.S b/libc/string/mips/memset.S
+index 43034ce..1c9f14c 100644
+--- a/libc/string/mips/memset.S
++++ b/libc/string/mips/memset.S
+@@ -37,7 +37,7 @@
+    prefetching.  */
+ 
+ #if (__mips == 4) || (__mips == 5) || (__mips == 32) || (__mips == 64)
+-# ifndef DISABLE_PREFETCH
++# ifdef __UCLIBC_USE_MIPS_PREFETCH__
+ #  define USE_PREFETCH
+ # endif
+ #endif
+-- 
+2.7.4.GIT
+

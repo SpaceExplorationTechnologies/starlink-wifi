@@ -1,0 +1,13 @@
+diff --git a/extensions/rtsp/nf_conntrack_rtsp.c b/extensions/rtsp/nf_conntrack_rtsp.c
+index e1ea8b8..1f4235d 100644
+--- a/extensions/rtsp/nf_conntrack_rtsp.c
++++ b/extensions/rtsp/nf_conntrack_rtsp.c
+@@ -281,7 +281,7 @@ void destroy_rtsp_exp(struct nf_conn *master_ct)
+ 			ct = nf_ct_tuplehash_to_ctrack(h);
+ 			if(ct->master == master_ct)
+ 			{
+-				mod_timer(&ct->timeout, jiffies);
++				mod_timer_pending(&ct->timeout, jiffies);
+ 			}
+ 		}
+ 	}

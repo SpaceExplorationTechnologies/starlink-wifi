@@ -1,0 +1,134 @@
+--- a/src/drivers/driver.h
++++ b/src/drivers/driver.h
+@@ -4096,6 +4096,14 @@ struct wpa_driver_ops {
+ 	 */
+ 	int (*send_external_auth_status)(void *priv,
+ 					 struct external_auth *params);
++
++	/**
++	 * enable_map - Enable Multi-AP functionality
++	 * @priv: Private driver interface data
++	 */
++	int (*enable_map) (void *priv);
++
++
+ };
+ 
+ /**
+--- a/src/drivers/driver_nl80211.c
++++ b/src/drivers/driver_nl80211.c
+@@ -10634,6 +10634,27 @@ fail:
+ 	return ret;
+ }
+ 
++static int nl80211_enable_map(void *priv)
++{
++	struct i802_bss *bss = priv;
++	struct wpa_driver_nl80211_data *drv = bss->drv;
++	struct nl_msg *msg;
++	int ret = -ENOBUFS;
++
++	msg = nl80211_cmd_msg(drv->first_bss, 0, NL80211_CMD_SET_INTERFACE);
++	if (!msg || nla_put_u8(msg, NL80211_ATTR_MAP, 1))
++		goto fail;
++
++	ret = send_and_recv_msgs(drv, msg, NULL, NULL);
++	msg = NULL;
++	if (!ret)
++		return 0;
++fail:
++	nlmsg_free(msg);
++	wpa_printf(MSG_DEBUG, "nl80211: Failed to enable Multi-AP");
++
++	return ret;
++}
+ 
+ const struct wpa_driver_ops wpa_driver_nl80211_ops = {
+ 	.name = "nl80211",
+@@ -10765,4 +10786,5 @@ const struct wpa_driver_ops wpa_driver_n
+ 	.get_peer_inactive_time = i802_get_inact_sec,
+ 	.update_connect_params = nl80211_update_connection_params,
+ 	.send_external_auth_status = nl80211_send_external_auth_status,
++	.enable_map = nl80211_enable_map,
+ };
+--- a/src/drivers/nl80211_copy.h
++++ b/src/drivers/nl80211_copy.h
+@@ -2656,6 +2656,7 @@ enum nl80211_attrs {
+ 
+ 	NL80211_ATTR_NSS,
+ 	NL80211_ATTR_ACK_SIGNAL,
++	NL80211_ATTR_MAP,
+ 
+ 	NL80211_ATTR_CONTROL_PORT_OVER_NL80211,
+ 
+--- a/wpa_supplicant/config.c
++++ b/wpa_supplicant/config.c
+@@ -4916,6 +4916,7 @@ static const struct global_parse_data gl
+ 	{ INT_RANGE(gas_rand_mac_addr, 0, 2), 0 },
+ 	{ INT_RANGE(dpp_config_processing, 0, 2), 0 },
+ 	{ INT(tdls_peer_max_inactivity), 0 },
++	{ INT(map_enabled), 0},
+ };
+ 
+ #undef FUNC
+--- a/wpa_supplicant/config.h
++++ b/wpa_supplicant/config.h
+@@ -1479,6 +1479,11 @@ struct wpa_config {
+ 	 * Default Value: 300 seconds.
+ 	 */
+ 	int tdls_peer_max_inactivity;
++
++	/**
++	 * map_enabled - Enable Multi-AP functionality
++	 */
++	int map_enabled;
+ };
+ 
+ 
+--- a/wpa_supplicant/driver_i.h
++++ b/wpa_supplicant/driver_i.h
+@@ -30,6 +30,13 @@ static inline void wpa_drv_deinit(struct
+ 		wpa_s->driver->deinit(wpa_s->drv_priv);
+ }
+ 
++static inline int wpa_drv_enable_map(struct wpa_supplicant *wpa_s)
++{
++	if (wpa_s->driver->enable_map)
++		return wpa_s->driver->enable_map(wpa_s->drv_priv);
++	return -1;
++}
++
+ static inline int wpa_drv_set_param(struct wpa_supplicant *wpa_s,
+ 				    const char *param)
+ {
+--- a/wpa_supplicant/wpa_supplicant.c
++++ b/wpa_supplicant/wpa_supplicant.c
+@@ -6003,6 +6003,12 @@ struct wpa_supplicant * wpa_supplicant_a
+ 	}
+ #endif /* CONFIG_P2P */
+ 
++	if (wpa_s->conf->map_enabled)
++		if (wpa_drv_enable_map(wpa_s)) {
++			wpa_printf(MSG_INFO, "failed to enabled Multi-AP\n");
++			return NULL;
++	}
++
+ 	return wpa_s;
+ }
+ 
+--- a/wpa_supplicant/wpa_supplicant.conf
++++ b/wpa_supplicant/wpa_supplicant.conf
+@@ -1431,6 +1431,13 @@ fast_reauth=1
+ # default: 300 seconds
+ #tdls_peer_max_inactivity=300
+ 
++# Enable Multi-AP funtionality.
++#
++# default = 0 (disable Multi-AP).
++# map_enabled = 1 (enable Multi-AP).
++#map_enabled=1
++
++
+ # Example blocks:
+ 
+ # Simple case: WPA-PSK, PSK as an ASCII passphrase, allow all valid ciphers

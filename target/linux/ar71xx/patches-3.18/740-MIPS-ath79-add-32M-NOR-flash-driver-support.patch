@@ -1,0 +1,244 @@
+Index: linux-3.18.23/drivers/mtd/devices/m25p80.c
+===================================================================
+--- linux-3.18.23.orig/drivers/mtd/devices/m25p80.c	2016-03-22 17:17:53.510224780 +0100
++++ linux-3.18.23/drivers/mtd/devices/m25p80.c	2016-03-22 17:52:50.216974108 +0100
+@@ -67,6 +67,16 @@
+ 	return spi_write(spi, flash->command, len + 1);
+ }
+ 
++static int m25p80_ext_addr(struct spi_nor *nor, u8 addr)
++{
++	struct m25p *flash = nor->priv;
++
++	flash->command[0] = SPINOR_OP_WR_EXT;
++	flash->command[1] = addr;
++
++	return spi_write(flash->spi, flash->command, 2);
++}
++
+ static void m25p80_write(struct spi_nor *nor, loff_t to, size_t len,
+ 			size_t *retlen, const u_char *buf)
+ {
+@@ -125,6 +139,7 @@ 
+ 	nor->erase = m25p80_erase;
+ 	nor->write_reg = m25p80_write_reg;
+ 	nor->read_reg = m25p80_read_reg;
++	nor->ext_addr = m25p80_ext_addr;
+ 
+ 	nor->dev = &spi->dev;
+ 	nor->mtd = &flash->mtd;
+@@ -282,7 +282,8 @@
+ 	{"en25q64"},	{"en25qh128"},	{"en25qh256"},
+ 	{"f25l32pa"},
+ 	{"mr25h256"},	{"mr25h10"},
+-	{"gd25q32"},	{"gd25q64"},
++	{"gd25q32"},	{"gd25q64"},	{"md25d40"},	{"gd25d20"},
++	{"gd25d40"},	{"gd25q128"},	{"gd25q256"},
+ 	{"160s33b"},	{"320s33b"},	{"640s33b"},
+ 	{"mx25l2005a"},	{"mx25l4005a"},	{"mx25l8005"},	{"mx25l1606e"},
+ 	{"mx25l3205d"},	{"mx25l3255e"},	{"mx25l6405d"},	{"mx25l12805d"},
+Index: linux-3.18.23/drivers/mtd/spi-nor/spi-nor.c
+===================================================================
+--- linux-3.18.23.orig/drivers/mtd/spi-nor/spi-nor.c	2016-03-22 17:17:52.410242224 +0100
++++ linux-3.18.23/drivers/mtd/spi-nor/spi-nor.c	2016-03-22 18:20:32.058619754 +0100
+@@ -267,6 +267,20 @@
+ 	mutex_unlock(&nor->lock);
+ }
+ 
++static inline int enter_ext_addr(struct spi_nor *nor, u8 addr)
++{
++	if (wait_till_ready(nor))
++		return -1;
++
++	write_enable(nor);
++	return nor->ext_addr(nor, addr);
++}
++
++static inline int exit_ext_addr(struct spi_nor *flash, bool ext)
++{
++	return ext ? enter_ext_addr(flash, 0) : 0;
++}
++ 
+ /*
+  * Erase an address range on the nor chip.  The address range may extend
+  * one or more erase sectors.  Return an error is there is a problem erasing.
+@@ -277,6 +277,7 @@
+ 	u32 addr, len;
+ 	uint32_t rem;
+ 	int ret;
++	bool ext = false;
+ 
+ 	dev_dbg(nor->dev, "at 0x%llx, len %lld\n", (long long)instr->addr,
+ 			(long long)instr->len);
+@@ -306,6 +307,11 @@
+ 
+ 	/* "sector"-at-a-time erase */
+ 	} else {
++		if (nor->addr_width == 3 && addr >= FLASH_16M_SIZE) {
++			ext = true;
++			enter_ext_addr(nor, GET_EXT_4B(addr));
++			addr = GET_EXT_3BS(addr);
++		}
+ 		while (len) {
+ 			if (nor->erase(nor, addr)) {
+ 				ret = -EIO;
+@@ -316,7 +322,7 @@
+ 			len -= mtd->erasesize;
+ 		}
+ 	}
+-
++	exit_ext_addr(nor, ext);
+ 	spi_nor_unlock_and_unprep(nor, SPI_NOR_OPS_ERASE);
+ 
+ 	instr->state = MTD_ERASE_DONE;
+@@ -325,6 +331,7 @@
+ 	return ret;
+ 
+ erase_err:
++	exit_ext_addr(nor, ext);
+ 	spi_nor_unlock_and_unprep(nor, SPI_NOR_OPS_ERASE);
+ 	instr->state = MTD_ERASE_FAILED;
+ 	return ret;
+@@ -510,7 +517,11 @@
+ 	/* GigaDevice */
+ 	{ "gd25q32", INFO(0xc84016, 0, 64 * 1024,  64, SECT_4K) },
+ 	{ "gd25q64", INFO(0xc84017, 0, 64 * 1024, 128, SECT_4K) },
+-	{ "gd25q128", INFO(0xc84018, 0, 64 * 1024, 256, SECT_4K) },
++	{ "md25d40",  INFO(0x514013, 0, 64 * 1024,  8,  SECT_4K) },
++	{ "gd25d20",  INFO(0xc84012, 0, 64 * 1024,  4,  SECT_4K) },
++	{ "gd25d40",  INFO(0xc84013, 0, 64 * 1024,  8,  SECT_4K) },
++	{ "gd25q128", INFO(0xc84018, 0, 64 * 1024,  256,  SECT_4K) },
++	{ "gd25q256", INFO(0xc84019, 0, 64 * 1024,  512,  SECT_4K) },
+ 
+ 	/* Intel/Numonyx -- xxxs33b */
+ 	{ "160s33b",  INFO(0x898911, 0, 64 * 1024,  32, 0) },
+@@ -682,6 +694,7 @@
+ {
+ 	struct spi_nor *nor = mtd_to_spi_nor(mtd);
+ 	int ret;
++	bool ext = false;
+ 
+ 	dev_dbg(nor->dev, "from 0x%08x, len %zd\n", (u32)from, len);
+ 
+@@ -689,8 +702,15 @@
+ 	if (ret)
+ 		return ret;
+ 
++	if (nor->addr_width == 3 && from >= FLASH_16M_SIZE) {
++		ext = true;
++		enter_ext_addr(nor, GET_EXT_4B(from));
++		from = GET_EXT_3BS(from);
++	}
++
+ 	ret = nor->read(nor, from, len, retlen, buf);
+ 
++	exit_ext_addr(nor, ext);
+ 	spi_nor_unlock_and_unprep(nor, SPI_NOR_OPS_READ);
+ 	return ret;
+ }
+@@ -782,6 +794,7 @@
+ 	struct spi_nor *nor = mtd_to_spi_nor(mtd);
+ 	u32 page_offset, page_size, i;
+ 	int ret;
++	bool ext = false;
+ 
+ 	dev_dbg(nor->dev, "to 0x%08x, len %zd\n", (u32)to, len);
+ 
+@@ -789,6 +809,12 @@
+ 	if (ret)
+ 		goto write_err;
+ 
++	if (nor->addr_width == 3 && to >= FLASH_16M_SIZE) {
++		ext = true;
++		enter_ext_addr(nor, GET_EXT_4B(to));
++		to = GET_EXT_3BS(to);
++	}
++
+ 	write_enable(nor);
+ 
+ 	page_offset = to & (nor->page_size - 1);
+@@ -815,6 +841,7 @@
+ 	}
+ 
+ write_err:
++	exit_ext_addr(nor, ext);
+ 	spi_nor_unlock_and_unprep(nor, SPI_NOR_OPS_WRITE);
+ 	return 0;
+ }
+@@ -917,6 +962,35 @@
+ 	return 0;
+ }
+ 
++/*
++ * The Extended Address Register is used only when the device is operating in
++ * the 3-Byte Address Mode (ADS=0). The lower 128Mb memory array (00000000h –
++ * 00FFFFFFh) is selected when A24=0, all instructions with 3-Byte addresses
++ * will be executed within that region. When A24=1, the upper 128Mb memory array
++ * (01000000h – 01FFFFFFh) will be selected.
++ * Upon power up or after the execution of a Software/Hardware Reset, the
++ * Extended Address Register values will be cleared to 0.
++ */
++static const u32 spi_nor_ext_addr_ids[] = {
++	0xef4019,
++	0xc84019,
++	0xc22019,
++	0xc22619,
++	0x20ba19,
++	/* add id here */
++};
++
++static int spi_nor_ext_addr_mode(u32 jedec_id)
++{
++	int id;
++
++	for (id = 0; id < ARRAY_SIZE(spi_nor_ext_addr_ids); id++)
++		if (jedec_id == spi_nor_ext_addr_ids[id])
++			return 1;
++
++	return 0;
++}
++
+ int spi_nor_scan(struct spi_nor *nor, const char *name, enum read_mode mode)
+ {
+ 	const struct spi_device_id	*id = NULL;
+@@ -1069,7 +1143,8 @@
+ 
+ 	if (info->addr_width)
+ 		nor->addr_width = info->addr_width;
+-	else if (mtd->size > 0x1000000) {
++	else if (mtd->size > 0x1000000 &&
++				!spi_nor_ext_addr_mode(info->jedec_id)) {
+ 		/* enable 4-byte addressing if the device exceeds 16MiB */
+ 		nor->addr_width = 4;
+ 		if (JEDEC_MFR(info->jedec_id) == CFI_MFR_AMD) {
+Index: linux-3.18.23/include/linux/mtd/spi-nor.h
+===================================================================
+--- linux-3.18.23.orig/include/linux/mtd/spi-nor.h	2015-10-29 03:49:46.000000000 +0100
++++ linux-3.18.23/include/linux/mtd/spi-nor.h	2016-03-22 17:46:27.839038056 +0100
+@@ -30,6 +30,7 @@
+ #define SPINOR_OP_BE_4K		0x20	/* Erase 4KiB block */
+ #define SPINOR_OP_BE_4K_PMC	0xd7	/* Erase 4KiB block on PMC chips */
+ #define SPINOR_OP_BE_32K	0x52	/* Erase 32KiB block */
++#define SPINOR_OP_WR_EXT	0xc5	/* Write extended address */
+ #define SPINOR_OP_CHIP_ERASE	0xc7	/* Erase whole flash chip */
+ #define SPINOR_OP_SE		0xd8	/* Sector erase (usually 64KiB) */
+ #define SPINOR_OP_RDID		0x9f	/* Read JEDEC ID */
+@@ -73,6 +74,10 @@
+ /* Configuration Register bits. */
+ #define CR_QUAD_EN_SPAN		0x2	/* Spansion Quad I/O */
+ 
++#define FLASH_16M_SIZE		0x1000000
++#define GET_EXT_3BS(addr)	((addr) % FLASH_16M_SIZE)
++#define GET_EXT_4B(addr)	((addr) >> 24)
++
+ enum read_mode {
+ 	SPI_NOR_NORMAL = 0,
+ 	SPI_NOR_FAST,
+@@ -185,6 +189,7 @@ 
+ 	void (*write)(struct spi_nor *nor, loff_t to,
+ 			size_t len, size_t *retlen, const u_char *write_buf);
+ 	int (*erase)(struct spi_nor *nor, loff_t offs);
++	int (*ext_addr) (struct spi_nor *nor, u8 addr);
+ 
+ 	void *priv;
+ };

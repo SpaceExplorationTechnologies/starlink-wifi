@@ -1,0 +1,57 @@
+#!/bin/sh
+#
+# Copyright (c) 2014 The Linux Foundation. All rights reserved.
+# Copyright (C) 2011-2012 OpenWrt.org
+#
+
+[ -e /etc/config/ubootenv ] && exit 0
+
+touch /etc/config/ubootenv
+
+. /lib/ipq806x.sh
+. /lib/uboot-envtools.sh
+. /lib/functions.sh
+
+board=$(ipq806x_board_name)
+
+default_uboot_env () {
+	UBOOTENV_PART=$(cat /proc/mtd | grep APPSBLENV)
+	mtd_dev=$(echo $UBOOTENV_PART | awk '{print $1}' | sed 's/:$//')
+	mtd_size=0x$(echo $UBOOTENV_PART | awk '{print $2}')
+	mtd_erase=0x$(echo $UBOOTENV_PART | awk '{print $3}')
+	nor_flash=`find /sys/bus/spi/devices/*/mtd -name ${mtd_dev}`
+
+	if [ -z "$UBOOTENV_PART" ]; then
+		mtd_dev=$(echo $(find_mmc_part "0:APPSBLENV") | sed 's/^.\{5\}//')
+		if [ -n "$mtd_dev" ]; then
+			EMMC_UBOOTENV_PART=$(cat /proc/partitions | grep $mtd_dev)
+			#convert block to bytes
+			emmc_uboot_env_size=`expr $(echo $EMMC_UBOOTENV_PART | awk '{print $3}') \* 1024`
+			uboot_env_size=0x`printf "%x" $emmc_uboot_env_size`
+		fi
+		mtd_erase=""
+	elif [ -n "$nor_flash" ]; then
+		uboot_env_size=$mtd_size
+		sectors=$(( $uboot_env_size / $mtd_erase ))
+	else
+		# size is hardcoded to 0x40000 in u-boot
+		uboot_env_size=0x40000
+		sectors=$(( $uboot_env_size / $mtd_erase ))
+	fi
+
+	echo /dev/$mtd_dev 0x0 $uboot_env_size $mtd_erase $sectors
+}
+
+case "$board" in
+db149 | ap148 | ap145 | ap148_1xx | db149_1xx | db149_2xx | ap145_1xx | db147 | ap160 | ap160_2xx | ap161 | ak01_1xx | ap-dk01.1-c1 | ap-dk01.1-c2 | ap-dk04.1-c1 | ap-dk04.1-c2 | ap-dk04.1-c3 | ap-dk04.1-c4 | ap-dk04.1-c5 | ap-dk05.1-c1 | ap-dk06.1-c1 | ap-dk07.1-c1 | ap-dk07.1-c2 | ap-dk07.1-c3 | ap-hk01-c1 | ap-hk01-c2 | ap-hk02 | ap-hk05 | ap-hk06)
+	env=$(default_uboot_env)
+	[ -n "${env}" ] && ubootenv_add_uci_config $env
+	;;
+esac
+
+echo $env > /etc/fw_env.config
+
+# config_load ubootenv
+# config_foreach ubootenv_add_app_config ubootenv
+
+exit 0

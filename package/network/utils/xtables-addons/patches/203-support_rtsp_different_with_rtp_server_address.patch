@@ -1,0 +1,158 @@
+--- a/extensions/rtsp/nf_conntrack_rtsp.c	2013-05-20 16:17:00.884015399 +0800
++++ b/extensions/rtsp/nf_conntrack_rtsp.c	2013-05-20 16:05:14.040510343 +0800
+@@ -300,6 +300,35 @@
+ 
+ /*** conntrack functions ***/
+ 
++static int parse_addr(const struct nf_conn *ct, const char *cp,
++                      const char **endp, union nf_inet_addr *addr,
++                      const char *limit)
++{
++	const char *end;
++	int ret = 0;
++
++	if (!ct)
++		return 0;
++
++	memset(addr, 0, sizeof(*addr));
++	switch (nf_ct_l3num(ct)) {
++	case AF_INET:
++		ret = in4_pton(cp, limit - cp, (u8 *)&addr->ip, -1, &end);
++		break;
++	case AF_INET6:
++		ret = in6_pton(cp, limit - cp, (u8 *)&addr->ip6, -1, &end);
++		break;
++	default:
++		BUG();
++	}
++
++	if (ret == 0 || end == cp)
++		return 0;
++	if (endp)
++		*endp = end;
++	return 1;
++}
++
+ /* outbound packet: client->server */
+ 
+ static inline int
+@@ -333,6 +362,8 @@
+ 		uint    transoff = 0;
+ 		uint    translen = 0;
+ 		uint    off;
++		union nf_inet_addr saddr;
++		const char *c, *limit;
+ 		
+ 		if (!rtsp_parse_message(pdata, datalen, &dataoff,
+ 					&hdrsoff, &hdrslen,
+@@ -350,6 +381,11 @@
+ 			continue;   /* not a SETUP message */
+ 		pr_debug("found a setup message\n");
+ 
++		limit = pdata+datalen;
++		/*fetch the address for RTP media server*/
++		parse_addr(ct,pdata+cmdoff + sizeof("SETUP rtsp://") -1,&c,&saddr,limit);
++		memcpy(&expinfo.rtpaddr, &saddr, (nf_ct_l3num(ct) == AF_INET) ? 4 : 16);
++
+ 		off = 0;
+ 		if(translen) {
+ 			rtsp_parse_transport(pdata+transoff, translen, &expinfo);
+@@ -372,7 +408,7 @@
+ 		be_loport = htons(expinfo.loport);
+ 
+ 		nf_ct_expect_init(exp, NF_CT_EXPECT_CLASS_DEFAULT, nf_ct_l3num(ct),
+-			&ct->tuplehash[!dir].tuple.src.u3, &ct->tuplehash[!dir].tuple.dst.u3,
++			&expinfo.rtpaddr, &ct->tuplehash[!dir].tuple.dst.u3,
+ 			IPPROTO_UDP, NULL, &be_loport); 
+ 
+ 		exp->master = ct;
+--- a/extensions/rtsp/nf_conntrack_rtsp.h	2013-05-20 16:17:00.884015399 +0800
++++ b/extensions/rtsp/nf_conntrack_rtsp.h	2013-05-20 16:00:48.843195310 +0800
+@@ -42,6 +42,7 @@
+     portblock_t pbtype;     /* Type of port block that was requested */
+     u_int16_t   loport;     /* Port that was requested, low or first */
+     u_int16_t   hiport;     /* Port that was requested, high or second */
++    union nf_inet_addr rtpaddr; /*RTP media server addr,in case RTSP session with different IPv4 address for RTP media server*/
+ #if 0
+     uint        method;     /* RTSP method */
+     uint        cseq;       /* CSeq from request */
+--- a/extensions/rtsp/nf_nat_rtsp.c	2013-05-20 16:17:00.884015399 +0800
++++ b/extensions/rtsp/nf_nat_rtsp.c	2013-05-20 16:16:08.003753175 +0800
+@@ -84,7 +84,7 @@
+     *pptcpdata = (char*)tcph +  tcph->doff*4;
+     *ptcpdatalen = ((char*)skb_transport_header(skb) + skb->len) - *pptcpdata;
+ }
+-
++ static void expected(struct nf_conn* ct, struct nf_conntrack_expect *exp);
+ /*** nat functions ***/
+ 
+ /*
+@@ -149,7 +149,6 @@
+     t->dst.u3.ip = newip;
+ 
+     exp->saved_proto.udp.port = exp->tuple.dst.u.udp.port;
+-    exp->expectfn = nf_nat_follow_master;
+     exp->dir = !dir;
+ 
+     extaddrlen = extip ? sprintf(szextaddr, "%u.%u.%u.%u", NIPQUAD(extip))
+@@ -188,14 +187,14 @@
+                 rtcp_exp = nf_ct_expect_alloc(ct);
+ 
+                 nf_ct_expect_init(rtcp_exp, NF_CT_EXPECT_CLASS_DEFAULT, nf_ct_l3num(ct),
+-                    &ct->tuplehash[!dir].tuple.src.u3, &ct->tuplehash[!dir].tuple.dst.u3,
++                    &prtspexp->rtpaddr, &ct->tuplehash[!dir].tuple.dst.u3,
+                     IPPROTO_UDP, NULL, &be_loport);
+ 
+                 rtcp_exp->master = ct;
+                 rtcp_exp->flags = 0;
+ 
+                 rtcp_exp->saved_proto.udp.port = prtspexp->loport + 1;
+-                rtcp_exp->expectfn = nf_nat_follow_master;
++                rtcp_exp->expectfn = expected;
+                 rtcp_exp->dir = !CTINFO2DIR(ctinfo);
+ 
+ 
+@@ -467,26 +466,23 @@
+ 
+ static void expected(struct nf_conn* ct, struct nf_conntrack_expect *exp)
+ {
+-    struct nf_nat_multi_range_compat mr;
+-    u_int32_t newdstip, newsrcip, newip;
+-
+-    struct nf_conn *master = ct->master;
+-
+-    newdstip = master->tuplehash[IP_CT_DIR_ORIGINAL].tuple.src.u3.ip;
+-    newsrcip = ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple.src.u3.ip;
+-    //FIXME (how to port that ?)
+-    //code from 2.4 : newip = (HOOK2MANIP(hooknum) == IP_NAT_MANIP_SRC) ? newsrcip : newdstip;
+-    newip = newdstip;
+-
+-    pr_debug("newsrcip=%u.%u.%u.%u, newdstip=%u.%u.%u.%u, newip=%u.%u.%u.%u\n",
+-           NIPQUAD(newsrcip), NIPQUAD(newdstip), NIPQUAD(newip));
+-
+-    mr.rangesize = 1;
+-    // We don't want to manip the per-protocol, just the IPs. 
+-    mr.range[0].flags = IP_NAT_RANGE_MAP_IPS;
+-    mr.range[0].min_ip = mr.range[0].max_ip = newip;
+-
+-    nf_nat_setup_info(ct, &mr.range[0], IP_NAT_MANIP_DST);
++	struct nf_nat_ipv4_range range;
++	u_int32_t newip;
++	struct nf_conn *master = ct->master;
++	newip = master->tuplehash[IP_CT_DIR_ORIGINAL].tuple.src.u3.ip;
++	range.flags = IP_NAT_RANGE_MAP_IPS | NF_NAT_RANGE_PROTO_SPECIFIED;
++	range.min = range.max = exp->saved_proto;
++	range.min_ip = range.max_ip = newip;
++	nf_nat_setup_info(ct, &range, IP_NAT_MANIP_DST);
++	/* Change src to where master sends to, but only if the connection
++	 * actually came from the same source. */
++	if (ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple.src.u3.ip ==
++			ct->master->tuplehash[exp->dir].tuple.src.u3.ip) {
++		range.flags = NF_NAT_RANGE_MAP_IPS;
++		range.min_ip = range.max_ip
++			= ct->master->tuplehash[!exp->dir].tuple.dst.u3.ip;
++		nf_nat_setup_info(ct, &range, NF_NAT_MANIP_SRC);
++	}
+ }
+ 
+ 

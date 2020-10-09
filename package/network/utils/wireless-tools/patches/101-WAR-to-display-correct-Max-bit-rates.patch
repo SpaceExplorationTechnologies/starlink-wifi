@@ -1,0 +1,13 @@
+--- a/iwlib.c
++++ b/iwlib.c
+@@ -1132,7 +1132,8 @@ iw_print_bitrate(char *	buffer,
+ 		 int	buflen,
+ 		 int	bitrate)
+ {
+-  double	rate = bitrate;
++  /* Due to overrun, driver sends in Kbps, Convert in to bps */
++  double        rate = (double) bitrate * 1000;
+   char		scale;
+   int		divisor;
+ 
+

@@ -1,0 +1,11 @@
+--- a/extensions/rtsp/nf_nat_rtsp.c	2013-08-30 15:57:18.354469486 +0800
++++ b/extensions/rtsp/nf_nat_rtsp.c	2013-08-30 15:57:04.998403259 +0800
+@@ -195,7 +195,7 @@
+                 rtcp_exp->master = ct;
+                 rtcp_exp->flags = 0;
+ 
+-                rtcp_exp->saved_proto.udp.port = prtspexp->loport + 1;
++                rtcp_exp->saved_proto.udp.port = htons(prtspexp->loport + 1);
+                 rtcp_exp->expectfn = expected;
+                 rtcp_exp->dir = !CTINFO2DIR(ctinfo);
+ 

@@ -1,0 +1,20 @@
+diff --git a/scripts/netifd-wireless.sh b/scripts/netifd-wireless.sh
+index e30aeec..09ac4ab 100644
+--- a/scripts/netifd-wireless.sh
++++ b/scripts/netifd-wireless.sh
+@@ -42,6 +42,7 @@ _wdev_prepare_channel() {
+ 	json_get_vars channel hwmode
+ 
+ 	auto_channel=0
++	enable_ht=0
+ 	htmode=
+ 	hwmode="${hwmode##11}"
+ 	hwmode_n="${hwmode##n}"
+@@ -58,6 +59,7 @@ _wdev_prepare_channel() {
+ 	esac
+ 
+ 	[[ "$hwmode_n" = "$hwmode" ]] || {
++		enable_ht=1
+ 		hwmode="$hwmode_n"
+ 
+ 		json_get_vars htmode

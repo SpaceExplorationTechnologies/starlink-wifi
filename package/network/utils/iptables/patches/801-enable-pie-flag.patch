@@ -1,0 +1,16 @@
+Index: iptables-1.4.21/iptables/Makefile.am
+===================================================================
+--- iptables-1.4.21.orig/iptables/Makefile.am	2018-07-24 18:27:37.959407764 +0530
++++ iptables-1.4.21/iptables/Makefile.am	2018-07-24 18:28:22.443616529 +0530
+@@ -13,9 +13,9 @@
+ if ENABLE_IPV4
+ xtables_multi_SOURCES += iptables-save.c iptables-restore.c \
+                          iptables-standalone.c iptables.c
+-xtables_multi_CFLAGS  += -DENABLE_IPV4
++xtables_multi_CFLAGS  += -DENABLE_IPV4 -fpie
+ xtables_multi_LDADD   += ../libiptc/libip4tc.la
+-xtables_multi_LDFLAGS += -liptext4
++xtables_multi_LDFLAGS += -liptext4 -pie
+ endif
+ if ENABLE_IPV6
+ xtables_multi_SOURCES += ip6tables-save.c ip6tables-restore.c \
