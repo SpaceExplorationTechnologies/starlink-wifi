@@ -1,0 +1,113 @@
+Index: backports-20180329-3.14.77-7954640a/include/linux/ieee80211.h
+===================================================================
+--- backports-20180329-3.14.77-7954640a.orig/include/linux/ieee80211.h
++++ backports-20180329-3.14.77-7954640a/include/linux/ieee80211.h
+@@ -669,6 +669,8 @@ struct ieee80211s_hdr {
+ #define MESH_FLAGS_AE		0x3
+ #define MESH_FLAGS_PS_DEEP	0x4
+ 
++#define MESH_CTRL_FLAGS_MAXVAL	0x2
++
+ /**
+  * enum ieee80211_preq_flags - mesh PREQ element flags
+  *
+Index: backports-20180329-3.14.77-7954640a/net/mac80211/rx.c
+===================================================================
+--- backports-20180329-3.14.77-7954640a.orig/net/mac80211/rx.c
++++ backports-20180329-3.14.77-7954640a/net/mac80211/rx.c
+@@ -1714,6 +1714,27 @@ ieee80211_rx_h_sta_process(struct ieee80
+ 	return RX_CONTINUE;
+ } /* ieee80211_rx_h_sta_process */
+ 
++static bool ieee80211_rx_filter_packet(struct ieee80211_rx_data *rx)
++{
++	struct sk_buff *skb = rx->skb;
++	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *)skb->data;
++	struct ieee80211s_hdr *mesh_hdr __maybe_unused;
++	u32 snap_offset = 0;
++
++	snap_offset = ieee80211_hdrlen(hdr->frame_control) +
++			ieee80211_crypto_hdrlen(rx->key->conf.cipher);
++
++	if (ieee80211_vif_is_mesh(&rx->sdata->vif)) {
++		mesh_hdr = (struct ieee80211s_hdr *) (skb->data + snap_offset);
++		snap_offset += ieee80211_get_mesh_hdrlen(mesh_hdr);
++	}
++
++	if (likely(memcmp(skb->data + snap_offset, rfc1042_header, 3) == 0))
++		return false;
++
++	return true;
++}
++
+ static ieee80211_rx_result debug_noinline
+ ieee80211_rx_h_decrypt(struct ieee80211_rx_data *rx)
+ {
+@@ -1898,6 +1919,11 @@ ieee80211_rx_h_decrypt(struct ieee80211_
+ 		return RX_DROP_MONITOR;
+ 	}
+ 
++	if (unlikely(ieee80211_is_data(hdr->frame_control) &&
++		     status->flag & RX_FLAG_DECRYPTED &&
++		     ieee80211_rx_filter_packet(rx)))
++		return RX_DROP_UNUSABLE;
++
+ 	switch (rx->key->conf.cipher) {
+ 	case WLAN_CIPHER_SUITE_WEP40:
+ 	case WLAN_CIPHER_SUITE_WEP104:
+@@ -2545,6 +2571,9 @@ ieee80211_rx_h_mesh_fwding(struct ieee80
+ 	if (!mesh_hdr->ttl)
+ 		return RX_DROP_MONITOR;
+ 
++	if (mesh_hdr->flags > MESH_CTRL_FLAGS_MAXVAL)
++		return RX_DROP_MONITOR;
++
+ 	if (mesh_hdr->flags & MESH_FLAGS_AE) {
+ 		struct mesh_path *mppath;
+ 		char *proxied_addr;
+Index: backports-20180329-3.14.77-7954640a/net/mac80211/wpa.c
+===================================================================
+--- backports-20180329-3.14.77-7954640a.orig/net/mac80211/wpa.c
++++ backports-20180329-3.14.77-7954640a/net/mac80211/wpa.c
+@@ -1257,3 +1257,30 @@ ieee80211_crypto_hw_decrypt(struct ieee8
+ 
+ 	return RX_DROP_UNUSABLE;
+ }
++
++int ieee80211_crypto_hdrlen(u32 cipher)
++{
++	switch (cipher) {
++	case WLAN_CIPHER_SUITE_WEP40:
++	case WLAN_CIPHER_SUITE_WEP104:
++		return IEEE80211_WEP_IV_LEN;
++	case WLAN_CIPHER_SUITE_TKIP:
++		return IEEE80211_TKIP_IV_LEN;
++	case WLAN_CIPHER_SUITE_CCMP:
++		return IEEE80211_CCMP_HDR_LEN;
++	case WLAN_CIPHER_SUITE_CCMP_256:
++		return IEEE80211_CCMP_256_HDR_LEN;
++	case WLAN_CIPHER_SUITE_GCMP:
++	case WLAN_CIPHER_SUITE_GCMP_256:
++		return IEEE80211_GCMP_HDR_LEN;
++	case WLAN_CIPHER_SUITE_AES_CMAC:
++	case WLAN_CIPHER_SUITE_BIP_CMAC_256:
++	case WLAN_CIPHER_SUITE_BIP_GMAC_128:
++	case WLAN_CIPHER_SUITE_BIP_GMAC_256:
++		return 0;
++	default:
++		WARN_ONCE(1, "unsupported crypto cipher %x\n", cipher);
++	}
++
++	return 0;
++}
+Index: backports-20180329-3.14.77-7954640a/net/mac80211/wpa.h
+===================================================================
+--- backports-20180329-3.14.77-7954640a.orig/net/mac80211/wpa.h
++++ backports-20180329-3.14.77-7954640a/net/mac80211/wpa.h
+@@ -51,5 +51,6 @@ ieee80211_tx_result
+ ieee80211_crypto_gcmp_encrypt(struct ieee80211_tx_data *tx);
+ ieee80211_rx_result
+ ieee80211_crypto_gcmp_decrypt(struct ieee80211_rx_data *rx);
++int ieee80211_crypto_hdrlen(u32 cipher);
+ 
+ #endif /* WPA_H */

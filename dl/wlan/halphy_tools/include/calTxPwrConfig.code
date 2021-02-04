@@ -1,0 +1,169 @@
+#if !defined(_CAL_TX_PWR_CONFIG)
+#define  _CAL_TX_PWR_CONFIG
+
+/* attenuation to PM */
+#define _PM_ATTEN_5G   13
+#define _PM_ATTEN_2G   12
+
+/* tx gain range */
+#define _MIN_TX_GAIN_IDX  0
+#define _MAX_TX_GAIN_IDX  31
+#define _MAX_TX_GAIN_IDX_SIZE  (_MAX_TX_GAIN_IDX +1)
+
+#define _MIN_TX_GAIN_IDX_SWEEP  8     // testing range
+#define _MAX_TX_GAIN_IDX_SWEEP  10
+
+#define _MAX_CHAIN_MASKS_IN_LIST  3
+
+/* Channel list */
+/* this list MUST match the golden bin file CAL channel list */
+typedef struct {
+    A_UINT32    gainIdx_ptA;
+    A_UINT32    gainIdx_ptB;
+} _GAINIDX_LIST;
+
+typedef struct {
+    A_INT32     dac_ptA;
+    A_INT32     dac_ptB;
+} _DAC_LIST;
+
+typedef struct {
+    A_UINT32         chainMask;
+    _GAINIDX_LIST    gainIdx;
+} _CHAINMASK_LIST;    
+
+typedef struct {
+    A_UINT32         channel;
+    A_UINT32         wlanMode;
+    A_UINT32         numChainMasks;
+    _CHAINMASK_LIST  calChainMasksList[_MAX_CHAIN_MASKS_IN_LIST];
+    _DAC_LIST        dac;
+} _CHANNEL_LIST;
+
+//#define _CAL_2CHAINS_CUS220
+//#define _CAL_2CHAINS_WB342   
+#define _CAL_3CHAINS
+static _CHANNEL_LIST CALChannelList2G[] = {
+#if defined (_CAL_2CHAINS_CUS220)
+    {2412, MODE_11G, 2, {{0x1, {7, 11}}, {0x2, {7, 11}}, {0x4, {7, 11}}}, {0, -8}},
+    {2442, MODE_11G, 2, {{0x1, {7, 11}}, {0x2, {7, 11}}, {0x4, {7, 11}}}, {0, -8}},
+    {2472, MODE_11G, 2, {{0x1, {7, 11}}, {0x2, {7, 11}}, {0x4, {7, 11}}}, {0, -8}},
+#endif //#if defined (_CAL_3CHAINS)
+#if defined (_CAL_2CHAINS_WB342)
+    {2412, MODE_11G, 2, {{0x1, {12, 16}}, {0x2, {12, 16}}, {0x4, {11, 15}}}, {0, -8}},
+    {2442, MODE_11G, 2, {{0x1, {12, 16}}, {0x2, {12, 16}}, {0x4, {11, 15}}}, {0, -8}},
+    {2472, MODE_11G, 2, {{0x1, {12, 16}}, {0x2, {12, 16}}, {0x4, {11, 15}}}, {0, -8}},
+#endif //#if defined (_CAL_3CHAINS)
+#if defined (_CAL_3CHAINS)
+    {2412, MODE_11G, 3, {{0x1, {12, 16}}, {0x2, {11, 15}}, {0x4, {11, 15}}}, {0, -8}},
+    {2442, MODE_11G, 3, {{0x1, {12, 16}}, {0x2, {11, 15}}, {0x4, {11, 15}}}, {0, -8}},
+    {2472, MODE_11G, 3, {{0x1, {12, 16}}, {0x2, {11, 15}}, {0x4, {11, 15}}}, {0, -8}},
+#endif //#if defined (_CAL_3CHAINS)
+};
+
+const A_UINT32 NumCALChannels2G = sizeof(CALChannelList2G) / sizeof(_CHANNEL_LIST);
+
+static _CHANNEL_LIST CALChannelList5G[] = {
+#if defined (_CAL_2CHAINS_CUS220)
+    {5180, MODE_11A, 2, {{0x1, {9, 13}}, {0x2, {9, 13}}, {0x4, { 9, 13}}}, {0, -8}},
+    {5240, MODE_11A, 2, {{0x1, {9, 13}}, {0x2, {9, 13}}, {0x4, { 9, 13}}}, {0, -8}},
+    {5260, MODE_11A, 2, {{0x1, {9, 13}}, {0x2, {9, 13}}, {0x4, { 9, 13}}}, {0, -8}},
+    {5320, MODE_11A, 2, {{0x1, {9, 13}}, {0x2, {9, 13}}, {0x4, { 9, 13}}}, {0, -8}},
+    {5500, MODE_11A, 2, {{0x1, {8, 12}}, {0x2, {8, 12}}, {0x4, { 8, 12}}}, {0, -8}},
+    {5700, MODE_11A, 2, {{0x1, {8, 12}}, {0x2, {8, 12}}, {0x4, { 8, 12}}}, {0, -8}},
+    {5745, MODE_11A, 2, {{0x1, {9, 13}}, {0x2, {9, 13}}, {0x4, { 9, 13}}}, {0, -8}},
+    {5805, MODE_11A, 2, {{0x1, {9, 13}}, {0x2, {9, 13}}, {0x4, { 9, 13}}}, {0, -8}},
+#endif //#if defined (_CAL_3CHAINS)
+#if defined (_CAL_2CHAINS_WB342)
+    {5180, MODE_11A, 2, {{0x1, {14, 18}}, {0x2, {14, 18}}, {0x4, {14, 18}}}, {0, -8}},
+    {5240, MODE_11A, 2, {{0x1, {14, 18}}, {0x2, {14, 18}}, {0x4, {14, 18}}}, {0, -8}},
+    {5260, MODE_11A, 2, {{0x1, {14, 18}}, {0x2, {14, 18}}, {0x4, {14, 18}}}, {0, -8}},
+    {5320, MODE_11A, 2, {{0x1, {14, 18}}, {0x2, {14, 18}}, {0x4, {14, 18}}}, {0, -8}},
+    {5500, MODE_11A, 2, {{0x1, {14, 18}}, {0x2, {14, 18}}, {0x4, {14, 18}}}, {0, -8}},
+    {5700, MODE_11A, 2, {{0x1, {14, 18}}, {0x2, {14, 18}}, {0x4, {14, 18}}}, {0, -8}},
+    {5745, MODE_11A, 2, {{0x1, {14, 18}}, {0x2, {14, 18}}, {0x4, {14, 18}}}, {0, -8}},
+    {5805, MODE_11A, 2, {{0x1, {14, 18}}, {0x2, {14, 18}}, {0x4, {14, 18}}}, {0, -8}},
+#endif //#if defined (_CAL_3CHAINS)
+#if defined (_CAL_3CHAINS)
+    {5180, MODE_11A, 3, {{0x1, {10, 14}}, {0x2, {10, 14}}, {0x4, { 9, 13}}}, {0, -8}},
+    {5240, MODE_11A, 3, {{0x1, {10, 14}}, {0x2, {10, 14}}, {0x4, { 9, 13}}}, {0, -8}},
+    {5260, MODE_11A, 3, {{0x1, {10, 14}}, {0x2, {10, 14}}, {0x4, { 9, 13}}}, {0, -8}},
+    {5320, MODE_11A, 3, {{0x1, {10, 14}}, {0x2, {10, 14}}, {0x4, { 9, 13}}}, {0, -8}},
+    {5500, MODE_11A, 3, {{0x1, {10, 14}}, {0x2, {10, 14}}, {0x4, { 9, 13}}}, {0, -8}},
+    {5700, MODE_11A, 3, {{0x1, {10, 14}}, {0x2, {10, 14}}, {0x4, { 9, 13}}}, {0, -8}},
+    {5745, MODE_11A, 3, {{0x1, {10, 14}}, {0x2, {10, 14}}, {0x4, {10, 14}}}, {0, -8}},
+    {5805, MODE_11A, 3, {{0x1, {10, 14}}, {0x2, {10, 14}}, {0x4, {10, 14}}}, {0, -8}},
+#endif //#if defined (_CAL_3CHAINS)
+};
+
+const A_UINT32 NumCALChannels5G = sizeof(CALChannelList5G) / sizeof(_CHANNEL_LIST);
+
+/* rate list */
+/* For CAL, only 1 rate */
+static A_UINT32 CALRateList[] = {
+    ATH_RATE_6_5M,
+};
+
+const A_UINT32 NumCALRates = sizeof(CALRateList) / sizeof(A_UINT32);
+
+/* chain mask list */
+/* CAL should go over indvidual list, but sweep/characterization may choose */
+static A_UINT32 CALChainMaskList[] = {
+    0x1,
+    0x2,
+#if defined (_CAL_3CHAINS)
+    0x4,
+#endif
+#if 0
+    0x7, 
+#endif
+};
+
+const A_UINT32 NumCALChainMasks = sizeof(CALChainMaskList) / sizeof(A_UINT32);
+
+/* tx gain index */
+static A_UINT32 CALGainIdxList[] = {
+    16,
+    20,
+};
+
+const A_UINT32 NumCALGainIdxes = sizeof(CALGainIdxList) / sizeof(A_UINT32);
+
+/* tx gain DAC values */
+#define _DAC_HIGH   6
+#define _DAC_LOW  -16
+#define _MAX_DAC_SIZE (_DAC_HIGH - _DAC_LOW)
+#define _dacIdx(dacVal)  ((dacVal) - _DAC_LOW)
+
+static A_INT32 CALDACValues[] = {
+    0, 
+    -8,
+};
+
+const A_UINT32 NumCALDACValues = sizeof(CALDACValues) / sizeof(A_INT32);
+
+/* CAL data selection criteria */
+/* this section contains the logic how to select the CAL data. 
+ * The criteria are:
+ *    1. target power range;
+ *    2. EVM;
+ *    3. mask;
+ *    4. Over the temp.
+ *
+ * For now, we specify fixed: txGainIdx, and DAC.
+ */
+typedef struct {
+    A_UINT32  _txGainIdx;
+    A_INT32   _DAC;
+    A_UINT32  _tgtPwr_t10;
+} _CAL_POINT;
+/*
+static _CAL_POINT _CALPointA = {17, 0, 140};
+static _CAL_POINT _CALPointB = {23, -8, 140};
+*/
+
+/* # tx packets, per each CAL tx attempt */
+#define _CAL_TX_NUM_PACKETS 150
+
+#endif /* #if !defined(_CAL_TX_PWR_CONFIG) */
+

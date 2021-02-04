@@ -1,0 +1,11 @@
+--- a/configure.ac
++++ b/configure.ac
+@@ -165,7 +165,7 @@
+
+ dnl libm, for sin() etc.
+ LT_LIB_M
+-AC_SUBST(LIBM)
++AC_SUBST(LIBM, "")
+
+ dnl check for pthreads
+ AX_PTHREAD

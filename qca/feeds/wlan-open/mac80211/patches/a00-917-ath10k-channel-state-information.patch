@@ -1,0 +1,961 @@
+--- a/drivers/net/wireless/ath/ath10k/core.c
++++ b/drivers/net/wireless/ath/ath10k/core.c
+@@ -2932,11 +2932,20 @@ static void ath10k_core_register_work(st
+ 		goto err_spectral_destroy;
+ 	}
+ 
++	status = ath10k_cfr_capture_create(ar);
++	if (status) {
++		ath10k_err(ar, "Could not init cfr rfs: %d\n",
++			   status);
++		goto err_thermal_unregister;
++	}
++
+ 	ath10k_fwlog_register(ar);
+ 
+ 	set_bit(ATH10K_FLAG_CORE_REGISTERED, &ar->dev_flags);
+ 	return;
+ 
++err_thermal_unregister:
++	ath10k_thermal_unregister(ar);
+ err_spectral_destroy:
+ 	ath10k_spectral_destroy(ar);
+ err_debug_destroy:
+@@ -2987,6 +2996,8 @@ void ath10k_core_unregister(struct ath10
+ 	 */
+ 	ath10k_spectral_destroy(ar);
+ 
++	ath10k_cfr_capture_destroy(ar);
++
+ 	/* We must unregister from mac80211 before we stop HTC and HIF.
+ 	 * Otherwise we will fail to submit commands to FW and mac80211 will be
+ 	 * unhappy about callback failures.
+--- a/drivers/net/wireless/ath/ath10k/core.h
++++ b/drivers/net/wireless/ath/ath10k/core.h
+@@ -503,6 +503,7 @@ struct ath10k_sta {
+ 	u8 tpc;
+ 	u32 peer_ps_state;
+ 	enum nl80211_cqm_txrate_threshold_event last_event;
++	struct ath10k_cfr_capture cfr_capture;
+ };
+ 
+ #define ATH10K_VDEV_SETUP_TIMEOUT_HZ (5 * HZ)
+@@ -875,6 +876,12 @@ enum ath10k_dt_btcoex_support_flag {
+ 	ATH10K_DT_BTCOEX_NOT_SUPPORTED,
+ };
+ 
++struct ath10k_cfr_capture {
++	u32 cfr_enable;
++	u32 cfr_period;
++	u32 cfr_bandwidth;
++	u32 cfr_method;
++};
+ 
+ struct ath10k_fw_file {
+ 	const struct firmware *firmware;
+@@ -1197,11 +1204,21 @@ struct ath10k {
+ 	bool radar_conf_waiting;
+ 	/*Status indicated by the Radar Confirmation Event*/
+ 	enum wmi_radar_conf_status radar_conf_status;
++	u32	cfr_enable;
++	struct rchan *rfs_cfr_capture;
+ 
+ 	/* must be last */
+ 	u8 drv_priv[0] __aligned(sizeof(void *));
+ };
+ 
++static inline bool ath10k_peer_cfr_capture_enabled(struct ath10k *ar)
++{
++	if (test_bit(WMI_SERVICE_CFR_CAPTURE_SUPPORT, ar->wmi.svc_map))
++		return true;
++
++	return false;
++}
++
+ static inline bool ath10k_peer_stats_enabled(struct ath10k *ar)
+ {
+ 	if (test_bit(ATH10K_FLAG_PEER_STATS, &ar->dev_flags) &&
+--- a/drivers/net/wireless/ath/ath10k/debug.c
++++ b/drivers/net/wireless/ath/ath10k/debug.c
+@@ -2272,6 +2272,74 @@ static const struct file_operations fops
+ 	.open = simple_open
+ };
+ 
++static ssize_t ath10k_write_cfr_enable(struct file *file,
++				       const char __user *user_buf,
++				       size_t count, loff_t *ppos)
++{
++	struct ath10k *ar = file->private_data;
++	u8 cfr_enable;
++	u32 param;
++	int ret;
++
++	if (kstrtou8_from_user(user_buf, count, 0, &cfr_enable))
++		return -EINVAL;
++
++	mutex_lock(&ar->conf_mutex);
++
++	if (ar->state != ATH10K_STATE_ON) {
++		ret = -ENETDOWN;
++		goto exit;
++	}
++
++	if (cfr_enable > 1 || cfr_enable < 0) {
++		ret = -EINVAL;
++		goto exit;
++	}
++
++	if (ar->cfr_enable == cfr_enable) {
++		ret = count;
++		goto exit;
++	}
++
++	param = ar->wmi.pdev_param->enable_cfr_capture;
++	ret = ath10k_wmi_pdev_set_param(ar, param, cfr_enable);
++	if (ret) {
++		ath10k_warn(ar, "CFR capture enable failed from debugfs: %d\n",
++			    ret);
++		goto exit;
++	}
++
++	ar->cfr_enable = cfr_enable;
++
++	ret = count;
++
++exit:
++	mutex_unlock(&ar->conf_mutex);
++
++	return ret;
++}
++
++static ssize_t ath10k_read_cfr_enable(struct file *file, char __user *user_buf,
++				      size_t count, loff_t *ppos)
++{
++	struct ath10k *ar = file->private_data;
++	int len = 0;
++	char buf[32];
++
++	len = scnprintf(buf, sizeof(buf) - len, "%d\n",
++			ar->cfr_enable);
++
++	return simple_read_from_buffer(user_buf, count, ppos, buf, len);
++}
++
++static const struct file_operations fops_cfr_enable = {
++	.read = ath10k_read_cfr_enable,
++	.write = ath10k_write_cfr_enable,
++	.open = simple_open,
++	.owner = THIS_MODULE,
++	.llseek = default_llseek,
++};
++
+ static ssize_t ath10k_write_peer_stats(struct file *file,
+ 				       const char __user *ubuf,
+ 				       size_t count, loff_t *ppos)
+@@ -2876,6 +2944,11 @@ int ath10k_debug_register(struct ath10k
+ 	debugfs_create_file("fw_test", 0600, ar->debug.debugfs_phy, ar,
+ 			    &fops_fw_test);
+ 
++	if (test_bit(WMI_SERVICE_CFR_CAPTURE_SUPPORT, ar->wmi.svc_map))
++		debugfs_create_file("periodic_cfr_enable", 0600,
++				    ar->debug.debugfs_phy,
++				    ar, &fops_cfr_enable);
++
+ 	return 0;
+ }
+ 
+--- a/drivers/net/wireless/ath/ath10k/debugfs_sta.c
++++ b/drivers/net/wireless/ath/ath10k/debugfs_sta.c
+@@ -787,6 +787,129 @@ static const struct file_operations fops
+ 	.llseek = default_llseek,
+ };
+ 
++static ssize_t ath10k_dbg_sta_write_cfr_capture(struct file *file,
++						const char __user *user_buf,
++						size_t count, loff_t *ppos)
++{
++	struct ieee80211_sta *sta = file->private_data;
++	struct ath10k_sta *arsta = (struct ath10k_sta *)sta->drv_priv;
++	struct ath10k *ar = arsta->arvif->ar;
++	struct wmi_peer_cfr_capture_conf_arg arg;
++	u32 per_peer_cfr_status = 0, per_peer_cfr_bw  = 0;
++	u32 per_peer_cfr_method = 0, per_peer_cfr_period = 0;
++	int ret;
++	char buf[64] = {0};
++
++	simple_write_to_buffer(buf, sizeof(buf) - 1, ppos, user_buf, count);
++
++	mutex_lock(&ar->conf_mutex);
++
++	if (ar->state != ATH10K_STATE_ON) {
++		ret = -ENETDOWN;
++		goto out;
++	}
++
++	ret = sscanf(buf, "%u %u %u %u", &per_peer_cfr_status, &per_peer_cfr_bw,
++		     &per_peer_cfr_period, &per_peer_cfr_method);
++
++	if (ret < 1) {
++		ret = -EINVAL;
++		goto out;
++	}
++
++	if (per_peer_cfr_status && ret != 4) {
++		ret = -EINVAL;
++		goto out;
++	}
++
++	if (per_peer_cfr_status == arsta->cfr_capture.cfr_enable &&
++	    (per_peer_cfr_period &&
++	    per_peer_cfr_period == arsta->cfr_capture.cfr_period) &&
++	    per_peer_cfr_bw == arsta->cfr_capture.cfr_bandwidth &&
++	    per_peer_cfr_method == arsta->cfr_capture.cfr_method) {
++		ret = count;
++		goto out;
++	}
++
++	if (per_peer_cfr_status > WMI_PEER_CFR_CAPTURE_ENABLE ||
++	    per_peer_cfr_status < WMI_PEER_CFR_CAPTURE_DISABLE ||
++	    per_peer_cfr_bw >= WMI_PEER_CFR_CAPTURE_BW_MAX  ||
++	    per_peer_cfr_bw < WMI_PEER_CFR_CAPTURE_BW_20MHZ ||
++	    per_peer_cfr_method < WMI_PEER_CFR_CAPTURE_METHOD_NULL_FRAME ||
++	    per_peer_cfr_method >= WMI_PEER_CFR_CAPTURE_METHOD_MAX ||
++	    per_peer_cfr_period < WMI_PEER_CFR_PERIODICITY_MIN ||
++	    per_peer_cfr_period > WMI_PEER_CFR_PERIODICITY_MAX) {
++		ret = -EINVAL;
++		goto out;
++	}
++
++	/*TODO: Need rework when base time is configurable*/
++	if (per_peer_cfr_period % 10) {
++		ret = -EINVAL;
++		goto out;
++	}
++
++	/*TODO:Need correction for 80+80 MHz*/
++	if (per_peer_cfr_bw > sta->bandwidth) {
++		ret = -EINVAL;
++		goto out;
++	}
++
++	arg.request = per_peer_cfr_status;
++	arg.periodicity = per_peer_cfr_period;
++	arg.bandwidth = per_peer_cfr_bw;
++	arg.capture_method = per_peer_cfr_method;
++
++	ret = ath10k_wmi_peer_set_cfr_capture_conf(ar, arsta->arvif->vdev_id,
++						   sta->addr, &arg);
++	if (ret) {
++		ath10k_warn(ar, "failed to send cfr capture info: vdev_id %u peer %pM\n",
++			    arsta->arvif->vdev_id, sta->addr);
++		goto out;
++	}
++
++	ret = count;
++
++	arsta->cfr_capture.cfr_enable = per_peer_cfr_status;
++	arsta->cfr_capture.cfr_period = per_peer_cfr_period;
++	arsta->cfr_capture.cfr_bandwidth = per_peer_cfr_bw;
++	arsta->cfr_capture.cfr_method = per_peer_cfr_method;
++out:
++	mutex_unlock(&ar->conf_mutex);
++	return ret;
++}
++
++static ssize_t ath10k_dbg_sta_read_cfr_capture(struct file *file,
++					       char __user *user_buf,
++					       size_t count, loff_t *ppos)
++{
++	struct ieee80211_sta *sta = file->private_data;
++	struct ath10k_sta *arsta = (struct ath10k_sta *)sta->drv_priv;
++	struct ath10k *ar = arsta->arvif->ar;
++	char buf[512];
++	int len = 0;
++
++	mutex_lock(&ar->conf_mutex);
++	len = scnprintf(buf, sizeof(buf) - len, "cfr_status: %s\n"
++			"cfr_bandwidth: %dMHz\ncfr_period: %d ms\ncfr_method: %d\n",
++			(arsta->cfr_capture.cfr_enable) ? "enabled" :
++			"disabled", (arsta->cfr_capture.cfr_bandwidth == 0) ?
++			20 : (arsta->cfr_capture.cfr_bandwidth == 1) ?
++			40 : 80, arsta->cfr_capture.cfr_period,
++			arsta->cfr_capture.cfr_method);
++	mutex_unlock(&ar->conf_mutex);
++
++	return simple_read_from_buffer(user_buf, count, ppos, buf, len);
++}
++
++static const struct file_operations fops_cfr_capture = {
++	.read = ath10k_dbg_sta_read_cfr_capture,
++	.write = ath10k_dbg_sta_write_cfr_capture,
++	.open = simple_open,
++	.owner = THIS_MODULE,
++	.llseek = default_llseek,
++};
++
+ static ssize_t ath10k_dbg_sta_read_peer_tid_log(struct file *file, char __user *user_buf,
+ 						size_t count, loff_t *ppos)
+ {
+@@ -872,4 +995,11 @@ void ath10k_sta_add_debugfs(struct ieee8
+ 			    &fops_set_tpc);
+ 	debugfs_create_file("peer_tid_log", S_IRUSR, dir, sta, &fops_peer_tid_log);
+ 	debugfs_create_file("peer_ps_state", S_IRUSR, dir, sta, &fops_peer_ps_state);
++
++	if (test_bit(WMI_SERVICE_CFR_CAPTURE_SUPPORT, ar->wmi.svc_map))
++		debugfs_create_file("cfr_capture", 0644 , dir,
++				    sta, &fops_cfr_capture);
++	if (test_bit(WMI_SERVICE_CFR_CAPTURE_SUPPORT, ar->wmi.svc_map))
++		debugfs_create_file("cfr_capture", 0644 , dir,
++				    sta, &fops_cfr_capture);
+ }
+--- a/drivers/net/wireless/ath/ath10k/htt.c
++++ b/drivers/net/wireless/ath/ath10k/htt.c
+@@ -139,6 +139,8 @@ static const enum htt_t2h_msg_type htt_1
+ 				HTT_T2H_MSG_TYPE_TX_MODE_SWITCH_IND,
+ 	[HTT_10_4_T2H_MSG_TYPE_PEER_STATS] =
+ 				HTT_T2H_MSG_TYPE_PEER_STATS,
++	[HTT_10_4_T2H_MSG_TYPE_CFR_DUMP_COMPL_IND] =
++				HTT_T2H_MSG_TYPE_CFR_DUMP_COMPL_IND,
+ };
+ 
+ int ath10k_htt_connect(struct ath10k_htt *htt)
+--- a/drivers/net/wireless/ath/ath10k/htt.h
++++ b/drivers/net/wireless/ath/ath10k/htt.h
+@@ -501,6 +501,7 @@ enum htt_10_4_t2h_msg_type {
+ 	/* 0x19 to 0x2f are reserved */
+ 	HTT_10_4_T2H_MSG_TYPE_TX_MODE_SWITCH_IND     = 0x30,
+ 	HTT_10_4_T2H_MSG_TYPE_PEER_STATS	     = 0x31,
++	HTT_10_4_T2H_MSG_TYPE_CFR_DUMP_COMPL_IND     = 0x32,
+ 	/* keep this last */
+ 	HTT_10_4_T2H_NUM_MSGS
+ };
+@@ -536,6 +537,7 @@ enum htt_t2h_msg_type {
+ 	HTT_T2H_MSG_TYPE_TX_FETCH_CONFIRM,
+ 	HTT_T2H_MSG_TYPE_TX_MODE_SWITCH_IND,
+ 	HTT_T2H_MSG_TYPE_PEER_STATS,
++	HTT_T2H_MSG_TYPE_CFR_DUMP_COMPL_IND = 0x32,
+ 	/* keep this last */
+ 	HTT_T2H_NUM_MSGS
+ };
+@@ -1595,6 +1597,45 @@ struct htt_per_peer_tx_stats_ind {
+ 	__le32	reserved2;
+ } __packed;
+ 
++struct htt_mac_addr {
++	union {
++		u8 addr[6];
++		struct {
++			u32 word0;
++			u32 word1;
++		} __packed;
++	} __packed;
++} __packed;
++
++#define HTT_T2H_CFR_DUMP_TYPE1_MEM_REQ_ID_MASK  0X0000007F
++#define HTT_T2H_CFR_DUMP_TYPE1_MEM_REQ_ID_LSB   0
++#define HTT_T2H_CFR_DUMP_TYPE1_STATUS_MASK      0X00000080
++#define HTT_T2H_CFR_DUMP_TYPE1_STATUS_LSB       7
++#define HTT_T2H_CFR_DUMP_TYPE1_CAP_BW_MASK      0X00000700
++#define HTT_T2H_CFR_DUMP_TYPE1_CAP_BW_LSB       8
++#define HTT_T2H_CFR_DUMP_TYPE1_MODE_MASK        0X00003800
++#define HTT_T2H_CFR_DUMP_TYPE1_MODE_LSB         11
++#define HTT_T2H_CFR_DUMP_TYPE1_STS_MASK         0X0001C000
++#define HTT_T2H_CFR_DUMP_TYPE1_STS_LSB          14
++#define HTT_T2H_CFR_DUMP_TYPE1_CHAN_BW_MASK     0X000E0000
++#define HTT_T2H_CFR_DUMP_TYPE1_CHAN_BW_LSB      17
++#define HTT_T2H_CFR_DUMP_TYPE1_CAP_TYPE_MASK    0X00F00000
++#define HTT_T2H_CFR_DUMP_TYPE1_CAP_TYPE_LSB     20
++#define HTT_T2H_CFR_DUMP_TYPE1_VDEV_ID_MASK     0XFF000000
++#define HTT_T2H_CFR_DUMP_TYPE1_VDEV_ID_LSB      24
++struct htt_peer_cfr_dump_ind_lagacy {
++	u32	info;
++	struct htt_mac_addr mac_addr;
++	u32	index;
++	u32	length;
++	u32	timestamp;
++	u32	seq_no;
++	u32	chan_mhz;
++	u32	center_freq1;
++	u32	center_freq2;
++	u32	chan_phy_mode;
++} __packed;
++
+ struct htt_peer_tx_stats {
+ 	u8 num_ppdu;
+ 	u8 ppdu_len;
+@@ -1647,6 +1688,17 @@ struct htt_cmd {
+ 	};
+ } __packed;
+ 
++enum htt_cfr_capture_msg_type {
++	HTT_PEER_CFR_CAPTURE_MSG_TYPE_LAGACY  = 0x1,
++	HTT_PEER_CFR_CAPTURE_MSG_TYPE_MAX,
++};
++
++struct htt_peer_cfr_dump_compl_ind {
++	u8 pad[3];
++	u32 cfr_msg_type;
++	struct htt_peer_cfr_dump_ind_lagacy cfr_dump_lagacy;
++} __packed;
++
+ struct htt_resp {
+ 	struct htt_resp_hdr hdr;
+ 	union {
+@@ -1673,6 +1725,7 @@ struct htt_resp {
+ 		struct htt_tx_mode_switch_ind tx_mode_switch_ind;
+ 		struct htt_channel_change chan_change;
+ 		struct htt_peer_tx_stats peer_tx_stats;
++		struct htt_peer_cfr_dump_compl_ind cfr_dump_ind;
+ 	};
+ } __packed;
+ 
+--- a/drivers/net/wireless/ath/ath10k/htt_rx.c
++++ b/drivers/net/wireless/ath/ath10k/htt_rx.c
+@@ -26,6 +26,7 @@
+ #include "smart_ant.h"
+ #include "debug_htt_stats.h"
+ 
++#include "spectral.h"
+ #include <linux/log2.h>
+ #include <linux/bitfield.h>
+ 
+@@ -2788,6 +2789,155 @@ out:
+ 	rcu_read_unlock();
+ }
+ 
++static void
++ath10k_htt_fetch_n_relay_cfr_data(struct ath10k *ar,
++				  struct htt_peer_cfr_dump_ind_lagacy *htt_msg,
++				  struct ath10k_rfs_cfr_dump *rfs_cfr_dump)
++{
++	struct ath10k_mem_chunk *mem_chunk = NULL;
++	u32 mem_index = __le32_to_cpu(htt_msg->index);
++	u32 req_id = MS(htt_msg->info, HTT_T2H_CFR_DUMP_TYPE1_MEM_REQ_ID);
++	u32 *rindex, *windex;
++	u32 msg_len = __le32_to_cpu(htt_msg->length);
++	void *vaddr;
++	int i;
++
++	/* Find host allocated memory for the request ID provied by firmware,
++	 * in HTT message, where CFR dump is wrriten by the firmware.
++	 *
++	 *  Host allocated memory layout:
++	 *     Read      Write                                     FW
++	 *    Index      Index   <-------   CFR data     ------->Magic Num
++	 *  --------------------------------------------------------------
++	 *  | 4 byte  | 4 byte   |      CFR dump                | 4 byte |
++	 *  --------------------------------------------------------------
++	 *    Updated   Updated                                  Updated
++	 *      by      by FW                                     by FW
++	 *     host
++	 **/
++	for (i = 0 ; i < ar->wmi.num_mem_chunks; i++) {
++		if (ar->wmi.mem_chunks[i].req_id == req_id)
++			mem_chunk = &ar->wmi.mem_chunks[i];
++	}
++
++	if (!mem_chunk) {
++		ath10k_warn(ar, "No memory allocated for req ID %d\n", req_id);
++		return;
++	}
++
++	/* fetch the read index and write index pointers based on above memory
++	 * logic.
++	 **/
++	vaddr = mem_chunk->vaddr;
++	rindex = (u32 *)vaddr;
++	windex = rindex + 1;
++
++
++	/* mem_index is having the index of the address where CFR dump wrriten,
++	 * find data pointer from mem index and start address of memory.
++	 **/
++	rfs_cfr_dump->cfr_dump = vaddr + mem_index;
++	/*Dont do relayfs when there is no data to realy*/
++	if (msg_len)
++		ath10k_cfr_dump_to_rfs(ar, rfs_cfr_dump->cfr_dump, msg_len);
++
++	/* Updating the read index to the number of bytes read by host, it will
++	 * help in writing next capture.
++	 * ignoring 4 byte for FW magic number from the actual allocated memory
++	 * length to avoid courruption in magic number. This memory is circular
++	 * so after complation of one round, Skipping the first 8 byte as they
++	 * are for read index and write index.
++	 */
++	if (((*rindex) + msg_len) <= (mem_chunk->len - 4))
++		(*rindex) += msg_len;
++	else if (((*rindex) + msg_len) > (mem_chunk->len - 4))
++		(*rindex) = (msg_len + 8);
++}
++
++static void
++ath10k_htt_populate_rfs_cfr_header(struct ath10k *ar,
++				   struct ath10k_rfs_cfr_hdr *cfr_hdr,
++				   struct htt_peer_cfr_dump_ind_lagacy *cfr_ind)
++{
++	u8 rx_chain_mask;
++
++	cfr_hdr->head_magic_num = 0xDEADBEAF;
++	ether_addr_copy(cfr_hdr->addr, cfr_ind->mac_addr.addr);
++	cfr_hdr->status = MS(cfr_ind->info, HTT_T2H_CFR_DUMP_TYPE1_STATUS);
++	cfr_hdr->capture_bw = MS(cfr_ind->info, HTT_T2H_CFR_DUMP_TYPE1_CAP_BW);
++	cfr_hdr->channel_bw = MS(cfr_ind->info, HTT_T2H_CFR_DUMP_TYPE1_CHAN_BW);
++	cfr_hdr->capture_mode = MS(cfr_ind->info, HTT_T2H_CFR_DUMP_TYPE1_MODE);
++	cfr_hdr->capture_type = MS(cfr_ind->info, HTT_T2H_CFR_DUMP_TYPE1_CAP_TYPE);
++	cfr_hdr->sts_count = MS(cfr_ind->info, HTT_T2H_CFR_DUMP_TYPE1_STS);
++
++	cfr_hdr->prim20_chan = __le32_to_cpu(cfr_ind->chan_mhz);
++	cfr_hdr->center_freq1 =  __le32_to_cpu(cfr_ind->center_freq1);
++	cfr_hdr->center_freq2 =  __le32_to_cpu(cfr_ind->center_freq2);
++	cfr_hdr->phy_mode = __le32_to_cpu(cfr_ind->chan_phy_mode);
++
++	rx_chain_mask = ar->cfg_rx_chainmask;
++
++	while (rx_chain_mask) {
++		if (rx_chain_mask & BIT(0))
++			cfr_hdr->num_rx_chain++;
++
++		rx_chain_mask >>= 1;
++	}
++
++	cfr_hdr->length = __le32_to_cpu(cfr_ind->length);
++
++	cfr_hdr->timestamp = __le32_to_cpu(cfr_ind->timestamp);
++
++	ath10k_cfr_dump_to_rfs(ar , cfr_hdr, sizeof(struct ath10k_rfs_cfr_hdr));
++}
++
++static void ath10k_htt_peer_cfr_compl_ind(struct ath10k *ar,
++					  struct sk_buff *skb)
++{
++	struct htt_resp *resp = (struct htt_resp *)skb->data;
++	struct ath10k_rfs_cfr_dump rfs_cfr_dump = {0};
++	enum htt_cfr_capture_msg_type cfr_msg_type;
++	int expected_len;
++
++	cfr_msg_type = __le32_to_cpu(resp->cfr_dump_ind.cfr_msg_type);
++
++	switch (cfr_msg_type) {
++	case HTT_PEER_CFR_CAPTURE_MSG_TYPE_LAGACY:
++		if (!test_bit(WMI_SERVICE_CFR_CAPTURE_IND_MSG_TYPE_LAGACY,
++			      ar->wmi.svc_map)) {
++			ath10k_warn(ar, "Un supported msg type\n");
++			return;
++		}
++
++		expected_len = sizeof(struct htt_resp_hdr) +
++			       sizeof(struct htt_peer_cfr_dump_ind_lagacy) +
++			       sizeof(u32) + (3*sizeof(u8));
++		if (skb->len < expected_len) {
++			ath10k_warn(ar, "Invalid cfr capture completion event %d\n",
++				    skb->len);
++			return;
++		}
++
++		ath10k_htt_populate_rfs_cfr_header(ar, &rfs_cfr_dump.cfr_hdr,
++						   &resp->cfr_dump_ind.cfr_dump_lagacy);
++
++		ath10k_htt_fetch_n_relay_cfr_data(ar,
++						  &resp->cfr_dump_ind.cfr_dump_lagacy,
++						  &rfs_cfr_dump);
++
++		rfs_cfr_dump.tail_magic_num = 0xBEAFDEAD;
++
++		ath10k_cfr_dump_to_rfs(ar , &rfs_cfr_dump.tail_magic_num,
++				       sizeof(u32));
++
++		ath10k_cfr_finlalize_relay(ar);
++		break;
++	default:
++		ath10k_warn(ar, "unsupported CFR capture method\n");
++		break;
++	}
++}
++
+ static void ath10k_fetch_10_2_tx_stats(struct ath10k *ar, u8 *data)
+ {
+ 	struct ath10k_pktlog_hdr *hdr = (struct ath10k_pktlog_hdr *)data;
+@@ -3030,6 +3180,10 @@ bool ath10k_htt_t2h_msg_handler(struct a
+ 	case HTT_T2H_MSG_TYPE_PEER_STATS:
+ 		ath10k_htt_fetch_peer_stats(ar, skb);
+ 		break;
++	case HTT_T2H_MSG_TYPE_CFR_DUMP_COMPL_IND:
++		if (ath10k_peer_cfr_capture_enabled(ar))
++			ath10k_htt_peer_cfr_compl_ind(ar, skb);
++		break;
+ 	case HTT_T2H_MSG_TYPE_EN_STATS:
+ 	default:
+ 		ath10k_warn(ar, "htt event (%d) not handled\n",
+--- a/drivers/net/wireless/ath/ath10k/spectral.c
++++ b/drivers/net/wireless/ath/ath10k/spectral.c
+@@ -570,3 +570,47 @@ void ath10k_spectral_destroy(struct ath1
+ 		ar->spectral.rfs_chan_spec_scan = NULL;
+ 	}
+ }
++
++/*TODO: is this right place to do CFR relayfs ,thinking.*/
++
++void ath10k_cfr_finlalize_relay(struct ath10k *ar)
++{
++	if (!ar->rfs_cfr_capture)
++		return;
++
++	relay_flush(ar->rfs_cfr_capture);
++}
++
++void ath10k_cfr_dump_to_rfs(struct ath10k *ar, const void *buf,
++			    const int length)
++{
++	if (!ar->rfs_cfr_capture)
++		return;
++
++	relay_write(ar->rfs_cfr_capture, buf , length);
++}
++
++static struct rchan_callbacks rfs_cfr_capture_cb = {
++	.create_buf_file = create_buf_file_handler,
++	.remove_buf_file = remove_buf_file_handler,
++};
++
++int ath10k_cfr_capture_create(struct ath10k *ar)
++{
++	if (!test_bit(WMI_SERVICE_CFR_CAPTURE_SUPPORT, ar->wmi.svc_map))
++		return 0;
++
++	ar->rfs_cfr_capture = relay_open("cfr_dump",
++			      ar->debug.debugfs_phy,
++			      1100, 2000,
++			      &rfs_cfr_capture_cb, NULL);
++	return 0;
++}
++
++void ath10k_cfr_capture_destroy(struct ath10k *ar)
++{
++	if (ar->rfs_cfr_capture) {
++		relay_close(ar->rfs_cfr_capture);
++		ar->rfs_cfr_capture = NULL;
++	}
++}
+--- a/drivers/net/wireless/ath/ath10k/spectral.h
++++ b/drivers/net/wireless/ath/ath10k/spectral.h
+@@ -30,6 +30,30 @@ struct ath10k_spec_scan {
+ 	u8 fft_size;
+ };
+ 
++struct ath10k_rfs_cfr_hdr {
++	u32 head_magic_num;
++	u8  addr[6];
++	u8 status;
++	u8 capture_bw;
++	u8 channel_bw;
++	u8 phy_mode;
++	u16 prim20_chan;
++	u16 center_freq1;
++	u16 center_freq2;
++	u8 capture_mode;
++	u8 capture_type;
++	u8 sts_count;
++	u8 num_rx_chain;
++	u32 timestamp;
++	u32 length;
++} __packed;
++
++struct ath10k_rfs_cfr_dump {
++	struct ath10k_rfs_cfr_hdr cfr_hdr;
++	void *cfr_dump;
++	u32 tail_magic_num;
++} __packed;
++
+ /* enum ath10k_spectral_mode:
+  *
+  * @SPECTRAL_DISABLED: spectral mode is disabled
+@@ -54,6 +78,11 @@ int ath10k_spectral_start(struct ath10k
+ int ath10k_spectral_vif_stop(struct ath10k_vif *arvif);
+ int ath10k_spectral_create(struct ath10k *ar);
+ void ath10k_spectral_destroy(struct ath10k *ar);
++int ath10k_cfr_capture_create(struct ath10k *ar);
++void ath10k_cfr_capture_destroy(struct ath10k *ar);
++void ath10k_cfr_dump_to_rfs(struct ath10k *ar,
++			    const void *buf, const int length);
++void ath10k_cfr_finlalize_relay(struct ath10k *ar);
+ 
+ #else
+ 
+@@ -85,6 +114,25 @@ static inline void ath10k_spectral_destr
+ {
+ }
+ 
++static inline int ath10k_cfr_capture_create(struct ath10k *ar)
++{
++	return 0;
++}
++
++static inline void ath10k_cfr_capture_destroy(struct ath10k *ar)
++{
++}
++
++static inline void ath10k_cfr_dump_to_rfs(struct ath10k *ar,
++					  const void *buf,
++					  const int length)
++{
++}
++
++static inline void ath10k_cfr_finlalize_relay(struct ath10k *ar)
++{
++}
++
+ #endif /* CPTCFG_ATH10K_SPECTRAL */
+ 
+ #endif /* SPECTRAL_H */
+--- a/drivers/net/wireless/ath/ath10k/wmi.c
++++ b/drivers/net/wireless/ath/ath10k/wmi.c
+@@ -770,7 +770,8 @@ static struct wmi_cmd_map wmi_10_4_cmd_m
+ 	.tdls_peer_update_cmdid = WMI_10_4_TDLS_PEER_UPDATE_CMDID,
+ 	.tdls_set_offchan_mode_cmdid = WMI_10_4_TDLS_SET_OFFCHAN_MODE_CMDID,
+ 	.set_coex_param_cmdid = WMI_10_4_BTCOEX_CFG_CMDID,
+-	.radar_found_cmdid = WMI_10_4_RADAR_FOUND_CMDID
++	.radar_found_cmdid = WMI_10_4_RADAR_FOUND_CMDID,
++	.peer_set_cfr_capture_conf_cmdid = WMI_10_4_PEER_SET_CFR_CAPTURE_CONF_CMDID
+ };
+ 
+ /* MAIN WMI VDEV param map */
+@@ -1627,6 +1628,7 @@ static struct wmi_pdev_param_map wmi_10_
+ 	.arp_srcaddr = WMI_10_4_PDEV_PARAM_ARP_SRCADDR,
+ 	.arp_dstaddr = WMI_10_4_PDEV_PARAM_ARP_DSTADDR,
+ 	.enable_btcoex = WMI_10_4_PDEV_PARAM_ENABLE_BTCOEX,
++	.enable_cfr_capture = WMI_10_4_PDEV_PARAM_PER_PEER_CFR_ENABLE,
+ };
+ 
+ static const struct wmi_peer_flags_map wmi_peer_flags_map = {
+@@ -1964,6 +1966,35 @@ ath10k_wmi_op_gen_mgmt_tx(struct ath10k
+ 	return skb;
+ }
+ 
++static struct sk_buff *
++ath10k_wmi_10_4_op_gen_peer_cfr_capture_conf(struct ath10k *ar, u32 vdev_id,
++					     const u8 *mac,
++					     const struct wmi_peer_cfr_capture_conf_arg *arg)
++{
++	struct wmi_peer_cfr_capture_conf_10_4_cmd *cmd;
++	struct sk_buff *skb;
++
++	skb = ath10k_wmi_alloc_skb(ar, sizeof(*cmd));
++	if (!skb)
++		return ERR_PTR(-ENOMEM);
++
++	cmd = (struct wmi_peer_cfr_capture_conf_10_4_cmd *)skb->data;
++
++	cmd->request = __cpu_to_le32(arg->request);
++	cmd->periodicity = __cpu_to_le32(arg->periodicity);
++	cmd->vdev_id = __cpu_to_le32(vdev_id);
++	cmd->bandwidth = __cpu_to_le32(arg->bandwidth);
++	cmd->capture_method =  __cpu_to_le32(arg->capture_method);
++	ether_addr_copy(cmd->mac_addr.addr, mac);
++
++	ath10k_dbg(ar, ATH10K_DBG_WMI,
++		   "wmi request %d, vdev id %d, pee_mac:%pM, periodicty %d, bandwidth %d cap method %d\n",
++		   arg->request, vdev_id, cmd->mac_addr.addr,
++		   arg->periodicity, arg->bandwidth, arg->capture_method);
++
++	return skb;
++}
++
+ static void ath10k_wmi_event_scan_started(struct ath10k *ar)
+ {
+ 	lockdep_assert_held(&ar->data_lock);
+@@ -5086,6 +5117,7 @@ static int ath10k_wmi_alloc_chunk(struct
+ 	dma_addr_t paddr;
+ 	u32 pool_size;
+ 	int idx = ar->wmi.num_mem_chunks;
++	u32 *read_offset;
+ 	void *vaddr;
+ 
+ 	pool_size = num_units * round_up(unit_len, 4);
+@@ -5102,6 +5134,11 @@ static int ath10k_wmi_alloc_chunk(struct
+ 	ar->wmi.mem_chunks[idx].req_id = req_id;
+ 	ar->wmi.num_mem_chunks++;
+ 
++	if (req_id == WMI_CHANNEL_CAPTURE_HOST_MEM_REQ_ID) {
++		read_offset = (u32 *)vaddr;
++		(*read_offset) = WMI_CHANNEL_CAPTURE_DEFAULT_READ_OFFSET;
++	}
++
+ 	return num_units;
+ }
+ 
+@@ -9365,6 +9402,7 @@ static const struct wmi_ops wmi_10_4_ops
+ 	.gen_pdev_get_tpc_table_cmdid =
+ 			ath10k_wmi_10_4_op_gen_pdev_get_tpc_table_cmdid,
+ 	.gen_radar_found = ath10k_wmi_10_4_gen_radar_found,
++	.gen_peer_cfr_capture_conf = ath10k_wmi_10_4_op_gen_peer_cfr_capture_conf,
+ 
+ 	/* shared with 10.2 */
+ 	.pull_echo_ev = ath10k_wmi_op_pull_echo_ev,
+--- a/drivers/net/wireless/ath/ath10k/wmi.h
++++ b/drivers/net/wireless/ath/ath10k/wmi.h
+@@ -204,7 +204,7 @@ enum wmi_service {
+ 	WMI_SERVICE_RESET_CHIP,
+ 	WMI_SERVICE_CFR_CAPTURE_SUPPORT,
+ 	WMI_SERVICE_TX_DATA_ACK_RSSI,
+-	WMI_SERVICE_CFR_CAPTURE_IND_MSG_TYPE_1,
++	WMI_SERVICE_CFR_CAPTURE_IND_MSG_TYPE_LAGACY,
+ 	WMI_SERVICE_PER_PACKET_SW_ENCRYPT,
+ 	WMI_SERVICE_SPOOF_MAC_SUPPORT,
+ 
+@@ -356,7 +356,7 @@ enum wmi_10_4_service {
+ 	WMI_10_4_SERVICE_TPC_STATS_FINAL,
+ 	WMI_10_4_SERVICE_CFR_CAPTURE_SUPPORT,
+ 	WMI_10_4_SERVICE_TX_DATA_ACK_RSSI,
+-	WMI_10_4_SERVICE_CFR_CAPTURE_IND_MSG_TYPE_1,
++	WMI_10_4_SERVICE_CFR_CAPTURE_IND_MSG_TYPE_LAGACY,
+ 	WMI_10_4_SERVICE_PER_PACKET_SW_ENCRYPT,
+ };
+ 
+@@ -474,7 +474,7 @@ static inline char *wmi_service_name(int
+  	SVCSTR(WMI_SERVICE_RESET_CHIP);
+ 	SVCSTR(WMI_SERVICE_CFR_CAPTURE_SUPPORT);
+ 	SVCSTR(WMI_SERVICE_TX_DATA_ACK_RSSI);
+-	SVCSTR(WMI_SERVICE_CFR_CAPTURE_IND_MSG_TYPE_1);
++	SVCSTR(WMI_SERVICE_CFR_CAPTURE_IND_MSG_TYPE_LAGACY);
+ 	SVCSTR(WMI_SERVICE_PER_PACKET_SW_ENCRYPT);
+ 	default:
+ 		return NULL;
+@@ -788,8 +788,8 @@ static inline void wmi_10_4_svc_map(cons
+ 	       WMI_SERVICE_CFR_CAPTURE_SUPPORT, len);
+ 	SVCMAP(WMI_10_4_SERVICE_TX_DATA_ACK_RSSI,
+ 	       WMI_SERVICE_TX_DATA_ACK_RSSI, len);
+-	SVCMAP(WMI_10_4_SERVICE_CFR_CAPTURE_IND_MSG_TYPE_1,
+-	       WMI_SERVICE_CFR_CAPTURE_IND_MSG_TYPE_1, len);
++	SVCMAP(WMI_10_4_SERVICE_CFR_CAPTURE_IND_MSG_TYPE_LAGACY,
++	       WMI_SERVICE_CFR_CAPTURE_IND_MSG_TYPE_LAGACY, len);
+ 	SVCMAP(WMI_10_4_SERVICE_PER_PACKET_SW_ENCRYPT,
+ 	       WMI_SERVICE_PER_PACKET_SW_ENCRYPT, len);
+ }
+@@ -998,6 +998,7 @@ struct wmi_cmd_map {
+ 	u32 peer_set_smart_ant_train_info_cmdid;
+ 	u32 set_coex_param_cmdid;
+ 	u32 radar_found_cmdid;
++	u32 peer_set_cfr_capture_conf_cmdid;
+ };
+ 
+ /*
+@@ -1838,6 +1839,7 @@ enum wmi_10_4_cmd_id {
+ 	WMI_10_4_PDEV_SET_BRIDGE_MACADDR_CMDID,
+ 	WMI_10_4_ATF_GROUP_WMM_AC_CONFIG_REQUEST_CMDID,
+ 	WMI_10_4_RADAR_FOUND_CMDID,
++	WMI_10_4_PEER_SET_CFR_CAPTURE_CONF_CMDID,
+ 	WMI_10_4_PDEV_UTF_CMDID = WMI_10_4_END_CMDID - 1,
+ };
+ 
+@@ -2190,6 +2192,10 @@ enum wlan_mode_capability {
+ 	WHAL_WLAN_11AG_CAPABILITY  = 0x3,
+ };
+ 
++#define WMI_CHANNEL_CAPTURE_HOST_MEM_REQ_ID 9
++
++#define WMI_CHANNEL_CAPTURE_DEFAULT_READ_OFFSET 8
++
+ /* structure used by FW for requesting host memory */
+ struct wlan_host_mem_req {
+ 	/* ID of the request */
+@@ -3185,6 +3191,42 @@ struct wmi_bssid_arg {
+ 	const u8 *bssid;
+ };
+ 
++#define WMI_PEER_CFR_CAPTURE_ENABLE   1
++#define WMI_PEER_CFR_CAPTURE_DISABLE  0
++
++#define WMI_PEER_CFR_PERIODICITY_MIN  0
++#define WMI_PEER_CFR_PERIODICITY_MAX  (10*60*1000)
++
++enum ath10k_wmi_cfr_capture_bw {
++	WMI_PEER_CFR_CAPTURE_BW_20MHZ = 0,
++	WMI_PEER_CFR_CAPTURE_BW_40MHZ = 1,
++	WMI_PEER_CFR_CAPTURE_BW_80MHZ = 2,
++	WMI_PEER_CFR_CAPTURE_BW_160MHZ   = 3,
++	WMI_PEER_CFR_CAPTURE_BW_80_80MHZ = 4,
++	WMI_PEER_CFR_CAPTURE_BW_MAX,
++};
++
++enum ath10k_wmi_cfr_capture_method {
++	WMI_PEER_CFR_CAPTURE_METHOD_NULL_FRAME = 0,
++	WMI_PEER_CFR_CAPTURE_METHOD_MAX,
++};
++
++struct wmi_peer_cfr_capture_conf_10_4_cmd {
++	 __le32 request;
++	struct wmi_mac_addr mac_addr;
++	__le32 vdev_id;
++	__le32 periodicity;
++	__le32 bandwidth;
++	__le32 capture_method;
++} __packed;
++
++struct wmi_peer_cfr_capture_conf_arg {
++	u32 request;
++	u32 periodicity;
++	u32 bandwidth;
++	u32 capture_method;
++};
++
+ struct wmi_start_scan_arg {
+ 	u32 scan_id;
+ 	u32 scan_req_id;
+@@ -3757,6 +3799,7 @@ struct wmi_pdev_param_map {
+ 	u32 arp_srcaddr;
+ 	u32 arp_dstaddr;
+ 	u32 enable_btcoex;
++	u32 enable_cfr_capture;
+ };
+ 
+ #define WMI_PDEV_PARAM_UNSUPPORTED 0
+@@ -4073,6 +4116,14 @@ enum wmi_10_4_pdev_param {
+ 	WMI_10_4_PDEV_PARAM_ATF_DYNAMIC_ENABLE,
+ 	WMI_10_4_PDEV_PARAM_ATF_SSID_GROUP_POLICY,
+ 	WMI_10_4_PDEV_PARAM_ENABLE_BTCOEX,
++	WMI_10_4_PDEV_PARAM_ATF_PEER_STATS,
++	WMI_10_4_PDEV_PARAM_ANTENNA_GAIN_HALF_DB,
++	WMI_10_4_PDEV_PARAM_SOFT_TX_CHAIN_MASK,
++	WMI_10_4_PDEV_PARAM_TX_ACK_TIMEOUT,
++	WMI_10_4_PDEV_PARAM_RX_INDICATION_MITIGATION,
++	WMI_10_4_PDEV_PARAM_DYNAMIC_AUTO_BURST_ENABLE,
++	WMI_10_4_PDEV_PARAM_ESP_INDICATION_PERIOD,
++	WMI_10_4_PDEV_PARAM_PER_PEER_CFR_ENABLE,
+ };
+ 
+ struct wmi_pdev_set_param_cmd {
+--- a/drivers/net/wireless/ath/ath10k/wmi-ops.h
++++ b/drivers/net/wireless/ath/ath10k/wmi-ops.h
+@@ -234,6 +234,9 @@ struct wmi_ops {
+ 			const struct wmi_peer_sant_set_train_arg *arg);
+ 	struct sk_buff *(*gen_set_coex_param)(struct ath10k *ar,
+ 					      u32 wlan_traffic_priority);
++	struct sk_buff *(*gen_peer_cfr_capture_conf)(struct ath10k *ar,
++						     u32 vdev_id, const u8 *mac,
++						     const struct wmi_peer_cfr_capture_conf_arg *arg);
+ };
+ 
+ int ath10k_wmi_cmd_send(struct ath10k *ar, struct sk_buff *skb, u32 cmd_id);
+@@ -1698,4 +1701,22 @@ ath10k_wmi_radar_found(struct ath10k *ar
+ 	return ath10k_wmi_cmd_send(ar, skb,
+ 				   ar->wmi.cmd->radar_found_cmdid);
+ }
++
++static inline int
++ath10k_wmi_peer_set_cfr_capture_conf(struct ath10k *ar,
++				     u32 vdev_id, const u8 *mac,
++				     const struct wmi_peer_cfr_capture_conf_arg *arg)
++{
++	struct sk_buff *skb;
++
++	if (!ar->wmi.ops->gen_peer_cfr_capture_conf)
++		return -EOPNOTSUPP;
++
++	skb = ar->wmi.ops->gen_peer_cfr_capture_conf(ar, vdev_id, mac, arg);
++	if (IS_ERR(skb))
++		return PTR_ERR(skb);
++
++	return ath10k_wmi_cmd_send(ar, skb,
++				   ar->wmi.cmd->peer_set_cfr_capture_conf_cmdid);
++}
+ #endif

@@ -1,0 +1,187 @@
+QCA WLAN Driver
+---------------
+
+This driver adds support for the WLAN subsystem for supporting
+integrated WLAN module
+
+Required properties:
+  - compatible = "qcom,cnss-qca8074"; for IPQ8074 device
+		= "qcom,cnss-qca6290"; for QCA6290 device
+  - reg = <baseaddr length>
+  - interrupts = <list of msi and legacy interrupts>
+  - interrupt-names = <list of interrupt's string name defined in the interrupts field. Please
+    ensure the order of the interrupts and the interrupts name matches with each other.
+  - wlan-en-gpio: WLAN_EN GPIO signal specified by the chip specifications
+  - pinctrl-names: Names corresponding to the numbered pinctrl states
+  - pinctrl-<n>: Pinctrl states as described in
+                 bindings/pinctrl/pinctrl-bindings.txt
+  - status = ok or disabled.
+    Please refer below example.
+
+
+Optional properties:
+
+Example:
+
+		wifi0: wifi@c0000000 {
+			compatible = "qcom,cnss-qca8074";
+			eg = <0xc000000 0x2000000>;
+			interrupts = <0 320 1>, /* o_wcss_apps_intr[0] =  */
+				<0 319 1>,
+				<0 318 1>,
+				<0 317 1>,
+				<0 316 1>,
+				<0 315 1>,
+				<0 314 1>,
+				<0 311 1>,
+				<0 310 1>,
+				<0 309 1>,
+				<0 308 1>,
+				<0 307 1>,
+				<0 306 1>,
+				<0 302 1>,
+				<0 301 1>,
+				<0 300 1>,
+				<0 299 1>,
+				<0 296 1>,
+				<0 295 1>,
+				<0 294 1>,
+				<0 293 1>,
+				<0 292 1>,
+				<0 291 1>,
+				<0 290 1>,
+				<0 289 1>,
+				<0 288 1>, /* o_wcss_apps_intr[25] */
+				<0 239 1>,
+				<0 236 1>,
+				<0 235 1>,
+				<0 234 1>,
+				<0 233 1>,
+				<0 232 1>,
+				<0 231 1>,
+				<0 230 1>,
+				<0 229 1>,
+				<0 228 1>,
+				<0 224 1>,
+				<0 223 1>,
+				<0 203 1>,
+				<0 183 1>,
+				<0 180 1>,
+				<0 179 1>,
+				<0 178 1>,
+				<0 177 1>,
+				<0 176 1>,
+				<0 163 1>,
+				<0 162 1>,
+				<0 160 1>,
+				<0 159 1>,
+				<0 158 1>,
+				<0 157 1>,
+				<0 156 1>; /* o_wcss_apps_intr[51] */
+
+			interrupt-names = "misc-pulse1",
+				"misc-latch",
+				"sw-exception",
+				"watchdog",
+				"ce0",
+				"ce1",
+				"ce2",
+				"ce3",
+				"ce4",
+				"ce5",
+				"ce6",
+				"ce7",
+				"ce8",
+				"ce9",
+				"ce10",
+				"ce11",
+				"host2wbm-desc-feed",
+				"host2reo-re-injection",
+				"host2reo-command",
+				"host2rxdma-monitor-ring3",
+				"host2rxdma-monitor-ring2",
+				"host2rxdma-monitor-ring1",
+				"reo2ost-exception",
+				"wbm2host-rx-release",
+				"reo2host-status",
+				"reo2host-destination-ring4",
+				"reo2host-destination-ring3",
+				"reo2host-destination-ring2",
+				"reo2host-destination-ring1",
+				"rxdma2host-monitor-destination-mac3",
+				"rxdma2host-monitor-destination-mac2",
+				"rxdma2host-monitor-destination-mac1",
+				"ppdu-end-interrupts-mac3",
+				"ppdu-end-interrupts-mac2",
+				"ppdu-end-interrupts-mac1",
+				"rxdma2host-monitor-status-ring-mac3",
+				"rxdma2host-monitor-status-ring-mac2",
+				"rxdma2host-monitor-status-ring-mac1",
+				"host2rxdma-host-buf-ring-mac3",
+				"host2rxdma-host-buf-ring-mac2",
+				"host2rxdma-host-buf-ring-mac1",
+				"rxdma2host-destination-ring-mac3",
+				"rxdma2host-destination-ring-mac2",
+				"rxdma2host-destination-ring-mac1",
+				"host2tcl-input-ring4",
+				"host2tcl-input-ring3",
+				"host2tcl-input-ring2",
+				"host2tcl-input-ring1",
+				"wbm2host-tx-completions-ring3",
+				"wbm2host-tx-completions-ring2",
+				"wbm2host-tx-completions-ring1",
+				"tcl2host-status-ring";
+			status = "ok";
+		};
+
+		wifi0: wifi@b8100000 {
+			compatible = "qca,wifi-ar955x";
+			reg = <0xb8100000 0x20000>;
+			core-id = <0x0>;
+
+			interrupt-parent = <&ip2_int>;
+			interrupts = <1>;
+			interrupt-names = "legacy";
+			status = "ok";
+		};
+
+		wifi0: wifi@b8100000 {
+			compatible = "qca,wifi-ar953x";
+			reg = <0xb8100000 0x20000>;
+			core-id = <0x0>;
+
+			interrupt-parent = <&ip2_int>;
+			interrupts = <1>;
+			interrupt-names = "legacy";
+			status = "ok";
+		};
+
+		wifi0: wifi@b8100000 {
+			compatible = "qca,wifi-ar956x";
+			reg = <0xb8100000 0x20000>;
+			core-id = <0x0>;
+
+			interrupt-parent = <&ip2_int>;
+			interrupts = <1>;
+			interrupt-names = "legacy";
+			status = "ok";
+		};
+
+		wifi0: wifi@b8100000 {
+			compatible = "qca,wifi-ar550x";
+			reg = <0xb8100000 0x20000>;
+			core-id = <0x0>;
+
+			interrupt-parent = <&ip2_int>;
+			interrupts = <1>;
+			interrupt-names = "legacy";
+			status = "ok";
+		};
+		wifi3: wifi3@f00000 {
+		        compatible  = "qcom,cnss-qca6290";
+		        wlan-en-gpio = <&tlmm 57 0>;
+		        pinctrl-names = "wlan_en_active", "wlan_en_sleep";
+		        pinctrl-0 = <&cnss_wlan_en_active>;
+		        pinctrl-1 = <&cnss_wlan_en_sleep>;
+		        status = "ok";
+		};

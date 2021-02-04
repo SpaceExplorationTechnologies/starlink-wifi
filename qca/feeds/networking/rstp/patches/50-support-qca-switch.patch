@@ -1,0 +1,1815 @@
+diff --git a/Makefile b/Makefile
+index f903f91..1cbc40b 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,6 +1,6 @@
+ 
+ DSOURCES =  brstate.c libnetlink.c epoll_loop.c bridge_track.c \
+-	   packet.c ctl_socket.c netif_utils.c main.c brmon.c
++	   packet.c ctl_socket.c netif_utils.c main.c brmon.c switch_api.c qca_switch.c
+ 
+ DOBJECTS = $(DSOURCES:.c=.o)
+ 
+diff --git a/bridge_track.c b/bridge_track.c
+index 2967d08..4db8914 100644
+--- a/bridge_track.c
++++ b/bridge_track.c
+@@ -44,6 +44,8 @@
+ 
+ #include "log.h"
+ 
++#include "switch_api.h"
++
+ /*------------------------------------------------------------*/
+ 
+ struct ifdata {
+@@ -162,11 +164,13 @@ void update_port_stp_config(struct ifdata *ifc, UID_STP_PORT_CFG_T * cfg)
+ 		ifc->admin_point2point = cfg->admin_point2point;
+ }
+ 
++int get_bridge_port_num(struct ifdata *ifc);
++
+ /**************************************************************/
+ 
+ int add_port_stp(struct ifdata *ifc)
+ {				/* Bridge is ifc->master */
+-	TST((ifc->port_index = get_bridge_portno(ifc->name)) >= 0, -1);
++	TST((ifc->port_index = get_bridge_port_num(ifc)) >= 0, -1);
+ 
+ 	/* Add port to STP */
+ 	instance_begin(ifc->master);
+@@ -320,7 +324,7 @@ struct ifdata *create_if(int if_index, struct ifdata *br)
+ 	p->is_bridge = (br == NULL);
+ 
+ 	/* TODO: purge use of name, due to issue with renameing */
+-	if_indextoname(if_index, p->name);
++	rstp_if_indextoname(if_index, p->name);
+ 
+ 	if (p->is_bridge) {
+ 		INFO("Add bridge %s", p->name);
+@@ -351,6 +355,8 @@ struct ifdata *create_if(int if_index, struct ifdata *br)
+ 	/* Add to interface list */
+ 	ADD_TO_LIST(if_head, next, p);
+ 
++	switch_port_attach_if(if_index);
++
+ 	return p;
+ }
+ 
+@@ -380,9 +386,32 @@ void delete_if(struct ifdata *ifc)
+ 	REMOVE_FROM_LIST(if_head, next, ifc,
+ 			 "Can't find interface ifindex %d on iflist",
+ 			 ifc->if_index);
++
++	switch_port_detach_if(ifc->if_index);
++
+ 	free(ifc);
+ }
+ 
++int get_bridge_port_num(struct ifdata *ifc)
++{
++	struct ifdata *p;
++	unsigned int bitmap = 1;
++	int index = 0;
++
++	if(ifc->is_bridge)
++		return -1;
++
++	if(ifc->port_index > 0)
++		return ifc->port_index;
++
++	for(p = if_head; p && (p->master == ifc->master); p = p->next)
++		bitmap = bitmap | (1 << p->port_index);
++
++	while(bitmap & (1 << index)) ++index;
++
++	return index;
++}
++
+ static int stp_enabled(struct ifdata *br)
+ {
+ 	char path[40 + IFNAMSIZ];
+@@ -503,6 +532,9 @@ int bridge_notify(int br_index, int if_index, int newlink,
+ {
+ 	struct ifdata *br = NULL;
+ 
++	if(!switch_notify(br_index, if_index, newlink, flags))
++		return 0;
++
+ 	LOG("br_index %d, if_index %d, up %d running %d",
+ 	    br_index, if_index, (flags & IFF_UP), flags & IFF_RUNNING);
+ 
+@@ -573,7 +605,7 @@ int bridge_notify(int br_index, int if_index, int newlink,
+ 		} else {	/* This may be a new link */
+ 			if (!ifc) {
+ 				char ifname[IFNAMSIZ];
+-				if (if_indextoname(if_index, ifname)
++				if (rstp_if_indextoname(if_index, ifname)
+ 				    && is_bridge(ifname)) {
+ 					ifc = create_if(if_index, NULL);
+ 					if (!ifc) {
+@@ -653,6 +685,20 @@ void bridge_bpdu_rcv(int if_index, const unsigned char *data, int len)
+ 	instance_end();
+ }
+ 
++void update_switch_port_link_status(struct switch_port *sw_port)
++{
++	struct ifdata *br_port;
++	int up;
++
++	br_port = find_if(sw_port->if_index);
++	if(!br_port)
++		return;
++
++	up = switch_port_get_link_status(sw_port);
++	if(br_port->up != up)
++		set_if_up(br_port, up);
++}
++
+ void bridge_one_second(void)
+ {
+ 	//  LOG("");
+@@ -672,6 +718,7 @@ void bridge_one_second(void)
+ 	if (count % 60 == 0)
+ 		bridge_get_configuration();
+ 
++	switch_port_one_second();
+ }
+ 
+ /* Implementing STP_OUT functions */
+@@ -696,23 +743,32 @@ STP_OUT_flush_lt(IN int port_index, IN int vlan_id,
+ 
+ 	char fname[128];
+ 	if (port_index == 0) {	/* i.e. passed port_index was 0 */
++		struct ifdata *port;
+ 		sprintf(fname, "/sys/class/net/%s/bridge/flush",
+ 			current_br->name);
+ 		flush_port(fname);
++
++		for (port = current_br->port_list; port; port = port->port_next) {
++			switch_port_flush_fdb(port->name);
++		}
+ 	} else if (type == LT_FLASH_ONLY_THE_PORT) {
+ 		struct ifdata *port = find_port(port_index);
+ 		TST(port != NULL, 0);
+-		sprintf(fname, "/sys/class/net/%s/brif/%s/flush",
+-			current_br->name, port->name);
+-		flush_port(fname);
++		if(switch_port_flush_fdb(port->name)) {
++			sprintf(fname, "/sys/class/net/%s/brif/%s/flush",
++				current_br->name, port->name);
++			flush_port(fname);
++		}
+ 	} else if (type == LT_FLASH_ALL_PORTS_EXCLUDE_THIS) {
+ 		struct ifdata *port;
+ 		for (port = current_br->port_list; port; port = port->port_next) {
+ 			if (port->port_index != port_index) {
+-				sprintf(fname,
+-					"/sys/class/net/%s/brif/%s/flush",
+-					current_br->name, port->name);
+-				flush_port(fname);
++				if(switch_port_flush_fdb(port->name)) {
++					sprintf(fname,
++						"/sys/class/net/%s/brif/%s/flush",
++						current_br->name, port->name);
++					flush_port(fname);
++				}
+ 			}
+ 		}
+ 	} else
+@@ -782,8 +838,8 @@ STP_OUT_set_port_state(IN int port_index, IN int vlan_id,
+ 		fprintf(stderr, "set_port_state: Unexpected state %d\n", state);
+ 		return -1;
+ 	}
+-	if (port->up)
+-		bridge_set_state(port->if_index, br_state);
++	/*if (port->up)*/ /*always block port when it become down, then avoid loop when it become up again*/
++	bridge_set_state(port->if_index, br_state);
+ 	return 0;
+ }
+ 
+@@ -881,7 +937,7 @@ int CTL_enable_bridge_rstp(int br_index, int enable)
+ 	struct ifdata *br = find_if(br_index);
+ 	if (br == NULL) {
+ 		char ifname[IFNAMSIZ];
+-		if (if_indextoname(br_index, ifname) && is_bridge(ifname))
++		if (rstp_if_indextoname(br_index, ifname) && is_bridge(ifname))
+ 			br = create_if(br_index, NULL);
+ 	}
+ 	if (br == NULL || !br->is_bridge)
+@@ -1003,7 +1059,7 @@ int CTL_add_bridge(char *name)
+ 	int br_index, up;
+ 	struct ifdata *br = NULL;
+ 
+-	br_index = if_nametoindex(name);
++	br_index = rstp_if_nametoindex(name);
+ 	if(br_index == 0) {
+ 		ERROR("bridge %s not exist", name);
+ 		return 0;
+@@ -1036,13 +1092,13 @@ int CTL_add_bridge_port(char *br_name, char *pt_name)
+ 	int br_index, if_index, up;
+ 	struct ifdata *br, *br_port;
+ 
+-	br_index = if_nametoindex(br_name);
++	br_index = rstp_if_nametoindex(br_name);
+ 	if(br_index == 0) {
+ 		ERROR("bridge %s not exist", br_name);
+ 		return 0;
+ 	}
+ 
+-	if_index = if_nametoindex(pt_name);
++	if_index = rstp_if_nametoindex(pt_name);
+ 	if(if_index == 0) {
+ 		ERROR("bridge port %s not exist", pt_name);
+ 		return 0;
+@@ -1090,5 +1146,17 @@ int CTL_add_bridge_port(char *br_name, char *pt_name)
+ 	return 0;
+ }
+ 
++int CTL_if_indextoname(unsigned int ifindex, char *ifname)
++{
++	rstp_if_indextoname(ifindex, ifname);
++	return 0;
++}
++
++int CTL_if_nametoindex(const char *ifname, unsigned int *ifindex)
++{
++	*ifindex = rstp_if_nametoindex(ifname);
++	return 0;
++}
++
+ #undef CTL_CHECK_BRIDGE_PORT
+ #undef CTL_CHECK_BRIDGE
+diff --git a/brmon.c b/brmon.c
+index 96a1113..1a6eeb3 100644
+--- a/brmon.c
++++ b/brmon.c
+@@ -27,6 +27,7 @@
+ #include "libnetlink.h"
+ 
+ #include "bridge_ctl.h"
++#include "netif_utils.h"
+ 
+ static const char SNAPSHOT[] = "v0.1";
+ 
+@@ -66,7 +67,7 @@ static int dump_msg(const struct sockaddr_nl *who, struct nlmsghdr *n,
+ 
+ 	if (tb[IFLA_MASTER]) {
+ 	   master = *(int*)RTA_DATA(tb[IFLA_MASTER]);
+-	   fprintf(fp, "master %s ", if_indextoname(master, b1));
++	   fprintf(fp, "master %s ", rstp_if_indextoname(master, b1));
+ 	}
+ 
+ 	fprintf(fp, "\n");
+diff --git a/brstate.c b/brstate.c
+index 889c2ea..e63519d 100644
+--- a/brstate.c
++++ b/brstate.c
+@@ -25,6 +25,7 @@
+ #include <string.h>
+ 
+ #include "libnetlink.h"
++#include "switch_api.h"
+ 
+ static int br_set_state(struct rtnl_handle *rth, unsigned ifindex, __u8 state)
+ {
+@@ -53,7 +54,11 @@ extern struct rtnl_handle rth_state;
+ 
+ int bridge_set_state(int ifindex, int brstate)
+ {
+-	int err = br_set_state(&rth_state, ifindex, brstate);
++	int err = switch_port_set_stp_state(ifindex, brstate);
++	if(!err)
++		return 0;
++
++	err = br_set_state(&rth_state, ifindex, brstate);
+ 	if (err < 0) {
+ 		fprintf(stderr,
+ 			"Couldn't set bridge state, ifindex %d, state %d\n",
+diff --git a/ctl_cli_wrap.c b/ctl_cli_wrap.c
+index 8ad65c4..b7c5985 100644
+--- a/ctl_cli_wrap.c
++++ b/ctl_cli_wrap.c
+@@ -35,6 +35,9 @@ CLIENT_SIDE_FUNCTION(enable_bridge_rstp)
+     CLIENT_SIDE_FUNCTION(set_debug_level)
+     CLIENT_SIDE_FUNCTION(add_bridge)
+     CLIENT_SIDE_FUNCTION(add_bridge_port)
++    CLIENT_SIDE_FUNCTION(if_indextoname)
++    CLIENT_SIDE_FUNCTION(if_nametoindex)
++
+ #include <base.h>
+ const char *CTL_error_explanation(int err_no)
+ {
+diff --git a/ctl_functions.h b/ctl_functions.h
+index 4a04d62..33afae4 100644
+--- a/ctl_functions.h
++++ b/ctl_functions.h
+@@ -46,6 +46,10 @@ int CTL_add_bridge(char *name);
+ 
+ int CTL_add_bridge_port(char *br_name, char *pt_name);
+ 
++int CTL_if_indextoname(unsigned int ifindex, char *ifname);
++
++int CTL_if_nametoindex(const char *ifname, unsigned int *ifindex);
++
+ #define CTL_ERRORS \
+  CHOOSE(Err_Interface_not_a_bridge), \
+  CHOOSE(Err_Bridge_RSTP_not_enabled), \
+diff --git a/ctl_main.c b/ctl_main.c
+index a90e185..d3b2714 100644
+--- a/ctl_main.c
++++ b/ctl_main.c
+@@ -80,7 +80,7 @@ static char *stp_state2str(RSTP_PORT_STATE stp_port_state, int detail)
+ static void CLI_out_port_id(int port, unsigned char cr)
+ {
+ 	static char ifname[IFNAMSIZ];
+-	if (if_indextoname(port, ifname))
++	if (CTL_if_indextoname(port, ifname))
+ 		printf("%s", ifname);
+ 	else
+ 		printf("Ifindex %02d", port);
+@@ -90,7 +90,9 @@ static void CLI_out_port_id(int port, unsigned char cr)
+ 
+ int get_index_die(const char *ifname, const char *doc, int die)
+ {
+-	int r = if_nametoindex(ifname);
++	int r = 0;
++
++	CTL_if_nametoindex(ifname, (unsigned int *)&r);
+ 	if (r == 0) {
+ 		fprintf(stderr,
+ 			"Can't find index for %s %s. Not a valid interface.\n",
+diff --git a/ctl_socket.c b/ctl_socket.c
+index 1438e5f..301d410 100644
+--- a/ctl_socket.c
++++ b/ctl_socket.c
+@@ -70,6 +70,8 @@ int handle_message(int cmd, void *inbuf, int lin, void *outbuf, int *lout)
+ 		SERVER_MESSAGE_CASE(set_debug_level);
+ 		SERVER_MESSAGE_CASE(add_bridge);
+ 		SERVER_MESSAGE_CASE(add_bridge_port);
++		SERVER_MESSAGE_CASE(if_indextoname);
++		SERVER_MESSAGE_CASE(if_nametoindex);
+ 
+ 	default:
+ 		ERROR("CTL: Unknown command %d", cmd);
+diff --git a/ctl_socket.h b/ctl_socket.h
+index a4b7c7a..d931b1e 100644
+--- a/ctl_socket.h
++++ b/ctl_socket.h
+@@ -180,6 +180,38 @@ struct add_bridge_port_OUT {
+ #define add_bridge_port_COPY_OUT ({ (void)0; })
+ #define add_bridge_port_CALL (in->br_name, in->pt_name)
+ 
++#if 0
++int CTL_if_indextoname(unsigned int ifindex, char *ifname);
++#endif
++#define CMD_CODE_if_indextoname 110
++#define if_indextoname_ARGS (unsigned int ifindex, char *ifname)
++struct if_indextoname_IN {
++	unsigned int ifindex;
++};
++struct if_indextoname_OUT {
++	char ifname[64];
++};
++#define if_indextoname_COPY_IN \
++  ({ in->ifindex = ifindex; })
++#define if_indextoname_COPY_OUT ({ strcpy(ifname, out->ifname); })
++#define if_indextoname_CALL (in->ifindex, out->ifname)
++
++#if 0
++int CTL_if_nametoindex(const char *ifname, unsigned int *ifindex);
++#endif
++#define CMD_CODE_if_nametoindex 111
++#define if_nametoindex_ARGS (const char *ifname, unsigned int *ifindex)
++struct if_nametoindex_IN {
++	char ifname[64];
++};
++struct if_nametoindex_OUT {
++	unsigned int ifindex;
++};
++#define if_nametoindex_COPY_IN \
++  ({ strncpy(in->ifname, ifname, sizeof(in->ifname)); })
++#define if_nametoindex_COPY_OUT ({ *ifindex = out->ifindex; })
++#define if_nametoindex_CALL (in->ifname, &out->ifindex)
++
+ /* General case part in ctl command server switch */
+ #define SERVER_MESSAGE_CASE(name) \
+ case CMD_CODE_ ## name : do { \
+diff --git a/main.c b/main.c
+index 33eebec..311dc7d 100644
+--- a/main.c
++++ b/main.c
+@@ -27,6 +27,7 @@
+ #include "ctl_socket_server.h"
+ #include "netif_utils.h"
+ #include "packet.h"
++#include "switch_api.h"
+ #include "log.h"
+ 
+ #include <stdio.h>
+@@ -55,6 +56,7 @@ topology_mode_t get_topology_mode(void)
+ 
+ static void handle_signal(int signo)
+ {
++	switch_port_final();
+ 	epoll_end_loop();
+ }
+ 
+@@ -105,6 +107,7 @@ int main(int argc, char *argv[])
+ 	TST(ctl_socket_init() == 0, -1);
+ 	TST(packet_sock_init() == 0, -1);
+ 	TST(netsock_init() == 0, -1);
++	TST(switch_port_init() == 0, -1);
+ 	TST(init_bridge_ops() == 0, -1);
+ 	if (become_daemon) {
+ 		FILE *f = fopen("/var/run/rstpd.pid", "w");
+diff --git a/netif_utils.c b/netif_utils.c
+index b3e7baa..4e96d5a 100644
+--- a/netif_utils.c
++++ b/netif_utils.c
+@@ -40,6 +40,7 @@
+ #include <linux/sockios.h>
+ 
+ #include "log.h"
++#include "switch_api.h"
+ 
+ int netsock = -1;
+ 
+@@ -57,6 +58,10 @@ int netsock_init(void)
+ int get_hwaddr(char *ifname, unsigned char *hwaddr)
+ {
+ 	struct ifreq ifr;
++
++	if(0 == switch_port_get_hwaddr(ifname, hwaddr))
++		return 0;
++
+ 	memset(&ifr, 0, sizeof(ifr));
+ 	strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
+ 	if (ioctl(netsock, SIOCGIFHWADDR, &ifr) < 0) {
+@@ -74,6 +79,9 @@ int ethtool_get_speed_duplex(char *ifname, int *speed, int *duplex)
+ 	strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
+ 	struct ethtool_cmd ecmd;
+ 
++	if(0 == switch_port_get_speed_duplex(ifname, speed, duplex))
++		return 0;
++
+ 	ecmd.cmd = ETHTOOL_GSET;
+ 	ifr.ifr_data = (caddr_t) & ecmd;
+ 	if (ioctl(netsock, SIOCETHTOOL, &ifr) < 0) {
+@@ -89,10 +97,16 @@ int ethtool_get_speed_duplex(char *ifname, int *speed, int *duplex)
+ int get_link_status(const char *name)
+ {
+ 	int s = -1;
++	struct switch_port *sw_port;
+ 	struct ifreq ifr = {};
+ 
+ 	if(!name) return 0;
+ 
++	sw_port = find_switch_port_by_name(name);
++	if(sw_port) {
++		return switch_port_get_link_status(sw_port);
++	}
++
+ 	if((s = socket(AF_INET, SOCK_DGRAM, 0)) <= 0) return 0;
+ 
+ 	strncpy(ifr.ifr_name, name, sizeof(ifr.ifr_name));
+@@ -107,6 +121,36 @@ int get_link_status(const char *name)
+ 	return ((ifr.ifr_flags & (IFF_UP|IFF_RUNNING)) == (IFF_UP|IFF_RUNNING));
+ }
+ 
++char *rstp_if_indextoname(unsigned int ifindex, char *ifname)
++{
++	struct switch_port *sw_port;
++
++	if(!ifname)
++		return NULL;
++
++	sw_port = find_switch_port_by_index(ifindex);
++	if(sw_port) {
++		strcpy(ifname, sw_port->name);
++		return ifname;
++	}
++	else
++		return if_indextoname(ifindex, ifname);
++}
++
++unsigned int rstp_if_nametoindex(const char *ifname)
++{
++	struct switch_port *sw_port;
++
++	if(!ifname)
++		return 0;
++
++	sw_port = find_switch_port_by_name(ifname);
++	if(sw_port)
++		return sw_port->if_index;
++	else
++		return if_nametoindex(ifname);
++}
++
+ /********* Sysfs based utility functions *************/
+ 
+ /* This sysfs stuff might break with interface renames */
+@@ -122,6 +166,10 @@ int is_bridge(char *if_name)
+ */
+ int is_bridge_slave(char *br_name, char *if_name)
+ {
++	int ret = switch_port_is_bridge_slave(br_name, if_name);
++	if(ret >= 0)
++		return ret;
++
+ 	char path[32 + 2 * IFNAMSIZ];
+ 	sprintf(path, "/sys/class/net/%s/brif/%s", br_name, if_name);
+ 	return (access(path, R_OK) == 0);
+diff --git a/netif_utils.h b/netif_utils.h
+index cc45e02..3319341 100644
+--- a/netif_utils.h
++++ b/netif_utils.h
+@@ -34,6 +34,10 @@ int ethtool_get_speed_duplex(char *ifname, int *speed, int *duplex);
+ 
+ int get_link_status(const char *name);
+ 
++char *rstp_if_indextoname(unsigned int ifindex, char *ifname);
++
++unsigned int rstp_if_nametoindex(const char *ifname);
++
+ /********* Sysfs based utility functions *************/
+ int is_bridge(char *if_name);
+ 
+diff --git a/packet.c b/packet.c
+index 001f6d4..09b06c0 100644
+--- a/packet.c
++++ b/packet.c
+@@ -45,6 +45,7 @@
+ #include <linux/filter.h>
+ 
+ #include "log.h"
++#include "switch_api.h"
+ 
+ static struct epoll_event_handler packet_event;
+ 
+@@ -76,6 +77,10 @@ void packet_send(int ifindex, const unsigned char *data, int len)
+ 		.sll_halen = ETH_ALEN,
+ 	};
+ 
++	if(switch_port_send_bpdu(ifindex, data, len) == 0) {
++		return;
++	}
++
+ 	memcpy(&sl.sll_addr, data, ETH_ALEN);
+ 
+ #ifdef PACKET_DEBUG
+diff --git a/qca_switch.c b/qca_switch.c
+new file mode 100644
+index 0000000..038d04e
+--- /dev/null
++++ b/qca_switch.c
+@@ -0,0 +1,409 @@
++#include <stdarg.h>
++#include <unistd.h>
++#include <net/if.h>
++#include <linux/if_bridge.h>
++#include <sys/types.h>
++#include <arpa/inet.h>
++#include <stdlib.h>
++#include <stdio.h>
++#include <string.h>
++#include <fcntl.h>
++#include <sys/ioctl.h>
++#include <api/sw_ioctl.h>
++
++#include "bridge_ctl.h"
++#include "netif_utils.h"
++#include "switch_api.h"
++#include "qca_switch.h"
++#include "log.h"
++
++struct rxAtherosHeader
++{
++  unsigned short src_port:3;
++  unsigned short with_tag:1;
++  unsigned short reserved:2;
++  unsigned short reason:5;
++  unsigned short priority:3;
++  unsigned short version:2;
++};
++
++struct txAtherosHeader
++{
++  unsigned short dst_port:7;
++  unsigned short from_cpu:1;
++  unsigned short action:3;
++  unsigned short priority:3;
++  unsigned short version:2;
++};
++
++#define ATHEROS_HEADER_OFFSET 12
++#define ATHEROS_HEADER_TYPE_OFFSET ATHEROS_HEADER_OFFSET
++#define ATHEROS_HEADER_INFO_OFFSET (ATHEROS_HEADER_OFFSET + 2)
++
++#define ATHEROS_HEADER_TYPE_SIZE 2
++#define ATHEROS_HEADER_INFO_SIZE 2
++#define ATHEROS_HEADER_SIZE (ATHEROS_HEADER_TYPE_SIZE + ATHEROS_HEADER_INFO_SIZE)
++
++#define ATHEROS_HEADER_VERSION 0X2
++#define ATHEROS_HEADER_REASON_BPDU 0X4
++
++static unsigned short atheros_header_type;
++
++
++/*switch driver API start*/
++int switch_driver_fd = -1;
++
++a_uint32_t sw_api_param_nums(a_uint32_t api_id)
++{
++	switch(api_id) {
++	case SW_API_MIRROR_ANALY_PT_SET:
++	case SW_API_FDB_RESV_ADD:
++	case SW_API_FDB_RESV_DEL:
++		return 2;
++	case SW_API_FDB_DELPORT:
++	case SW_API_PT_SPEED_GET:
++	case SW_API_PT_DUPLEX_GET:
++	case SW_API_PT_LINK_STATUS_GET:
++	case SW_API_HEADER_TYPE_SET:
++	case SW_API_PT_RXHDR_SET:
++	case SW_API_PT_TXHDR_SET:
++		return 3;
++	case SW_API_STP_PT_STATE_SET:
++		return 4;
++	}
++
++	return 0;
++}
++
++static sw_error_t sw_uk_exec(a_uint32_t api_id, ...)
++{
++	a_uint32_t value[SW_MAX_API_PARAM] = { 0 };
++	a_uint32_t rtn = SW_OK, i;
++	sw_error_t rv;
++	va_list arg_ptr;
++	a_uint32_t nr_param = 0;
++
++	if((nr_param = sw_api_param_nums(api_id)) == 0)
++		return SW_FAIL;
++
++	if(switch_driver_fd < 0) {
++		switch_driver_fd = open("/dev/switch_ssdk", O_RDWR);
++		if(switch_driver_fd < 0)
++			return SW_FAIL;
++	}
++
++	value[0] = api_id;
++	value[1] = (a_uint32_t)&rtn;
++
++	va_start(arg_ptr, api_id);
++	for (i = 0; i < nr_param; i++) {
++		value[i + 2] = va_arg(arg_ptr, a_uint32_t);
++	}
++	va_end(arg_ptr);
++
++	rv = ioctl(switch_driver_fd, SIOCDEVPRIVATE, value);
++	if (SW_OK != rv)
++		return rv;
++
++	return rtn;
++}
++/*switch driver API end*/
++
++int qca_switch_get_port_link_status(struct switch_port *sw_port)
++{
++	int ret, status;
++
++	ret = sw_uk_exec(SW_API_PT_LINK_STATUS_GET, 0, sw_port->priv.port_num, (a_uint32_t)(&status));
++	if(!ret)
++		return status;
++	else
++		return 0;
++}
++
++unsigned short qca_switch_get_atheros_header_type(void)
++{
++	char cmd[128];
++	char result[128];
++
++	if(!atheros_header_type)
++	{
++		snprintf(cmd, sizeof(cmd), "%s get_atheros_header_type", RSTP_CMD_PATH);
++		if(run_cmd(cmd, result, sizeof(result)))
++			atheros_header_type = strtol(result, NULL, 16);
++		else
++			atheros_header_type = 0xfefe;
++	}
++
++	return atheros_header_type;
++}
++
++unsigned char *qca_switch_recv_bpdu(struct switch_port **sw_port, struct sockaddr_ll *sl, unsigned char *origin_data, int origin_len, unsigned char *new_data, int *new_len)
++{
++	unsigned short raw;
++	struct rxAtherosHeader *rxhd;
++	char control_channel[SW_NAME_SIZE];
++
++	if(!sw_port || !sl || !origin_data || !new_data || !new_len)
++		return NULL;
++
++	raw = ntohs(*((unsigned short *)(origin_data + ATHEROS_HEADER_INFO_OFFSET)));
++	rxhd = (struct rxAtherosHeader *)&raw;
++	if((rxhd->version != ATHEROS_HEADER_VERSION) || (rxhd->reason != ATHEROS_HEADER_REASON_BPDU)) {
++		/*isn't what we wanted, skip*/
++		*new_len = origin_len;
++		return origin_data;
++	}
++
++	if(NULL == rstp_if_indextoname(sl->sll_ifindex, control_channel))
++		return NULL;
++
++	*sw_port = find_switch_port_by_num(control_channel, rxhd->src_port);
++	if((*sw_port) == NULL)
++		return NULL;
++
++	memcpy(new_data, origin_data, ATHEROS_HEADER_OFFSET);
++	memcpy(new_data + ATHEROS_HEADER_OFFSET, origin_data + ATHEROS_HEADER_OFFSET + ATHEROS_HEADER_SIZE, (origin_len - ATHEROS_HEADER_OFFSET - ATHEROS_HEADER_SIZE));
++
++	*new_len = origin_len - ATHEROS_HEADER_SIZE;
++	return new_data;
++}
++
++unsigned char *qca_switch_send_bpdu(struct switch_port *sw_port, struct sockaddr_ll *sl, unsigned char *origin_data, int origin_len, unsigned char *new_data, int *new_len)
++{
++	unsigned short type, raw;
++	struct txAtherosHeader *txhd;
++
++	if(!sw_port || !sl || !origin_data || !new_data || !new_len)
++		return NULL;
++
++	type = htons(qca_switch_get_atheros_header_type());
++	sl->sll_protocol = type;
++	raw = 0;
++	txhd = (struct txAtherosHeader *)&raw;
++
++	txhd->dst_port = (1 << sw_port->priv.port_num);
++	txhd->from_cpu = 1;
++	txhd->priority = 7;
++	txhd->version = ATHEROS_HEADER_VERSION;
++	raw = htons(raw);
++
++	/*copy dst mac*/
++	memcpy(new_data, origin_data, HWADDR_SIZE);
++	/*use mac address of control channel*/
++	get_hwaddr(sw_port->priv.control_channel, (new_data + HWADDR_SIZE));
++	/*because of hardware limitation, BPDU will be rebounded back to linux, and this will result in repeated warning like
++	* "received packet on eth1 with own address as source address", so to avoid this warning, here crack the source mac of BPDU
++	* to let it not same with eth1.
++	*/
++	new_data[HWADDR_SIZE] = (new_data[HWADDR_SIZE] ^ 0x08);
++	/*copy atheros header type*/
++	memcpy(new_data + ATHEROS_HEADER_TYPE_OFFSET, &type, sizeof(type));
++	/*copy atheros header information*/
++	memcpy(new_data + ATHEROS_HEADER_INFO_OFFSET, &raw, sizeof(raw));
++	/*copy other data*/
++	memcpy(new_data + (ATHEROS_HEADER_OFFSET + ATHEROS_HEADER_SIZE), origin_data + (2 * HWADDR_SIZE), (origin_len - (2 * HWADDR_SIZE)));
++
++	*new_len = origin_len + ATHEROS_HEADER_SIZE;
++	return new_data;
++}
++
++static int qca_stp_state_map[5] = {QCA_STP_STATE_DISABLE, QCA_STP_STATE_LISTEN, QCA_STP_STATE_LEARN, QCA_STP_STATE_FORWARD, QCA_STP_STATE_BLOCK};
++
++/*return value : 0 successful, other failed*/
++int qca_switch_set_stp_state(struct switch_port *sw_port, int state)
++{
++	if(!sw_port)
++		return -1;
++
++	if(state >= (sizeof(qca_stp_state_map)/sizeof(qca_stp_state_map[0])))
++		return -1;
++
++	return sw_uk_exec(SW_API_STP_PT_STATE_SET, 0, 0, sw_port->priv.port_num, (a_uint32_t)qca_stp_state_map[state]);
++}
++
++int qca_switch_get_speed(struct switch_port *sw_port)
++{
++	int speed = 10;
++
++	if(!sw_port)
++		return speed;
++
++	sw_uk_exec(SW_API_PT_SPEED_GET, 0, sw_port->priv.port_num, (a_uint32_t)&speed);
++
++	return speed;
++}
++
++int qca_switch_get_duplex(struct switch_port *sw_port)
++{
++	int duplex = 0;
++
++	if(!sw_port)
++		return duplex;
++
++	sw_uk_exec(SW_API_PT_DUPLEX_GET, 0, sw_port->priv.port_num, (a_uint32_t)&duplex);
++
++	return duplex;
++}
++
++int qca_switch_flush_fdb(struct switch_port *sw_port)
++{
++	if(!sw_port)
++		return -1;
++
++	return sw_uk_exec(SW_API_FDB_DELPORT, 0, sw_port->priv.port_num, 0);
++}
++
++int qca_switch_destroy_port(struct switch_port *sw_port)
++{
++	qca_switch_set_stp_state(sw_port, BR_STATE_FORWARDING);
++	return 0;
++}
++
++int qca_switch_socket_init(void)
++{
++	return socket(PF_PACKET, SOCK_RAW, htons(qca_switch_get_atheros_header_type()));
++}
++
++void qca_switch_load_ports(void)
++{
++	char cmd[128];
++	char result[1024];
++	char switch_type[SW_NAME_SIZE], control_channel[SW_NAME_SIZE], data_channel[SW_NAME_SIZE], port_name[SW_NAME_SIZE];
++	char *index;
++	int port_num, result_len, match;
++
++	snprintf(cmd, sizeof(cmd), "%s get_switch_ports", RSTP_CMD_PATH);
++	result_len = run_cmd(cmd, result, sizeof(result));
++	if(result_len)
++	{
++		for(index = result; index < (result + result_len);) {
++			while((*index) && (*index != '='))++index;
++			if(!(*index))
++				break;
++
++			++index;
++			match = sscanf(index, "%s %s %s %d %s", switch_type, control_channel, data_channel, &port_num, port_name);
++			if(match > 0) {
++				create_switch_port(switch_type, control_channel, data_channel, port_num, port_name);
++			}
++			else
++				break;
++		}
++	}
++}
++
++fal_fdb_entry_t resv_entry =
++{
++	{{0x01,0x80,0xc2,0x0,0x0,0x0}}, /*addr*/
++	65535,			      /*fid*/
++	FAL_MAC_RDT_TO_CPU,	      /*dacmd*/
++	FAL_MAC_FRWRD,		      /*sacmd*/
++	{0},			      /*port.map*/
++	A_TRUE,			      /*portmap_en*/
++	A_TRUE,			      /*is_multicast*/
++	A_TRUE,			      /*static_en*/
++	A_FALSE,		      /*leaky_en*/
++	A_TRUE,			      /*mirror_en*/
++	A_FALSE,		      /*clone_en*/
++	A_TRUE,			      /*cross_pt_state*/
++	A_FALSE,		      /*da_pri_en*/
++	A_FALSE,		      /*da_queue*/
++	A_FALSE,		      /*white_list_en*/
++};
++
++static int cpu_port = -1;
++static int mirrot_port = -1;
++
++/*configure switch to allow sending/receiving bpdu on switch*/
++int qca_switch_enable_rx_tx_bpdu(void)
++{
++	char cmd[128];
++	char result[128];
++
++	snprintf(cmd, sizeof(cmd), "%s get_cpu_mirror_port", RSTP_CMD_PATH);
++	if(run_cmd(cmd, result, sizeof(result)) <= 0)
++		return -1;
++
++	if(sscanf(result, "%d %d", &cpu_port, &mirrot_port) <= 0)
++		return -1;
++
++	/*set atheros header type, a raw socket will listen on this ethernet type to receive bpdu from switch*/
++	sw_uk_exec(SW_API_HEADER_TYPE_SET, 0, 1, qca_switch_get_atheros_header_type());
++
++	if(cpu_port >= 0) {
++		/*accept management packet with atheros header on cpu port(0)*/
++		sw_uk_exec(SW_API_PT_RXHDR_SET, 0, cpu_port, 1);
++		/*when output management packet on cpu port(0), insert atheros header*/
++		sw_uk_exec(SW_API_PT_TXHDR_SET, 0, cpu_port, 1);
++	}
++
++	if(mirrot_port >= 0) {
++		/*accept management packet with atheros header on cpu port(6)*/
++		sw_uk_exec(SW_API_PT_RXHDR_SET, 0, mirrot_port, 1);
++		/*when output management packet on cpu port(6), insert atheros header*/
++		sw_uk_exec(SW_API_PT_TXHDR_SET, 0, mirrot_port, 1);
++		/*set mirror port to cpu port(6)*/
++		sw_uk_exec(SW_API_MIRROR_ANALY_PT_SET, 0, mirrot_port);
++	}
++
++	/*add a reserved fdb entry to capture bpdu on switch, then redirect it to Linux*/
++	sw_uk_exec(SW_API_FDB_RESV_ADD, 0, (a_uint32_t)&resv_entry);
++
++	return 0;
++}
++
++/*remove configuration which is done in qca_switch_initialize*/
++int qca_switch_disable_rx_tx_bpdu(void)
++{
++	sw_uk_exec(SW_API_HEADER_TYPE_SET, 0, 0, 0);
++
++	if(cpu_port >= 0) {
++		sw_uk_exec(SW_API_PT_RXHDR_SET, 0, cpu_port, 0);
++		sw_uk_exec(SW_API_PT_TXHDR_SET, 0, cpu_port, 0);
++	}
++
++	if(mirrot_port >= 0) {
++		sw_uk_exec(SW_API_PT_RXHDR_SET, 0, mirrot_port, 0);
++		sw_uk_exec(SW_API_PT_TXHDR_SET, 0, mirrot_port, 0);
++	}
++
++	sw_uk_exec(SW_API_FDB_RESV_DEL, 0, (a_uint32_t)&resv_entry);
++
++	return 0;
++}
++
++int qca_switch_initialize(void)
++{
++	qca_switch_enable_rx_tx_bpdu();
++	qca_switch_load_ports();
++
++	return 0;
++}
++
++int qca_switch_finalize(void)
++{
++	qca_switch_disable_rx_tx_bpdu();
++	return 0;
++}
++
++struct switch_ops qca_switch_ops =
++{
++	.switch_type = "qca",
++	.get_link_status = qca_switch_get_port_link_status,
++	.get_speed = qca_switch_get_speed,
++	.get_duplex = qca_switch_get_duplex,
++	.get_hwaddr = switch_port_get_hwaddr_default,
++	.set_stp_state = qca_switch_set_stp_state,
++	.flush_fdb = qca_switch_flush_fdb,
++	.destroy_port = qca_switch_destroy_port,
++	.socket_init = qca_switch_socket_init,
++	.send_bpdu_hook = qca_switch_send_bpdu,
++	.recv_bpdu_hook = qca_switch_recv_bpdu,
++	.initialize = qca_switch_initialize,
++	.finalize = qca_switch_finalize
++};
++
++void qca_switch_init(void)
++{
++	register_switch_ops(&qca_switch_ops);
++}
+diff --git a/qca_switch.h b/qca_switch.h
+new file mode 100644
+index 0000000..4f581ee
+--- /dev/null
++++ b/qca_switch.h
+@@ -0,0 +1,69 @@
++
++#ifndef QCA_SWITCH_H
++#define QCA_SWITCH_H
++
++/*ssdk API start*/
++#define SW_MAX_API_PARAM 12
++typedef unsigned int a_uint32_t;
++typedef unsigned short a_uint16_t;
++typedef unsigned char a_uint8_t;
++
++typedef enum
++{
++    A_FALSE,
++    A_TRUE
++} a_bool_t;
++
++typedef enum {
++	SW_OK              = 0,       /* Operation succeeded                 */
++	SW_FAIL            = -1,      /* Operation failed                    */
++} sw_error_t;
++
++typedef struct
++{
++	a_uint8_t uc[6];
++} fal_mac_addr_t;
++
++typedef enum
++{
++	FAL_MAC_FRWRD = 0,      /**<   packets are normally forwarded */
++	FAL_MAC_DROP,           /**<   packets are dropped */
++	FAL_MAC_CPY_TO_CPU,     /**<   packets are copyed to cpu */
++	FAL_MAC_RDT_TO_CPU      /**<   packets are redirected to cpu */
++} fal_fwd_cmd_t;
++
++typedef a_uint32_t fal_pbmp_t;
++
++typedef struct
++{
++	fal_mac_addr_t addr;
++	a_uint16_t    fid;
++	fal_fwd_cmd_t dacmd;
++	fal_fwd_cmd_t sacmd;
++	union
++	{
++		a_uint32_t id;
++		fal_pbmp_t map;
++	} port;
++	a_bool_t portmap_en;
++	a_bool_t is_multicast;
++	a_bool_t static_en;
++	a_bool_t leaky_en;
++	a_bool_t mirror_en;
++	a_bool_t clone_en;
++	a_bool_t cross_pt_state;
++	a_bool_t da_pri_en;
++	a_uint8_t da_queue;
++	a_bool_t white_list_en;
++} fal_fdb_entry_t;
++/*ssdk API end*/
++
++enum
++{
++	QCA_STP_STATE_DISABLE,
++	QCA_STP_STATE_BLOCK,
++	QCA_STP_STATE_LISTEN,
++	QCA_STP_STATE_LEARN,
++	QCA_STP_STATE_FORWARD
++};
++#endif /* QCA_SWITCH_H */
+diff --git a/switch_api.c b/switch_api.c
+new file mode 100644
+index 0000000..9e5a6fc
+--- /dev/null
++++ b/switch_api.c
+@@ -0,0 +1,590 @@
++#include "switch_api.h"
++#include "bridge_ctl.h"
++#include "netif_utils.h"
++#include "epoll_loop.h"
++#include "log.h"
++
++#include <linux/if_ether.h>
++#include <net/if.h>
++#include <linux/if_bridge.h>
++
++static struct epoll_event_handler switch_port_packet_event;
++
++/*
++ * return value : length of string in result
++ */
++int run_cmd(const char *cmd, char *result, int max_len)
++{
++	FILE *fp = NULL;
++	int result_len = 0;
++
++	memset(result, 0, max_len);
++	fp = popen(cmd, "r");
++	if (!fp)
++		return 0;
++
++	while(fgets(result + result_len, max_len - result_len - 1, fp)) {
++		result_len += strlen(result + result_len);
++		if(result_len + 1 == max_len)
++			break;
++	}
++
++	pclose(fp);
++	return result_len;
++}
++
++struct switch_ops *switchOpsList = NULL;
++
++int register_switch_ops(struct switch_ops *ops)
++{
++	struct switch_ops *sw_ops;
++
++	if(!ops || !ops->switch_type)
++		return -1;
++
++	if(!ops->get_link_status || !ops->get_speed || !ops->get_duplex || !ops->get_hwaddr || !ops->set_stp_state || !ops->flush_fdb)
++		return -1;
++
++	for(sw_ops = switchOpsList; sw_ops; sw_ops = sw_ops->next) {
++		if(strcmp(sw_ops->switch_type, ops->switch_type) == 0) {
++			return 0;
++		}
++	}
++
++	ops->next = switchOpsList;
++	switchOpsList = ops;
++
++	return 0;
++}
++
++struct switch_ops *find_switch_ops(const char *switch_type)
++{
++	struct switch_ops *sw_ops;
++
++	if(!switch_type)
++		return NULL;
++
++	for(sw_ops = switchOpsList; sw_ops; sw_ops = sw_ops->next) {
++		if(strcmp(sw_ops->switch_type, switch_type) == 0) {
++			return sw_ops;
++		}
++	}
++
++	return NULL;
++}
++
++/* Instances */
++static struct switch_port *switchPortList = NULL;
++static unsigned int switch_port_if_index_latest = SWITCH_PORT_IFINDEX_MIN;
++
++struct switch_port *find_switch_port_by_index(int index)
++{
++	struct switch_port *sw_port;
++	for(sw_port = switchPortList; sw_port; sw_port = sw_port->next) {
++		if(sw_port->if_index == index) {
++			return sw_port;
++		}
++	}
++
++	return NULL;
++}
++
++struct switch_port *find_switch_port_by_name(const char *name)
++{
++	struct switch_port *sw_port;
++
++	if(!name)
++		return NULL;
++
++	for(sw_port = switchPortList; sw_port; sw_port = sw_port->next) {
++		if(strcmp(sw_port->name, name) == 0) {
++			return sw_port;
++		}
++	}
++
++	return NULL;
++}
++
++struct switch_port *find_switch_port_by_num(char *control_channel, unsigned int port_num)
++{
++	struct switch_port *sw_port;
++
++	if(!control_channel)
++		return NULL;
++
++	for(sw_port = switchPortList; sw_port; sw_port = sw_port->next) {
++		if((strcmp(sw_port->priv.control_channel, control_channel) == 0) && (sw_port->priv.port_num == port_num)) {
++			return sw_port;
++		}
++	}
++
++	return NULL;
++}
++
++/*add switch port to list, and sort by port_num*/
++void switch_port_insert_to_list(struct switch_port *new)
++{
++	struct switch_port *sw_port;
++
++	if(!new)
++		return;
++
++	for(sw_port = switchPortList; sw_port; sw_port = sw_port->next) {
++		if(new->priv.port_num > sw_port->priv.port_num) {
++			if(!sw_port->next || (new->priv.port_num < sw_port->next->priv.port_num)) {
++				break;
++			}
++		}
++	}
++
++	if(sw_port) {
++		new->next = sw_port->next;
++		sw_port->next = new;
++	}
++	else {
++		new->next = switchPortList;
++		switchPortList = new;
++	}
++}
++
++/*remove switch port from list*/
++void switch_port_remove_from_list(struct switch_port *old)
++{
++	struct switch_port *sw_port, *prev;
++
++	if(!old)
++		return;
++
++	for(prev = sw_port = switchPortList; sw_port; prev = sw_port, sw_port = sw_port->next) {
++		if(sw_port == old)
++			break;
++	}
++
++	if(!sw_port)
++		return;
++
++	if(prev == sw_port) {
++		switchPortList = sw_port->next;
++	}
++	else {
++		prev->next = sw_port->next;
++	}
++
++	sw_port->next = NULL;
++}
++
++void destroy_switch_port(struct switch_port *sw_port)
++{
++	if(!sw_port)
++		return;
++
++	if(sw_port->priv.ops && sw_port->priv.ops->destroy_port)
++		sw_port->priv.ops->destroy_port(sw_port);
++
++	switch_port_remove_from_list(sw_port);
++
++	if(sw_port->priv.control_channel)
++		free(sw_port->priv.control_channel);
++	if(sw_port->priv.data_channel)
++		free(sw_port->priv.data_channel);
++
++	free(sw_port);
++}
++
++struct switch_port *create_switch_port(char *switch_type, char *control_channel, char *data_channel, unsigned int port_num, char *port_name)
++{
++	struct switch_ops *ops;
++	struct switch_port *new;
++
++	if(!switch_type || !control_channel || !data_channel || !port_name) {
++		ERROR("parameter error.");
++		return NULL;
++	}
++
++	if(NULL == (ops = find_switch_ops(switch_type))) {
++		ERROR("no such type of switch.");
++		return NULL;
++	}
++
++	if(switch_port_if_index_latest >= SWITCH_PORT_IFINDEX_MAX) {
++		ERROR("Too many switch port.");
++		return NULL;
++	}
++
++	new = (struct switch_port *)malloc(sizeof(struct switch_port));
++	if(!new) {
++		ERROR("Allocate memory for struct switch_port failed.");
++		return NULL;
++	}
++
++	snprintf(new->name, sizeof(new->name), "%s.%s", control_channel, port_name);
++	new->if_index = ++switch_port_if_index_latest;
++
++	new->priv.control_channel = strdup(control_channel);
++	new->priv.data_channel = strdup(data_channel);
++	if(strcmp(control_channel, data_channel) != 0)
++		new->priv.type = SWITCH_PORT_TYPE_EXPORTED;
++	else
++		new->priv.type = SWITCH_PORT_TYPE_HIDDEN;
++
++	new->priv.port_num = port_num;
++	new->priv.hwaddr_cache_valid = 0;
++	new->priv.ops = ops;
++
++	switch_port_insert_to_list(new);
++
++	if(new->priv.ops->create_port && (new->priv.ops->create_port(new) != 0)) {
++		destroy_switch_port(new);
++		new = NULL;
++	}
++
++	return new;
++}
++
++void switch_port_recv_bpdu(uint32_t events, struct epoll_event_handler *h)
++{
++	int cc;
++	unsigned char buf[512];
++	struct sockaddr_ll sl;
++	socklen_t salen = sizeof(sl);
++	struct switch_ops *sw_ops;
++	struct switch_port *sw_port = NULL;
++	unsigned char *new_data, *data;
++	int new_len, len;
++
++	cc = recvfrom(h->fd, &buf, sizeof(buf), 0, (struct sockaddr *) &sl, &salen);
++	if (cc <= 0) {
++		ERROR("recvfrom failed: %m");
++		return;
++	}
++
++	new_len = cc + SWITCH_BPDU_MAX_EXTRA_SIZE;
++	new_data = (unsigned char *)malloc(new_len);
++	if(!new_data) {
++		ERROR("malloc failed.");
++		return;
++	}
++
++	data = buf;
++	len = cc;
++	for(sw_ops = switchOpsList; sw_ops; sw_ops = sw_ops->next) {
++		if(!sw_ops->recv_bpdu_hook)
++			continue;
++
++		data = sw_ops->recv_bpdu_hook(&sw_port, &sl, buf, cc, new_data, &new_len);
++		if(data) {
++			len = new_len;
++			break;
++		}
++	}
++
++	if(!data) {
++		/*can't be processed, drop it*/
++		goto recv_exit;
++	}
++
++	bridge_bpdu_rcv((sw_port ? sw_port->if_index : sl.sll_ifindex), data, len);
++
++recv_exit:
++	if(new_data)
++		free(new_data);
++}
++
++/*
++ * return value : 0 successful, !=0 failed
++ */
++int switch_port_send_bpdu(int ifindex, const unsigned char *data, int len)
++{
++	int l;
++	struct sockaddr_ll sl;
++	struct switch_port *sw_port;
++	int control_channel_ifindex;
++	unsigned char *new_data = NULL, *send_data = (unsigned char *)data;
++	int new_len = len + SWITCH_BPDU_MAX_EXTRA_SIZE, send_len = len;
++
++	sw_port = find_switch_port_by_index(ifindex);
++	if(!sw_port) {
++		/*not switch port, let function packet_send process*/
++		return -1;
++	}
++
++	control_channel_ifindex = rstp_if_nametoindex(sw_port->priv.control_channel);
++	if(!control_channel_ifindex) {
++		/*no linux network device connect to switch*/
++		return 0;
++	}
++
++	memset(&sl, 0, sizeof(sl));
++	sl.sll_family = AF_PACKET;
++	sl.sll_protocol = htons(ETH_P_802_2);
++	sl.sll_ifindex = control_channel_ifindex;
++	sl.sll_halen = HWADDR_SIZE;
++	memcpy(&sl.sll_addr, data, HWADDR_SIZE);
++
++	if(sw_port->priv.ops->send_bpdu_hook) {
++		new_data = (unsigned char *)malloc(new_len);
++		if(!new_data)
++			return 0;
++
++		send_data = sw_port->priv.ops->send_bpdu_hook(sw_port, &sl, (unsigned char *)data, len, new_data, &new_len);
++		if(!send_data) {
++			free(new_data);
++			return 0;
++		}
++
++		send_len = new_len;
++	}
++
++	l = sendto(switch_port_packet_event.fd, send_data, send_len, 0,
++		   (struct sockaddr *) &sl, sizeof(sl));
++
++	if (l < 0) {
++		if (errno != EWOULDBLOCK)
++			ERROR("send failed");
++	} else if (l != send_len)
++		ERROR("short write in sendto: %d instead of %d", l, send_len);
++
++	if(new_data)
++		free(new_data);
++
++	return 0;
++}
++
++int switch_port_get_link_status(struct switch_port *sw_port)
++{
++	return sw_port->priv.ops->get_link_status(sw_port);
++}
++
++/*return value : 0 successful, other failed*/
++int switch_port_set_stp_state(int ifindex, int brstate)
++{
++	struct switch_port *sw_port = find_switch_port_by_index(ifindex);
++	if(!sw_port) {
++		return -1;
++	}
++
++	sw_port->priv.ops->set_stp_state(sw_port, brstate);
++
++	if(sw_port->priv.type == SWITCH_PORT_TYPE_EXPORTED)
++	{
++		/*if switch port was exported as a Linux network device, we also need set its stp state in Linux bridge
++		* here is a trick : we don't use rstp_if_nametoindex because we konw it is a linux network device rather than a switch port
++		* a loop will take place if we don't do like this
++		*/
++		bridge_set_state(if_nametoindex(sw_port->priv.data_channel), brstate);
++	}
++
++	return 0;
++}
++
++int switch_port_get_speed_duplex(char *ifname, int *speed, int *duplex)
++{
++	struct switch_port *sw_port = find_switch_port_by_name(ifname);
++	if(!sw_port) {
++		return -1;
++	}
++
++	*speed = sw_port->priv.ops->get_speed(sw_port);
++	*duplex = sw_port->priv.ops->get_duplex(sw_port);
++
++	return 0;
++}
++
++int switch_port_get_hwaddr_default(struct switch_port *sw_port, unsigned char *hwaddr)
++{
++	int ret;
++
++	if(!sw_port || sw_port->priv.hwaddr_cache_valid || !hwaddr)
++		return -1;
++
++	if(sw_port->priv.type == SWITCH_PORT_TYPE_EXPORTED)
++		ret = get_hwaddr(sw_port->priv.data_channel, hwaddr);
++	else
++		ret = get_hwaddr(sw_port->priv.control_channel, hwaddr);
++
++	if(!ret && (sw_port->priv.type != SWITCH_PORT_TYPE_EXPORTED)) {
++		hwaddr[5] = (hwaddr[5] & 0xf0) | sw_port->priv.port_num;
++	}
++
++	return ret;
++}
++
++int switch_port_get_hwaddr(char *ifname, unsigned char *hwaddr)
++{
++	struct switch_port *sw_port;
++	int ret;
++
++	sw_port = find_switch_port_by_name(ifname);
++	if(!sw_port) {
++		return -1;
++	}
++
++	if(!sw_port->priv.hwaddr_cache_valid) {
++		ret = sw_port->priv.ops->get_hwaddr(sw_port, sw_port->priv.hwaddr_cache);
++		if(!ret) {
++			sw_port->priv.hwaddr_cache_valid = 1;
++		}
++		else
++			return -1;
++	}
++
++	memcpy(hwaddr, sw_port->priv.hwaddr_cache, HWADDR_SIZE);
++	return 0;
++}
++
++int switch_port_flush_fdb(char *ifname)
++{
++	struct switch_port *sw_port = find_switch_port_by_name(ifname);
++	if(!sw_port) {
++		return -1;
++	}
++
++	return sw_port->priv.ops->flush_fdb(sw_port);
++}
++
++/*call this API when a rstp bridge port created*/
++int switch_port_attach_if(int ifindex)
++{
++	return 0;
++}
++
++/*call this API when a rstp bridge port deleted*/
++int switch_port_detach_if(int ifindex)
++{
++	switch_port_set_stp_state(ifindex, BR_STATE_FORWARDING);
++	return 0;
++}
++
++static int interval = 0;
++static int elapse = 0;
++
++void switch_port_one_second(void)
++{
++	char cmd[128];
++	char result[128];
++	struct switch_port *sw_port;
++
++	if(interval == 0)
++	{
++		snprintf(cmd, sizeof(cmd), "%s get_linkstatus_check_interval", RSTP_CMD_PATH);
++		if(run_cmd(cmd, result, sizeof(result))) {
++			sscanf(result, "%d", &interval);
++		}
++		else {
++			return;
++		}
++	}
++
++	if((++elapse) != interval)
++		return;
++
++	elapse = 0;
++
++	for(sw_port = switchPortList; sw_port; sw_port = sw_port->next)
++	{
++		update_switch_port_link_status(sw_port);
++	}
++}
++
++int switch_port_is_bridge_slave(char *br_name, char *if_name)
++{
++	char *new_if_name;
++	struct switch_port *sw_port = find_switch_port_by_name(if_name);
++	if(!sw_port)
++		return -1;
++
++	if(sw_port->priv.type == SWITCH_PORT_TYPE_HIDDEN)
++		new_if_name = sw_port->priv.control_channel;
++	else if(sw_port->priv.type == SWITCH_PORT_TYPE_EXPORTED)
++		new_if_name = sw_port->priv.data_channel;
++	else
++		return -1;
++
++	if(!strcmp(if_name, new_if_name))
++		return -1;
++
++	return is_bridge_slave(br_name, new_if_name);
++}
++
++int switch_notify(int br_index, int if_index, int newlink, unsigned flags)
++{
++	char sw_name[64];
++	struct switch_port *sw_port;
++	int ret = -1;
++
++	if(is_switch_port_ifindex(if_index))
++		return -1;
++
++	if(NULL == rstp_if_indextoname(if_index, sw_name)) {
++		return -1;
++	}
++
++	for(sw_port = switchPortList; sw_port; sw_port = sw_port->next) {
++		if((sw_port->priv.type == SWITCH_PORT_TYPE_HIDDEN) && strcmp(sw_port->priv.control_channel, sw_name))
++			continue;
++
++		if((sw_port->priv.type == SWITCH_PORT_TYPE_EXPORTED) && strcmp(sw_port->priv.data_channel, sw_name))
++			continue;
++
++		if(switch_port_get_link_status(sw_port))
++			flags = (IFF_UP|IFF_RUNNING);
++		else
++			flags = 0;
++
++		bridge_notify(br_index, sw_port->if_index, newlink, flags);
++		ret = 0;
++	}
++
++	return ret;
++}
++
++extern void qca_switch_init(void);
++
++int switch_port_init(void)
++{
++	struct switch_ops *sw_ops;
++
++	qca_switch_init();
++
++	for(sw_ops = switchOpsList; sw_ops; sw_ops = sw_ops->next) {
++		switch_port_packet_event.fd = sw_ops->socket_init();
++		if(switch_port_packet_event.fd >= 0) {
++			if (fcntl(switch_port_packet_event.fd, F_SETFL, O_NONBLOCK) < 0)
++				ERROR("fcntl set nonblock failed: %m");
++
++			switch_port_packet_event.handler = switch_port_recv_bpdu;
++			add_epoll(&switch_port_packet_event);
++
++			break;
++		}
++	}
++
++	if(switch_port_packet_event.fd < 0) {
++		ERROR("init switch port socket failed");
++		return -1;
++	}
++
++	for(sw_ops = switchOpsList; sw_ops; sw_ops = sw_ops->next) {
++		if(sw_ops->initialize)
++			sw_ops->initialize();
++	}
++
++	return 0;
++}
++
++int switch_port_final(void)
++{
++	struct switch_port *sw_port;
++	struct switch_ops *sw_ops;
++
++	while((sw_port = switchPortList) != NULL) {
++		destroy_switch_port(sw_port);
++	}
++
++	for(sw_ops = switchOpsList; sw_ops; sw_ops = sw_ops->next) {
++		if(sw_ops->finalize)
++			sw_ops->finalize();
++	}
++
++	return 0;
++}
+diff --git a/switch_api.h b/switch_api.h
+new file mode 100644
+index 0000000..c982b0c
+--- /dev/null
++++ b/switch_api.h
+@@ -0,0 +1,162 @@
++
++#ifndef SWITCH_API_H
++#define SWITCH_API_H
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <stdarg.h>
++#include <string.h>
++#include <unistd.h>
++#include <sys/socket.h>
++#include <sys/ioctl.h>
++#include <fcntl.h>
++#include <netinet/in.h>
++
++#include <linux/if_packet.h>
++
++#define SWITCH_PORT_IFINDEX_MIN 0x2bcd0000
++#define SWITCH_PORT_IFINDEX_MAX 0x2bcdffff
++#define SWITCH_PORT_IFINDEX_MASK 0xffff0000
++#define is_switch_port_ifindex(x) (((x) & SWITCH_PORT_IFINDEX_MASK) == SWITCH_PORT_IFINDEX_MIN)
++
++#define SW_NAME_SIZE 64
++#define HWADDR_SIZE 6
++#define SWITCH_BPDU_MAX_EXTRA_SIZE 16
++#define RSTP_CMD_PATH "/lib/functions/rstp.sh"
++
++struct switch_ops;
++
++typedef enum
++{
++	SWITCH_PORT_TYPE_HIDDEN,
++	SWITCH_PORT_TYPE_EXPORTED
++}switch_port_type_t;
++
++struct switch_port_private
++{
++	switch_port_type_t type;
++	/*name of Linux network device
++	 *1, use this channel to send and receive BPDU for this switch port
++	 *2, use this channel to manage hardware attributes of this switch port
++	 */
++	char *control_channel;
++	/*name of Linux network device
++	 *data traffic of this switch port will go through this Linux network device
++	 *1, when 'data_channel == control_channel', we define this switch port as hidden switch port
++	 *   because it hasn't an independent mapped Linux network device
++	 *2, when 'data_channel != control_channel', we define this switch port as exported switch port
++	 *   because it has an independent mapped Linux network device
++	 */
++	char *data_channel;
++
++	/*which hardware port this switch port represent*/
++	unsigned int port_num;
++
++	/*getting mac address of switch port is too frequent, so cache it*/
++	unsigned short hwaddr_cache_valid;
++	unsigned char hwaddr_cache[HWADDR_SIZE];
++
++	struct switch_ops *ops;
++
++	/*hardware specific field, should only be accessed by hardware specific code*/
++	void *dev_priv;
++};
++
++struct switch_port
++{
++	struct switch_port *next;
++
++	/*section name of port in configuration file "/etc/config/rstp"*/
++	char name[SW_NAME_SIZE];
++
++	/*if_index of switch port always start with a magic "0x2bcd"
++	* when be involved in Linux OS related operations, such as sending/receiving BPDU packets
++	* this switch port will use the if_index of switch_name
++	*/
++	int if_index;
++
++	/*private field should only be accessed in switch_api.c*/
++	struct switch_port_private priv;
++};
++
++typedef struct switch_ops
++{
++	struct switch_ops *next;
++	char *switch_type;
++
++	/*these API must be provided by hardware specific code*/
++	int (*get_link_status)(struct switch_port *sw_port);
++	int (*get_speed)(struct switch_port *sw_port);
++	int (*get_duplex)(struct switch_port *sw_port);
++	int (*get_hwaddr)(struct switch_port *sw_port, unsigned char *hwaddr);
++	int (*set_stp_state)(struct switch_port *sw_port, int state);
++	int (*flush_fdb)(struct switch_port *sw_port);
++
++	/*do some hardware specific initiation when create switch port*/
++	int (*create_port)(struct switch_port *sw_port);
++	/*do some hardware specific finalization when destroy switch port*/
++	int (*destroy_port)(struct switch_port *sw_port);
++
++	/*create socket to send and receive BPDU*/
++	int (*socket_init)(void);
++	/*hardware specific code can modify bpdu before sending it
++	 *return : the new packet content pointer
++	 *parameter :
++	 *sw_port, IN, send bpdu on this switch port
++	 *sl, OUT, LLC address
++	 *origin_data, IN, original bpdu
++	 *origin_len, IN, original bpdu length
++	 *new_data, IN, buffer to use if modification is needed
++	 *new_len, IN OUT, max size of new_data, also carry the real size of returned new packet content
++	 */
++	unsigned char *(*send_bpdu_hook)(struct switch_port *sw_port, struct sockaddr_ll *sl, unsigned char *origin_data, int origin_len, unsigned char *new_data, int *new_len);
++	/*hardware specific code can modify bpdu after receiving it
++	 *return : the new packet content pointer
++	 *parameter :
++	 *sw_port, OUT, receiving switch port
++	 *sl, IN, LLC address
++	 *origin_data, IN, original bpdu
++	 *origin_len, IN, original bpdu length
++	 *new_data, IN, buffer to use if modification is needed
++	 *new_len, IN OUT, max size of new_data, also carry the real size of returned new packet content
++	 */
++	unsigned char *(*recv_bpdu_hook)(struct switch_port **sw_port, struct sockaddr_ll *sl, unsigned char *origin_data, int origin_len, unsigned char *new_data, int *new_len);
++
++	void (*one_second_callback)(void);
++
++	/*hardware specific initiation when rstp start*/
++	int (*initialize)(void);
++	/*hardware specific finalization when rstp stop*/
++	int (*finalize)(void);
++}switch_ops_t;
++
++/*public API start, these API can be used everywhere*/
++int run_cmd(const char *cmd, char *result, int max_len);
++struct switch_port *find_switch_port_by_index(int index);
++struct switch_port *find_switch_port_by_name(const char *name);
++int switch_port_send_bpdu(int ifindex, const unsigned char *data, int len);
++int switch_port_get_link_status(struct switch_port *sw_port);
++int switch_port_set_stp_state(int ifindex, int brstate);
++int switch_port_get_speed_duplex(char *ifname, int *speed, int *duplex);
++int switch_port_get_hwaddr(char *ifname, unsigned char *hwaddr);
++int switch_port_flush_fdb(char *ifname);
++int switch_port_attach_if(int ifindex);
++int switch_port_detach_if(int ifindex);
++void switch_port_one_second(void);
++void update_switch_port_link_status(struct switch_port *sw_port);
++int switch_port_is_bridge_slave(char *br_name, char *if_name);
++int switch_notify(int br_index, int if_index, int newlink, unsigned flags);
++int switch_port_init(void);
++int switch_port_final(void);
++/*public API end*/
++
++/*private API start, these API can only be used in switch module*/
++int register_switch_ops(struct switch_ops *ops);
++struct switch_ops *find_switch_ops(const char *switch_type);
++struct switch_port *find_switch_port_by_num(char *control_channel, unsigned int port_num);
++void destroy_switch_port(struct switch_port *sw_port);
++struct switch_port *create_switch_port(char *switch_type, char *control_channel, char *data_channel, unsigned int port_num, char *port_name);
++int switch_port_get_hwaddr_default(struct switch_port *sw_port, unsigned char *hwaddr);
++/*private API end*/
++
++#endif /* SWITCH_API_H */

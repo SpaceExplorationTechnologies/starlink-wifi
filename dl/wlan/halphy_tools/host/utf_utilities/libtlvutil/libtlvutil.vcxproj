@@ -1,0 +1,158 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{3298042F-3C1D-4A1F-A911-57DE32A33160}</ProjectGuid>
+    <RootNamespace>art2</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>11.0.50727.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ReferencePath>..\libtlvutil;$(ReferencePath)</ReferencePath>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ReferencePath>..\libtlvutil;$(ReferencePath)</ReferencePath>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\..\include;.\genParmTemplate\outputTemplate;..\..\..\..\..\..\include\systemtools\common;..\..\..\src2\\include;..\..\..\..\..\..\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG_PKTLOG;REMOVE_PKT_LOG;_DEBUG;_WINDOWS;WIN32;_CONSOLE;_MLD;NO_LIB_PRINT;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_HOST_SIM_TESTING;_FOR_HOST_TESTING;LIBTLVUTIL_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4293;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\Debug\libtlvutil.dll</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <ImportLibrary>.\Debug\libtlvutil.lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy .\Debug\libtlvutil.dll ..\..\..\art2_peregrine\bin</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\..\..\include;.\genParmTemplate\outputTemplate;..\..\..\..\..\..\include\systemtools\common;..\..\..\src2\include;..\..\..\..\..\..\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG_PKTLOG;REMOVE_PKT_LOG;WIN32;NDEBUG;_WINDOWS;_MLD;NO_LIB_PRINT;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_HOST_SIM_TESTING;_FOR_HOST_TESTING;LIBTLVUTIL_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4293;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\Release\libtlvutil.dll</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <ImportLibrary>.\Release\libtlvutil.lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy .\Release\libtlvutil.dll ..\..\..\art2_peregrine\bin</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="cmdParmsTemplate.c" />
+    <ClCompile Include="genTxBinCmdTlv.c" />
+    <ClCompile Include="parseRxBinCmdTlv.c" />
+    <ClCompile Include="..\common\testUtil.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_calDoneParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_calDoneParmTxtTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_calParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_calParmTxtTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_nartCmdParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_nartCmdParmTxtTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_nartRspParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_nartRspParmTxtTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_pmParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_pmParmTxtTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_rspGenericParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_rspGenericParmTxtTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_rxParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_rxParmTxtTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_rxStatusParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_rxStatusParmTxtTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_setRegParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_setRegParmTxtTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_submitreportParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_submitreportParmTxtTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_txParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_txParmTxtTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_txStatusParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_txStatusParmTxtTemplate.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="genTxBinCmdTlv.h" />
+    <ClInclude Include="..\include\otaHostCommon.h" />
+    <ClInclude Include="parseRxBinCmdTlv.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_calDoneParmTxtTemplate.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_calParmTxtTemplate.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_nartCmdParmTxtTemplate.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_nartRspParmTxtTemplate.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_pmParmTxtTemplate.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_rspGenericParmTxtTemplate.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_rxParmTxtTemplate.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_rxStatusParmTxtTemplate.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_setRegParmTxtTemplate.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_submitreportParmTxtTemplate.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_txParmTxtTemplate.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_txStatusParmTxtTemplate.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

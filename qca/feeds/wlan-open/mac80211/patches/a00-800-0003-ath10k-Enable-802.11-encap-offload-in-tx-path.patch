@@ -1,0 +1,306 @@
+--- a/drivers/net/wireless/ath/ath10k/core.c
++++ b/drivers/net/wireless/ath/ath10k/core.c
+@@ -45,6 +45,7 @@ static bool skip_otp;
+ static bool rawmode;
+ bool bug_on_fw_assert = true;
+ bool ath10k_enable_smart_antenna = false;
++static bool ethernet_mode = true;
+ 
+ /* Enable ATH10K_FW_CRASH_DUMP_REGISTERS and ATH10K_FW_CRASH_DUMP_CE_DATA
+  * by default.
+@@ -61,6 +62,7 @@ module_param_named(coredump_mask, ath10k
+ module_param(bug_on_fw_assert, bool, 0644);
+ module_param_named(enable_smart_antenna, ath10k_enable_smart_antenna,
+ 		   bool, 0644);
++module_param(ethernet_mode, bool, 0644);
+ 
+ MODULE_PARM_DESC(debug_mask, "Debugging mask");
+ MODULE_PARM_DESC(uart_print, "Uart target debugging");
+@@ -70,6 +72,7 @@ MODULE_PARM_DESC(rawmode, "Use raw 802.1
+ MODULE_PARM_DESC(coredump_mask, "Bitfield of what to include in firmware crash file");
+ MODULE_PARM_DESC(bug_on_fw_assert, "Bug on firmware assert");
+ MODULE_PARM_DESC(enable_smart_antenna, "Enable smart antenna supprot in fw");
++MODULE_PARM_DESC(ethernet_mode, "Use ethernet frame datapath");
+ 
+ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
+ 	{
+@@ -2822,6 +2825,14 @@ static void ath10k_core_register_work(st
+ 	set_bit(ATH10K_FLAG_PEER_STATS, &ar->dev_flags);
+ 	ar->debug.enable_extd_tx_stats = true;
+ 
++	if (ethernet_mode && rawmode) {
++		ath10k_err(ar, "invalid configuration, ethernet and rawmode data path can not coexist\n");
++		status = -EINVAL;
++		goto err;
++	}
++
++	ar->ethernet_mode = ethernet_mode;
++
+ 	status = ath10k_core_probe_fw(ar);
+ 	if (status) {
+ 		ath10k_err(ar, "could not probe fw (%d)\n", status);
+--- a/drivers/net/wireless/ath/ath10k/core.h
++++ b/drivers/net/wireless/ath/ath10k/core.h
+@@ -127,6 +127,7 @@ enum ath10k_skb_flags {
+ 	ATH10K_SKB_F_DELIVER_CAB = BIT(2),
+ 	ATH10K_SKB_F_MGMT = BIT(3),
+ 	ATH10K_SKB_F_QOS = BIT(4),
++	ATH10K_SKB_F_NO_80211_ENCAP = BIT(5),
+ };
+ 
+ struct ath10k_skb_cb {
+@@ -1168,6 +1169,8 @@ struct ath10k {
+ 
+ 	struct ath10k_smart_ant_info smart_ant_info;
+ 
++	bool ethernet_mode;
++
+ 	/* must be last */
+ 	u8 drv_priv[0] __aligned(sizeof(void *));
+ };
+--- a/drivers/net/wireless/ath/ath10k/htt_tx.c
++++ b/drivers/net/wireless/ath/ath10k/htt_tx.c
+@@ -1059,6 +1059,10 @@ static u8 ath10k_htt_tx_get_tid(struct s
+ 	struct ieee80211_hdr *hdr = (void *)skb->data;
+ 	struct ath10k_skb_cb *cb = ATH10K_SKB_CB(skb);
+ 
++	/* Firmware takes care of tid classification for ethernet format */
++	if (cb->flags & ATH10K_SKB_F_NO_80211_ENCAP)
++		return skb->priority % IEEE80211_QOS_CTL_TID_MASK;
++
+ 	if (!is_eth && ieee80211_is_mgmt(hdr->frame_control))
+ 		return HTT_DATA_TX_EXT_TID_MGMT;
+ 	else if (cb->flags & ATH10K_SKB_F_QOS)
+@@ -1182,15 +1186,17 @@ static int ath10k_htt_tx_32(struct ath10
+ 	txbuf_paddr = htt->txbuf.paddr +
+ 		      (sizeof(struct ath10k_htt_txbuf_32) * msdu_id);
+ 
+-	if ((ieee80211_is_action(hdr->frame_control) ||
+-	     ieee80211_is_deauth(hdr->frame_control) ||
+-	     ieee80211_is_disassoc(hdr->frame_control)) &&
+-	     ieee80211_has_protected(hdr->frame_control)) {
+-		skb_put(msdu, IEEE80211_CCMP_MIC_LEN);
+-	} else if (!(skb_cb->flags & ATH10K_SKB_F_NO_HWCRYPT) &&
+-		   txmode == ATH10K_HW_TXRX_RAW &&
+-		   ieee80211_has_protected(hdr->frame_control)) {
+-		skb_put(msdu, IEEE80211_CCMP_MIC_LEN);
++	if (!info->control.no_80211_encap) {
++		if ((ieee80211_is_action(hdr->frame_control) ||
++		    ieee80211_is_deauth(hdr->frame_control) ||
++		    ieee80211_is_disassoc(hdr->frame_control)) &&
++		    ieee80211_has_protected(hdr->frame_control)) {
++			skb_put(msdu, IEEE80211_CCMP_MIC_LEN);
++		} else if (!(skb_cb->flags & ATH10K_SKB_F_NO_HWCRYPT) &&
++			   txmode == ATH10K_HW_TXRX_RAW &&
++			   ieee80211_has_protected(hdr->frame_control)) {
++			skb_put(msdu, IEEE80211_CCMP_MIC_LEN);
++		}
+ 	}
+ 
+ 	skb_cb->paddr = dma_map_single(dev, msdu->data, msdu->len,
+--- a/drivers/net/wireless/ath/ath10k/mac.c
++++ b/drivers/net/wireless/ath/ath10k/mac.c
+@@ -3363,11 +3363,15 @@ ath10k_mac_tx_h_get_txmode(struct ath10k
+ 			   struct sk_buff *skb)
+ {
+ 	const struct ieee80211_hdr *hdr = (void *)skb->data;
++	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
+ 	__le16 fc = hdr->frame_control;
+ 
+ 	if (!vif || vif->type == NL80211_IFTYPE_MONITOR)
+ 		return ATH10K_HW_TXRX_RAW;
+ 
++	if (info->control.no_80211_encap)
++		return ATH10K_HW_TXRX_ETHERNET;
++
+ 	if (ieee80211_is_mgmt(fc))
+ 		return ATH10K_HW_TXRX_MGMT;
+ 
+@@ -3513,9 +3517,18 @@ static void ath10k_mac_tx_h_fill_cb(stru
+ 				    struct sk_buff *skb)
+ {
+ 	struct ieee80211_hdr *hdr = (void *)skb->data;
++	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
+ 	struct ath10k_skb_cb *cb = ATH10K_SKB_CB(skb);
+ 
+ 	cb->flags = 0;
++	cb->vif = vif;
++	cb->txq = txq;
++
++	if (info->control.no_80211_encap) {
++		cb->flags |= ATH10K_SKB_F_NO_80211_ENCAP;
++		return;
++	}
++
+ 	if (!ath10k_tx_h_use_hwcrypto(vif, skb))
+ 		cb->flags |= ATH10K_SKB_F_NO_HWCRYPT;
+ 
+@@ -3524,9 +3537,6 @@ static void ath10k_mac_tx_h_fill_cb(stru
+ 
+ 	if (ieee80211_is_data_qos(hdr->frame_control))
+ 		cb->flags |= ATH10K_SKB_F_QOS;
+-
+-	cb->vif = vif;
+-	cb->txq = txq;
+ }
+ 
+ bool ath10k_mac_tx_frm_has_freq(struct ath10k *ar)
+@@ -3635,6 +3645,9 @@ static int ath10k_mac_tx(struct ath10k *
+ 	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
+ 	int ret;
+ 
++	if (info->control.no_80211_encap)
++		goto skip_encap;
++
+ 	/* We should disable CCK RATE due to P2P */
+ 	if (info->flags & IEEE80211_TX_CTL_NO_CCK_RATE)
+ 		ath10k_dbg(ar, ATH10K_DBG_MAC, "IEEE80211_TX_CTL_NO_CCK_RATE\n");
+@@ -3657,6 +3670,7 @@ static int ath10k_mac_tx(struct ath10k *
+ 		}
+ 	}
+ 
++skip_encap:
+ 	if (info->flags & IEEE80211_TX_CTL_TX_OFFCHAN) {
+ 		if (!ath10k_mac_tx_frm_has_freq(ar)) {
+ 			ath10k_dbg(ar, ATH10K_DBG_MAC, "queued offchannel skb %pK\n",
+@@ -3706,6 +3720,7 @@ void ath10k_offchan_tx_work(struct work_
+ 	int ret;
+ 	unsigned long time_left;
+ 	bool tmp_peer_created = false;
++	struct ieee80211_tx_info *info;
+ 
+ 	/* FW requirement: We must create a peer before FW will send out
+ 	 * an offchannel frame. Otherwise the frame will be stuck and
+@@ -3725,8 +3740,14 @@ void ath10k_offchan_tx_work(struct work_
+ 		ath10k_dbg(ar, ATH10K_DBG_MAC, "mac offchannel skb %pK\n",
+ 			   skb);
+ 
+-		hdr = (struct ieee80211_hdr *)skb->data;
+-		peer_addr = ieee80211_get_DA(hdr);
++		info = IEEE80211_SKB_CB(skb);
++
++		if (info->control.no_80211_encap) {
++			peer_addr = skb->data;
++		} else {
++			hdr = (struct ieee80211_hdr *)skb->data;
++			peer_addr = ieee80211_get_DA(hdr);
++		}
+ 
+ 		spin_lock_bh(&ar->data_lock);
+ 		vdev_id = ar->scan.vdev_id;
+@@ -4216,7 +4237,7 @@ static void ath10k_mac_op_tx(struct ieee
+ 	struct ieee80211_vif *vif = info->control.vif;
+ 	struct ieee80211_sta *sta = control->sta;
+ 	struct ieee80211_txq *txq = NULL;
+-	struct ieee80211_hdr *hdr = (void *)skb->data;
++	struct ieee80211_hdr *hdr;
+ 	enum ath10k_hw_txrx_mode txmode;
+ 	enum ath10k_mac_tx_path txpath;
+ 	bool is_htt;
+@@ -4228,13 +4249,13 @@ static void ath10k_mac_op_tx(struct ieee
+ 
+ 	txmode = ath10k_mac_tx_h_get_txmode(ar, vif, sta, skb);
+ 	txpath = ath10k_mac_tx_h_get_txpath(ar, skb, txmode);
++
+ 	is_htt = (txpath == ATH10K_MAC_TX_HTT ||
+ 		  txpath == ATH10K_MAC_TX_HTT_MGMT);
+ 	is_mgmt = (txpath == ATH10K_MAC_TX_HTT_MGMT);
+ 
+ 	if (is_htt) {
+ 		spin_lock_bh(&ar->htt.tx_lock);
+-		is_presp = ieee80211_is_probe_resp(hdr->frame_control);
+ 
+ 		ret = ath10k_htt_tx_inc_pending(htt);
+ 		if (ret) {
+@@ -4245,14 +4266,19 @@ static void ath10k_mac_op_tx(struct ieee
+ 			return;
+ 		}
+ 
+-		ret = ath10k_htt_tx_mgmt_inc_pending(htt, is_mgmt, is_presp);
+-		if (ret) {
+-			ath10k_dbg(ar, ATH10K_DBG_MAC, "failed to increase tx mgmt pending count: %d, dropping\n",
+-				   ret);
+-			ath10k_htt_tx_dec_pending(htt);
+-			spin_unlock_bh(&ar->htt.tx_lock);
+-			ieee80211_free_txskb(ar->hw, skb);
+-			return;
++		if (is_mgmt) {
++			hdr = (struct ieee80211_hdr *)skb->data;
++			is_presp = ieee80211_is_probe_resp(hdr->frame_control);
++
++			ret = ath10k_htt_tx_mgmt_inc_pending(htt, is_mgmt, is_presp);
++			if (ret) {
++				ath10k_dbg(ar, ATH10K_DBG_MAC, "failed to increase tx mgmt pending count: %d, dropping\n",
++					   ret);
++				ath10k_htt_tx_dec_pending(htt);
++				spin_unlock_bh(&ar->htt.tx_lock);
++				ieee80211_free_txskb(ar->hw, skb);
++				return;
++			}
+ 		}
+ 		spin_unlock_bh(&ar->htt.tx_lock);
+ 	}
+@@ -8379,7 +8405,6 @@ int ath10k_mac_register(struct ath10k *a
+ 	ieee80211_hw_set(ar->hw, HAS_RATE_CONTROL);
+ 	ieee80211_hw_set(ar->hw, AP_LINK_PS);
+ 	ieee80211_hw_set(ar->hw, SPECTRUM_MGMT);
+-	ieee80211_hw_set(ar->hw, SUPPORT_FAST_XMIT);
+ 	ieee80211_hw_set(ar->hw, CONNECTION_MONITOR);
+ 	ieee80211_hw_set(ar->hw, SUPPORTS_PER_STA_GTK);
+ 	ieee80211_hw_set(ar->hw, WANT_MONITOR_VIF);
+@@ -8388,6 +8413,11 @@ int ath10k_mac_register(struct ath10k *a
+ 	ieee80211_hw_set(ar->hw, SUPPORTS_TX_FRAG);
+ 	ieee80211_hw_set(ar->hw, REPORTS_LOW_ACK);
+ 
++	if (ar->ethernet_mode)
++		ieee80211_hw_set(ar->hw, SUPPORTS_80211_ENCAP);
++	else
++		ieee80211_hw_set(ar->hw, SUPPORT_FAST_XMIT);
++
+ 	if (!test_bit(ATH10K_FLAG_RAW_MODE, &ar->dev_flags))
+ 		ieee80211_hw_set(ar->hw, SW_CRYPTO_CONTROL);
+ 
+--- a/drivers/net/wireless/ath/ath10k/txrx.c
++++ b/drivers/net/wireless/ath/ath10k/txrx.c
+@@ -63,6 +63,8 @@ int ath10k_txrx_tx_unref(struct ath10k_h
+ 	struct sk_buff *msdu;
+ 	struct ath10k_sta *arsta;
+ 	struct ieee80211_sta *sta = NULL;
++	struct ieee80211_vif *vif;
++	u8 flags;
+ 
+ 	ath10k_dbg(ar, ATH10K_DBG_HTT,
+ 		   "htt tx completion msdu_id %u status %d\n",
+@@ -92,6 +94,9 @@ int ath10k_txrx_tx_unref(struct ath10k_h
+ 		sta = txq->sta;
+ 	}
+ 
++	flags = skb_cb->flags;
++	vif = skb_cb->vif;
++
+ 	ath10k_htt_tx_free_msdu_id(htt, tx_done->msdu_id);
+ 	ath10k_htt_tx_dec_pending(htt);
+ 	if (htt->num_pending_tx == 0)
+@@ -142,7 +147,11 @@ int ath10k_txrx_tx_unref(struct ath10k_h
+ 		spin_unlock_bh(&ar->data_lock);
+ 	}
+ 
+-	ieee80211_tx_status(htt->ar->hw, msdu);
++	if (flags & ATH10K_SKB_F_NO_80211_ENCAP)
++		ieee80211_tx_status_8023(htt->ar->hw, vif, msdu);
++	else
++		ieee80211_tx_status(htt->ar->hw, msdu);
++
+ 	/* we do not own the msdu anymore */
+ 
+ 	return 0;
+--- a/net/mac80211/tx.c
++++ b/net/mac80211/tx.c
+@@ -1465,7 +1465,6 @@ void ieee80211_txq_purge(struct ieee8021
+ {
+ 	struct fq *fq = &local->fq;
+ 	struct fq_tin *tin = &txqi->tin;
+-	struct ieee80211_tx_info *info;
+ 
+ 	fq_tin_reset(fq, tin, fq_skb_free_func);
+ 	ieee80211_purge_tx_queue(&local->hw, &txqi->frags);

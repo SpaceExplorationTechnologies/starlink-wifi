@@ -1,0 +1,17 @@
+diff --git a/switch_api.c b/switch_api.c
+index 9e5a6fc..b95e924 100644
+--- a/switch_api.c
++++ b/switch_api.c
+@@ -372,6 +372,12 @@ int switch_port_set_stp_state(int ifindex, int brstate)
+ 		* a loop will take place if we don't do like this
+ 		*/
+ 		bridge_set_state(if_nametoindex(sw_port->priv.data_channel), brstate);
++	} else {
++		/*if switch port is hidden behind a Linux network device, we need to keep its data channel always in stp forwarding state.
++		* here is a trick : we don't use rstp_if_nametoindex because we konw it is a linux network device rather than a switch port
++		* a loop will take place if we don't do like this
++		*/
++		bridge_set_state(if_nametoindex(sw_port->priv.data_channel), BR_STATE_FORWARDING);
+ 	}
+ 
+ 	return 0;

@@ -1,0 +1,11 @@
+--- a/examples/provider/curl_http_client.cc
++++ b/examples/provider/curl_http_client.cc
+@@ -64,6 +64,8 @@ SendRequestBlocking(CurlHttpClient::Method method,
+                                                            &curl_easy_cleanup};
+   CHECK(curl);
+ 
++  curl_easy_setopt(curl.get(), CURLOPT_CAINFO, "/etc/ssl/certs/ca-certificates.crt");
++
+   switch (method) {
+     case CurlHttpClient::Method::kGet:
+       CHECK_EQ(CURLE_OK, curl_easy_setopt(curl.get(), CURLOPT_HTTPGET, 1L));

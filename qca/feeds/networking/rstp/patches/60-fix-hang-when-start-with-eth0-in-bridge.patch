@@ -1,0 +1,47 @@
+diff --git a/ctl_socket.c b/ctl_socket.c
+index 301d410..dafc86f 100644
+--- a/ctl_socket.c
++++ b/ctl_socket.c
+@@ -89,7 +89,7 @@ void ctl_rcv_handler(uint32_t events, struct epoll_event_handler *p)
+ 	struct msghdr msg;
+ 	struct sockaddr_un sa;
+ 	struct iovec iov[2];
+-	int l;
++	int l, cmd;
+ 
+ 	msg.msg_name = &sa;
+ 	msg.msg_namelen = sizeof(sa);
+@@ -110,12 +110,15 @@ void ctl_rcv_handler(uint32_t events, struct epoll_event_handler *p)
+ 		return;
+ 	}
+ 
+-	if (mhdr.lout)
+-		mhdr.res = handle_message(mhdr.cmd, msg_inbuf, mhdr.lin,
+-					  msg_outbuf, &mhdr.lout);
+-	else
+-		mhdr.res = handle_message(mhdr.cmd, msg_inbuf, mhdr.lin,
+-					  NULL, NULL);
++	cmd = mhdr.cmd;
++	if(cmd != CMD_CODE_enable_bridge_rstp) {
++		if (mhdr.lout)
++			mhdr.res = handle_message(mhdr.cmd, msg_inbuf, mhdr.lin,
++						msg_outbuf, &mhdr.lout);
++		else
++			mhdr.res = handle_message(mhdr.cmd, msg_inbuf, mhdr.lin,
++						NULL, NULL);
++	}
+ 
+ 	if (mhdr.res < 0)
+ 		mhdr.lout = 0;
+@@ -129,6 +132,11 @@ void ctl_rcv_handler(uint32_t events, struct epoll_event_handler *p)
+ 		    ("CTL: Couldn't send full response, sent %d bytes instead of %zd.",
+ 		     l, sizeof(mhdr) + mhdr.lout);
+ 	}
++
++	if(cmd == CMD_CODE_enable_bridge_rstp){
++		handle_message(cmd, msg_inbuf, mhdr.lin,
++			NULL, NULL);
++	}
+ }
+ 
+ struct epoll_event_handler ctl_handler;

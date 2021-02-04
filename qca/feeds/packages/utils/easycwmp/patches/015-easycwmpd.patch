@@ -1,0 +1,41 @@
+diff --git a/ext/openwrt/init.d/easycwmpd b/ext/openwrt/init.d/easycwmpd
+index 2bef646..42101fc 100644
+--- a/ext/openwrt/init.d/easycwmpd
++++ b/ext/openwrt/init.d/easycwmpd
+@@ -9,6 +9,9 @@ PROG="/usr/sbin/easycwmpd"
+ UCI_SET="/sbin/uci -q ${UCI_CONFIG_DIR:+-c $UCI_CONFIG_DIR} set"
+ UCI_GET="/sbin/uci -q ${UCI_CONFIG_DIR:+-c $UCI_CONFIG_DIR} get"
+ UCI_COMMIT="/sbin/uci -q ${UCI_CONFIG_DIR:+-c $UCI_CONFIG_DIR} commit"
++UCI_DEL="/sbin/uci -q ${UCI_CONFIG_DIR:+-c $UCI_CONFIG_DIR} delete"
++UCI_ADD_LIST="/sbin/uci -q ${UCI_CONFIG_DIR:+-c $UCI_CONFIG_DIR} add_list"
++
+ init_device_info() {
+ 	local val oval
+ 	local change=0
+@@ -31,6 +34,26 @@ init_device_info() {
+ 	
+ 	#The same thing here for OUI and SerialNumber
+ 
++	val=`cat "/tmp/sysinfo/model"`
++	oval=`$UCI_GET easycwmp.@device[0].model_name`
++	[ -n "$val" -a "$val" != "$oval" ] && { $UCI_SET easycwmp.@device[0].model_name="$val"; change=1; }
++
++	val=`cut -d ' ' -f 4- /tmp/sysinfo/model | sed "s/['\"]//g"`
++	oval=`$UCI_GET easycwmp.@device[0].model_number`
++	[ -n "$val" -a "$val" != "$oval" ] && { $UCI_SET easycwmp.@device[0].model_number="$val"; change=1; }
++
++	val=`cat "/proc/cpuinfo" | grep "processor" | wc -l`
++	oval=`$UCI_GET easycwmp.@device[0].processor_count`
++	[ -n "$val" -a "$val" != "$oval" ] && { $UCI_SET easycwmp.@device[0].processor_count="$val"; change=1; }
++
++	val=`ifconfig | grep HWaddr |awk '{split($5,a,":"); print a[1],":",a[2],":",a[3]}'`
++	oval=`$UCI_GET easycwmp.@device[0].oui`
++	[ -n "$val" -a "$val" != "$oval" ] && { $UCI_SET easycwmp.@device[0].oui="$val"; change=1; }
++
++	val=`cat /proc/cpuinfo | grep 'Serial'`
++	oval=`$UCI_GET easycwmp.@device[0].serial_number`
++	[ -n "$val" -a "$val" != "$oval" ] && { $UCI_SET easycwmp.@device[0].serial_number="$val"; change=1; }
++
+ 	[ "$change" = "1" ] && $UCI_COMMIT easycwmp
+ }
+ 

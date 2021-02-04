@@ -1,0 +1,82 @@
+/*
+ * Copyright (c) 2018, The Linux Foundation. All rights reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+#include "qcom-ipq8064-v2.0.dtsi"
+#include "qcom-ipq8064-ap148.dtsi"
+
+/ {
+	model = "Qualcomm Atheros IPQ8064/AP148";
+
+	soc {
+
+		tcsr@1a400000 {
+			compatible = "ipq,tcsr";
+			reg = <0x1a400000 0x100>;
+			ipq,usb-ctrl-select = <0x02>;
+			status = "ok";
+		};
+
+		phy@100f8800 {      /* USB3 port 1 HS phy */
+			status = "ok";
+		};
+
+		phy@100f8830 {      /* USB3 port 1 SS phy */
+			status = "ok";
+		};
+
+		phy@110f8800 {      /* USB3 port 0 HS phy */
+			status = "disabled";
+		};
+
+		phy@110f8830 {      /* USB3 port 0 SS phy */
+			status = "disabled";
+		};
+
+		usb30@0 {
+			status = "disabled";
+		};
+
+		usb30@1 {
+			status = "ok";
+		};
+
+		usb_dphy: phy@12500000 {
+			compatible  = "qcom,usb-otg-ci";
+			reg = <0x12500000 0x400>;
+			dr_mode = "peripheral";
+			clocks = <&gcc USB_HS1_XCVR_CLK>,
+						<&gcc USB_HS1_H_CLK>;
+			clock-names = "core", "iface";
+			resets = <&gcc USB_HS1_RESET>;
+			reset-names = "link";
+			status = "ok";
+		};
+
+		gadget1: gadget@12500000 {
+			compatible  = "qcom,ci-hdrc";
+			reg = <0x12500000 0x400>;
+			status = "ok";
+			dr_mode = "peripheral";
+			clocks = <&gcc USB_HS1_XCVR_CLK>;
+			clock-names = "core";
+			interrupts = <0 100 IRQ_TYPE_NONE>;
+			usb-phy = <&usb_dphy>;
+			phy_type = "ulpi";
+			resets  = <&gcc USB_HS1_RESET>;
+			reset-names = "core";
+		};
+	};
+};

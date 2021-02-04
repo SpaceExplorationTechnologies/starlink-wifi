@@ -1,0 +1,19 @@
+Qualcomm Atheros DDR and APPS FABRICS scaling
+------------------------------------------------
+
+Required properties :
+- compatible : "qcom,fab-scaling"
+- clocks : defines each clock needed
+- clock-names : contains clock names
+- fab_freq_high : Turbo FABRIC frequency
+- fab_freq_nominal : Nominal FABRIC frequency
+
+Example:
+
+fab-scaling {
+	compatible = "qcom,fab-scaling";
+	clocks = <&apps_fabric_clk>, <&ebi1_clk>;
+	clock-names = "apps-fab-clk", "ddr-fab-clk";
+	fab_freq_high = <533000000>;
+	fab_freq_nominal = <400000000>;
+};

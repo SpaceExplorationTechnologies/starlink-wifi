@@ -1,0 +1,16 @@
+Index: ntfs-3g-2014.2.15-1-fuseint/configure.ac
+===================================================================
+--- ntfs-3g-2014.2.15-1-fuseint.orig/configure.ac	2017-04-17 16:05:10.709123496 +0530
++++ ntfs-3g-2014.2.15-1-fuseint/configure.ac	2017-04-17 16:05:35.697288133 +0530
+@@ -260,8 +260,9 @@
+ 	AC_CHECK_LIB(
+ 		[pthread],
+ 		[pthread_create],
+-		[LIBFUSE_LITE_LIBS="${LIBFUSE_LITE_LIBS} -lpthread"],
+-		[AC_MSG_ERROR([Cannot find pthread library])]
++		[LIBFUSE_LITE_LIBS="${LIBFUSE_LITE_LIBS} -lpthread -ldl"],
++		[AC_MSG_ERROR([Cannot find pthread library])],
++		[-ldl]
+ 	)
+ 	AC_DEFINE(
+ 		[_REENTRANT],

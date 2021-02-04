@@ -1,0 +1,14 @@
+Index: libweave-1.4/Makefile
+===================================================================
+--- libweave-1.4.orig/Makefile 2016-04-18 17:07:30.000000000 +0200
++++ libweave-1.4/Makefile      2016-04-18 17:38:31.143628070 +0200
+@@ -99,7 +99,7 @@
+ all-libs : out/$(BUILD_MODE)/libweave.so
+ all-tests : out/$(BUILD_MODE)/libweave_exports_testrunner out/$(BUILD_MODE)/libweave_testrunner
+ 
+-all : all-libs all-examples all-tests all-testdevices
++all : all-libs all-examples
+ 
+ clean :
+       rm -rf out
+

@@ -1,0 +1,56 @@
+--- a/drivers/net/wireless/ath/wil6210/cfg80211.c
++++ b/drivers/net/wireless/ath/wil6210/cfg80211.c
+@@ -24,9 +24,13 @@
+ #include "fw.h"
+ #include "ftm.h"
+ 
+-static unsigned short scan_dwell_time  = WMI_SCAN_DWELL_TIME_MS;
+-module_param(scan_dwell_time, ushort, S_IRUGO|S_IWUSR);
+-MODULE_PARM_DESC(scan_dwell_time, " Scan dwell time");
++static uint scan_dwell_time  = WMI_SCAN_DWELL_TIME_MS;
++module_param(scan_dwell_time, uint, 0644);
++MODULE_PARM_DESC(scan_dwell_time, " Scan dwell time (msec)");
++
++static uint scan_timeout = WIL6210_SCAN_TO_SEC;
++module_param(scan_timeout, uint, 0644);
++MODULE_PARM_DESC(scan_timeout, " Scan timeout (seconds)");
+ 
+ static unsigned short acs_ch_weight[4] = {120, 100, 100, 100};
+ module_param_array(acs_ch_weight, ushort, NULL, 0);
+@@ -904,8 +908,9 @@ static int wil_cfg80211_scan(struct wiph
+ 
+ 	(void)wil_p2p_stop_discovery(vif);
+ 
+-	wil_dbg_misc(wil, "Start scan_request 0x%p\n", request);
+-	wil_dbg_misc(wil, "SSID count: %d", request->n_ssids);
++	wil_dbg_misc(wil,
++		     "Start scan_request 0x%p, dwell_time %dms, timeout %dsec, SSID count %d\n",
++		     request, scan_dwell_time, scan_timeout, request->n_ssids);
+ 
+ 	for (i = 0; i < request->n_ssids; i++) {
+ 		wil_dbg_misc(wil, "SSID[%d]", i);
+@@ -926,10 +931,12 @@ static int wil_cfg80211_scan(struct wiph
+ 	}
+ 
+ 	vif->scan_request = request;
+-	mod_timer(&vif->scan_timer, jiffies + WIL6210_SCAN_TO);
++	mod_timer(&vif->scan_timer,
++		  jiffies + msecs_to_jiffies(1000U * scan_timeout));
+ 
+ 	memset(&cmd, 0, sizeof(cmd));
+ 	cmd.cmd.scan_type = WMI_ACTIVE_SCAN;
++	cmd.cmd.dwell_time = cpu_to_le32(scan_dwell_time);
+ 	cmd.cmd.num_channels = 0;
+ 	n = min(request->n_channels, 4U);
+ 	for (i = 0; i < n; i++) {
+--- a/drivers/net/wireless/ath/wil6210/wil6210.h
++++ b/drivers/net/wireless/ath/wil6210/wil6210.h
+@@ -124,7 +124,7 @@ static inline u32 wil_mtu2macbuf(u32 mtu
+ #define WIL6210_ITR_RX_MAX_BURST_DURATION_DEFAULT (500) /* usec */
+ #define WIL6210_FW_RECOVERY_RETRIES	(5) /* try to recover this many times */
+ #define WIL6210_FW_RECOVERY_TO	msecs_to_jiffies(5000)
+-#define WIL6210_SCAN_TO		msecs_to_jiffies(10000)
++#define WIL6210_SCAN_TO_SEC		10
+ #define WIL6210_DISCONNECT_TO_MS (2000)
+ #define WIL6210_RX_HIGH_TRSH_INIT		(0)
+ #define WIL6210_RX_HIGH_TRSH_DEFAULT \

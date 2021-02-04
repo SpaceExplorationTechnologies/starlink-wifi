@@ -1,0 +1,11 @@
+diff -Nur a/programs/pluto/whack.c openswan-2.6.41/programs/pluto/whack.c
+--- a/programs/pluto/whack.c	2018-02-23 12:48:19.146332339 -0800
++++ b/programs/pluto/whack.c	2018-02-23 12:49:17.402330614 -0800
+@@ -2117,6 +2117,7 @@
+ 		}
+ 	    }
+ 	}
++	close(sock);
+ 	return exit_status;
+     }
+ }

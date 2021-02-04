@@ -1,0 +1,11 @@
+--- a/drivers/net/wireless/ath/wil6210/txrx.c
++++ b/drivers/net/wireless/ath/wil6210/txrx.c
+@@ -33,7 +33,7 @@ module_param(rtap_include_phy_info, bool
+ MODULE_PARM_DESC(rtap_include_phy_info,
+ 		 " Include PHY info in the radiotap header, default - no");
+ 
+-bool rx_align_2;
++bool rx_align_2 = 1;
+ module_param(rx_align_2, bool, 0444);
+ MODULE_PARM_DESC(rx_align_2, " align Rx buffers on 4*n+2, default - no");
+ 

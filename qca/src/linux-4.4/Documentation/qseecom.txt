@@ -1,0 +1,200 @@
+Available APIs used in Sample App:
+
+QSClient - Client Application in Linux
+
+qseecom.ko is a loadable kernel module which acts as the QTI secure client
+in the non-secure world. It provides a sample interface for communication with
+the secure world(QSEE).
+
+Multiplication and Crypto functionalities are currently available in the sample
+app. Similarly an app can be written to support any required functionalities.
+
+For each platform, memory has been reserved in the QTI default device tree.
+For ipq806x, the region is fixed, while it can be changed for ipq807x and
+ipq40xx.
+
+Available APIs in kernel which can be reused/extended:
+
+(1) qcom_scm_qseecom_notify	 -> to notify the load region of application
+(2) qcom_scm_qseecom_load	 -> to load the libraries and application
+(3) qcom_scm_qseecom_send_data	 -> to send data to perform operation
+(4) qcom_scm_qseecom_unload	 -> to unload the application and libraries
+(5) qcom_scm_tz_register_log_buf -> to register a log buf for sample app logs
+
+Refer to source code in drivers/misc/qseecom.c for re-using the above APIs. This
+can be modified or extended to support vendor applications.
+
+Sampleapp Usage Instructions:
+
+Across any platforms, apps can be loaded and functionalities can be performed
+securely from the non-secure world via the scm interface. Below are the steps
+to load a sample app and perform some basic operations:
+
+Before loading the sample app, the library required by sample app needs to be
+loaded.
+
+(0) Step 0: To provide the libraries required by Sample app
+
+This step can be skipped if its platform ipq8064 as we use a different
+framework.
+
+This step is needed only for ipq807x and ipq40xx platform.
+
+Concatenate all the seg files into 1 segment file and feed it as
+input to sys/firmware/seg_file and feed the mdt file as input to
+sys/firmware/mdt_file as below:
+
+In platform ipq40xx, the common lib is divided into 4 segments
+whereas in platform ipq807x, the common lib is divided into 5 segments.
+
+cat cmnlib.b00 > cmnlib.b0x
+cat cmnlib.b01 >> cmnlib.b0x
+cat cmnlib.b02 >> cmnlib.b0x
+cat cmnlib.b03 >> cmnlib.b0x
+
+Below step is needed only if its platform ipq807x:
+
+cat cmnlib.b04 >> cmnlib.b0x
+
+cat cmnlib.mdt > /sys/firmware/mdt_file
+cat cmnlib.b0x > /sys/firmware/seg_file
+
+(1) Step 1: To provide the sampleapp files to the kernel driver
+
+Concatenate all the seg files into 1 segment file and feed it as
+input to sys/firmware/seg_file and feed the mdt file as input to
+sys/firmware/mdt_file as below:
+
+In platform ipq8064 or ipq40xx, the sample app is divided into 4
+segments whereas in ipq807x, the sample app is divided into 7 segments
+
+cat sampleapp.b00 > sampleapp.b0x
+cat sampleapp.b01 >> sampleapp.b0x
+cat sampleapp.b02 >> sampleapp.b0x
+cat sampleapp.b03 >> sampleapp.b0x
+
+Below 3 steps are required if its platform ipq807x:
+cat sampleapp.b04 >> sampleapp.b0x
+cat sampleapp.b05 >> sampleapp.b0x
+cat sampleapp.b06 >> sampleapp.b0x
+
+cat sampleapp.mdt > /sys/firmware/mdt_file
+cat sampleapp.b0x > /sys/firmware/seg_file
+
+(2) Step 2: To start loading the sampleapp
+
+echo 1 > /sys/firmware/tzapp/load_start
+
+(3) Step 3: Perform operations required in the application
+
+To test Crypto functionality:
+echo 1 > /sys/firmware/tzapp/crypto
+
+To give input to Encryption:
+echo '6bc1bee22e409f9' > /sys/firmware/tzapp/encrypt
+
+To view encryption output:
+cat /sys/firmware/tzapp/encrypt
+
+To give input to Decryption:
+cat /sys/firmware/tzapp/encrypt > /sys/firmware/tzapp/decrypt
+
+To view decryption output:
+cat /sys/firmware/tzapp/decrypt
+
+To give input to Multiplication op:
+echo 100 > /sys/firmware/tzapp/basic_data
+
+To view Secure Multiplication output:
+cat /sys/firmware/tzapp/basic_data
+
+(4) Step 4: To start unloading the sampleapp
+
+echo 0 > /sys/firmware/tzapp/load_start
+
+The libraries used by sample app are automatically unloaded when the device
+driver is removed (i.e. during rmmod to remove the qseecom module).
+
+If the user doesn't unload the app, then the app is unloaded when the
+device driver is removed.
+
+Additionally logging has been enabled for QSEE sample app. To view the log at
+any point after loading the sample app from kernel, please use below command:
+
+cat /sys/firmware/tzapp/log_buf > log.txt
+
+QSEE APIs in ipq40xx:
+
+In ipq40xx, there are RSA and AES APIs available to perform crypto operations.
+The steps to use AES and RSA APIs are as below:
+
+RSA API:
+
+RSA Generate Key blob:
+(1) cat /sys/rsa_sec_key/rsa_generate > key_blob.txt
+
+RSA Import Key blob:
+(1) cat hex.dat > /sys/rsa_sec_key/rsa_import
+(2) cat /sys/rsa_sec_key/rsa_import > import_key_blob.txt
+
+Note:
+spec of the hex.dat file used in RSA Import Key blob:
+hex.dat size is 1066 bytes.
+
+1066 bytes split up:
+	528 bytes -> import modulus
+	2 bytes -> import modulus length in hexadecimal
+	5 bytes -> public exponent
+	1 byte -> public exponent length in hexadecimal
+	528 bytes -> private exponent
+	2 bytes -> private exponent length in hexadecimal
+
+public, private exponent can be any value other than 3
+modulus can be any value lesser than 4096
+
+RSA Sign data:
+(1) cat key_blob.txt > /sys/rsa_sec_key/rsa_key_blob
+    or
+    cat import_key_blob.txt > /sys/rsa_sec_key/rsa_key_blob
+(2) cat data.txt > /sys/rsa_sec_key/rsa_sign
+(3) cat /sys/rsa_sec_key/rsa_sign > signed_data.txt
+
+RSA Verification of Signature:
+(1) cat key_blob.txt > /sys/rsa_sec_key/rsa_key_blob
+    or
+    cat import_key_blob.txt > /sys/rsa_sec_key/rsa_key_blob
+(2) cat data.txt > /sys/rsa_sec_key/rsa_sign
+(3) cat signed_data.txt > /sys/rsa_sec_key/rsa_verify
+(4) cat /sys/rsa_sec_key/rsa_verify > verification_result.txt
+(5) cat verification_result.txt
+
+AES API:
+
+AES Generate Key blob:
+(1) cat /sys/sec_key/generate > key_blob.txt
+
+AES Import Key blob:
+(1) cat key.txt > /sys/sec_key/import
+(2) cat /sys/sec_key/import > imported_key_blob.txt
+
+AES Encrypt data:
+(1) cat key_blob.txt > /sys/sec_key/key_blob
+    or
+    cat imported_key_blob.txt > /sys/sec_key/key_blob
+(2) cat data.txt > /sys/sec_key/seal
+(3) cat /sys/sec_key/seal > encrypted_data.txt
+
+AES Decrypt data:
+(1) cat key_blob.txt > /sys/sec_key/key_blob
+    or
+    cat imported_key_blob.txt > /sys/sec_key/key_blob
+(2) cat encrypted_data.txt > /sys/sec_key/unseal
+
+Note:
+shk value is 0 by default in non-secure ipq40xx target systems.
+
+To make the keyblobs target dependent, shk values must be changed from default
+value in non-secure target systems.
+
+Without doing this, we will be able to encrypt in one board and decrypt in
+another board using the same keyblob.

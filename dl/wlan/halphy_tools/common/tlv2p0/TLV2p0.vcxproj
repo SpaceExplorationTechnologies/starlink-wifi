@@ -1,0 +1,272 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{E3BFF3BA-4F99-4439-B76F-8530277B991A}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>TLV2p0</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;TLV2P0_EXPORTS;_HOST_SIM_TESTING;USED_BY_HOST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\include;..\..\include;..\..\..\..\include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OutputFile>.\Debug\$(TargetName)$(TargetExt)</OutputFile>
+      <ManifestFile>$(InDir)$(TargetName)$(TargetExt).intermediate.manifest</ManifestFile>
+      <ProgramDatabaseFile>.\Debug\$(TargetName).pdb</ProgramDatabaseFile>
+      <ProfileGuidedDatabase>.\Debug\$(TargetName).pgd</ProfileGuidedDatabase>
+      <ImportLibrary>.\Debug\$(TargetName).lib</ImportLibrary>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;TLV2P0_EXPORTS;_HOST_SIM_TESTING;USED_BY_HOST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\include;..\..\include;..\..\..\..\include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OutputFile>.\x64\Debug\$(TargetName)$(TargetExt)</OutputFile>
+      <ManifestFile>$(InDir)$(TargetName)$(TargetExt).intermediate.manifest</ManifestFile>
+      <ProgramDatabaseFile>.\x64\Debug\$(TargetName).pdb</ProgramDatabaseFile>
+      <ProfileGuidedDatabase>.\x64\Debug\$(TargetName).pgd</ProfileGuidedDatabase>
+      <ImportLibrary>.\x64\Debug\$(TargetName).lib</ImportLibrary>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy x64\Debug\TLV2p0.dll ..\..\host\qtip_ch\package\
+copy x64\Debug\TLV2p0.lib ..\..\host\qtip_ch\package\</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;TLV2P0_EXPORTS;_HOST_SIM_TESTING;USED_BY_HOST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\include;..\..\include;..\..\..\..\include%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <OutputFile>.\Release\$(TargetName)$(TargetExt)</OutputFile>
+      <ProfileGuidedDatabase>.\Release\$(TargetName).pgd</ProfileGuidedDatabase>
+      <ImportLibrary>.\Release\$(TargetName).lib</ImportLibrary>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;TLV2P0_EXPORTS;_HOST_SIM_TESTING;USED_BY_HOST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\include;..\..\include;..\..\..\..\include%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <OutputFile>.\x64\Release\$(TargetName)$(TargetExt)</OutputFile>
+      <ProfileGuidedDatabase>.\x64\Release\$(TargetName).pgd</ProfileGuidedDatabase>
+      <ImportLibrary>.\x64\Release\$(TargetName).lib</ImportLibrary>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy x64\Release\TLV2p0.dll ..\..\host\qtip_ch\package\lib
+copy x64\Release\TLV2p0.lib ..\..\host\qtip_ch\package\lib</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\util\testUtil.c" />
+    <ClCompile Include="cmdEncoder\tlvCmdEncoder.c" />
+    <ClCompile Include="cmdParser\cmdBasicRspHandler.c" />
+    <ClCompile Include="cmdParser\cmdCommitOtpStream.c" />
+    <ClCompile Include="cmdParser\cmdConfigHandler.c" />
+    <ClCompile Include="cmdParser\cmdCustOtpSpaceGetSize.c" />
+    <ClCompile Include="cmdParser\cmdCustOtpSpaceRead.c" />
+    <ClCompile Include="cmdParser\cmdCustOtpSpaceWrite.c" />
+    <ClCompile Include="cmdParser\cmdDPDAgc2Pwr.c" />
+    <ClCompile Include="cmdParser\cmdDPDComplete.c" />
+    <ClCompile Include="cmdParser\cmdDPDLoopbackAttn.c" />
+    <ClCompile Include="cmdParser\cmdDPDLoopbackTiming.c" />
+    <ClCompile Include="cmdParser\cmdDPDTrainingQuality.c" />
+    <ClCompile Include="cmdParser\cmdGenericUtfCmdHandler.c" />
+    <ClCompile Include="cmdParser\cmdGetTgtPwr.c" />
+    <ClCompile Include="cmdParser\cmdHandlerTbl.c" />
+    <ClCompile Include="cmdParser\cmdHwCalHandler.c" />
+    <ClCompile Include="cmdParser\cmdLMChannelListAndRspHandler.c" />
+    <ClCompile Include="cmdParser\cmdLMGoHandler.c" />
+    <ClCompile Include="cmdParser\cmdLMHWCALHandler.c" />
+    <ClCompile Include="cmdParser\cmdLMHWCALRSPHandler.c" />
+    <ClCompile Include="cmdParser\cmdLMQueryHandler.c" />
+    <ClCompile Include="cmdParser\cmdLMRxHandler.c" />
+    <ClCompile Include="cmdParser\cmdLMTxHandler.c" />
+    <ClCompile Include="cmdParser\cmdLMTxInitHandler.c" />
+    <ClCompile Include="cmdParser\cmdLMRxInitHandler.c" />
+    <ClCompile Include="cmdParser\cmdMemReadHandler.c" />
+    <ClCompile Include="cmdParser\cmdMemWriteHandler.c" />
+    <ClCompile Include="cmdParser\cmdMoreSegmentHandler.c" />
+    <ClCompile Include="cmdParser\cmdRegReadHandler.c" />
+    <ClCompile Include="cmdParser\cmdRegWriteHandler.c" />
+    <ClCompile Include="cmdParser\cmdRxGainCalHandler.c" />
+    <ClCompile Include="cmdParser\cmdRxHandler.c" />
+    <ClCompile Include="cmdParser\cmdRxStatusHandler.c" />
+    <ClCompile Include="cmdParser\cmdSetPCIEConfigParam.c" />
+    <ClCompile Include="cmdParser\cmdSetRegDmn.c" />
+    <ClCompile Include="cmdParser\cmdTPCCALHandler.c" />
+    <ClCompile Include="cmdParser\cmdTPCCALPWRHandler.c" />
+    <ClCompile Include="cmdParser\cmdTxHandler.c" />
+    <ClCompile Include="cmdParser\cmdTxStatusHandler.c" />
+    <ClCompile Include="cmdParser\cmdXtalCalHandler.c" />
+    <ClCompile Include="cmdParser\parseBinCmdStream_v2.c" />
+    <ClCompile Include="cmdParser\sysCmdGeneric.c" />
+    <ClCompile Include="cmdParser\sysCmdHandlerTbl.c" />
+    <ClCompile Include="cmdParser\sysCmdSetChannel.c" />
+    <ClCompile Include="cmdParser\sysCmdTestData.c" />
+    <ClCompile Include="common\cmdRspParmsDict.c" />
+    <ClCompile Include="common\cmdRspParmsInternal.c" />
+    <ClCompile Include="common\sysCmdRspParmsDict.c" />
+    <ClCompile Include="tlvcmdrsp\tlvCmdRsp.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\cmdBasicRspHandler.h" />
+    <ClInclude Include="include\cmdCommitOtpStream.h" />
+    <ClInclude Include="include\cmdCustOtpSpaceGetSize.h" />
+    <ClInclude Include="include\cmdCustOtpSpaceRead.h" />
+    <ClInclude Include="include\cmdCustOtpSpaceWrite.h" />
+    <ClInclude Include="include\cmdDPDAgc2Pwr.h" />
+    <ClInclude Include="include\cmdDPDComplete.h" />
+    <ClInclude Include="include\cmdDPDLoopbackAttn.h" />
+    <ClInclude Include="include\cmdDPDLoopbackTiming.h" />
+    <ClInclude Include="include\cmdDPDTrainingQuality.h" />
+    <ClInclude Include="include\cmdGenericUtfCmdHandler.h" />
+    <ClInclude Include="include\cmdGetTgtPwr.h" />
+    <ClInclude Include="include\cmdHandlers.h" />
+    <ClInclude Include="include\cmdHwCalHandler.h" />
+    <ClInclude Include="include\cmdLMChannelListAndRspHandler.h" />
+    <ClInclude Include="include\cmdLMGoHandler.h" />
+    <ClInclude Include="include\cmdLMHWCALHandler.h" />
+    <ClInclude Include="include\cmdLMHWCALRSPHandler.h" />
+    <ClInclude Include="include\cmdLMQueryHandler.h" />
+    <ClInclude Include="include\cmdLMRxHandler.h" />
+    <ClInclude Include="include\cmdLMTxHandler.h" />
+    <ClInclude Include="include\cmdLMTxInitHandler.h" />
+    <ClInclude Include="include\cmdLMRxInitHandler.h" />
+    <ClInclude Include="include\cmdMoreSegmentHandler.h" />
+    <ClInclude Include="include\cmdRegReadHandler.h" />
+    <ClInclude Include="include\cmdRegWriteHandler.h" />
+    <ClInclude Include="include\cmdRspParmsDict.h" />
+    <ClInclude Include="include\cmdRspParmsInternal.h" />
+    <ClInclude Include="include\cmdRxGainCalHandler.h" />
+    <ClInclude Include="include\cmdRxHandler.h" />
+    <ClInclude Include="include\cmdRxStatusHandler.h" />
+    <ClInclude Include="include\cmdSetPCIEConfigParam.h" />
+    <ClInclude Include="include\cmdSetRegDmn.h" />
+    <ClInclude Include="include\cmdTPCCALHandler.h" />
+    <ClInclude Include="include\cmdTPCCALPWRHandler.h" />
+    <ClInclude Include="include\cmdTxHandler.h" />
+    <ClInclude Include="include\cmdTxStatusHandler.h" />
+    <ClInclude Include="include\cmdXtalCalHandler.h" />
+    <ClInclude Include="include\sysCmdGeneric.h" />
+    <ClInclude Include="include\sysCmdTestData.h" />
+    <ClInclude Include="include\tlv2Api.h" />
+    <ClInclude Include="include\tlv2Inc.h" />
+    <ClInclude Include="include\tlv2SysApi.h" />
+    <ClInclude Include="include\tlvCmdEncoder.h" />
+    <ClInclude Include="include\tlvCmdRsp.h" />
+    <ClInclude Include="include\tlvCmdRspInternal.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

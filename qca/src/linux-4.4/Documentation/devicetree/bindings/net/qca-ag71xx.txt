@@ -1,0 +1,99 @@
+* QCA MDIO IO device
+
+Required properties:
+- compatible : Should be "qca,ag71xx-mdio"
+- reg : Address and length of the register set for the device
+- reset-bit: Reset bitmap for mdio device
+
+Optional properties:
+- phy-mask: phy address mask
+- builtin-switch: 0: unsupport, 1: support
+- ar934x-support: 0: unsupport, 1: support
+
+Example:
+
+mdio0: mdio@19000000 {
+	compatible = "qca,ag71xx-mdio";
+	reg = <0x19000000 0x200>;
+	phy-mask = <0>;
+	builtin-switch = <0>;
+	ar934x-support = <0>;
+	reset-bit = <0x400000>;
+	phy0: ethernet-phy@0 {
+		reg = <0>;
+		qca,ar8327-initvals = <
+			0x00004 0x80080     /* PAD0_MODE */
+			0x00008 0x0000000   /* PAD5_MODE */
+			0x0000c 0x7600000   /* PAD6_MODE */
+			0x000e4 0x2a545     /* MAC_POWER_SEL */
+			0x000e0 0xc74164d0  /* SGMII_CTRL */
+			0x0007c 0x7e        /* PORT0_STATUS */
+			0x00094 0x7e        /* PORT6_STATUS */
+		>;
+	};
+	phy1: ethernet-phy@1 {
+		reg = <1>;
+	};
+	phy2: ethernet-phy@2 {
+		reg = <2>;
+	};
+	phy3: ethernet-phy@3 {
+		reg = <3>;
+	};
+	phy4: ethernet-phy@4 {
+		reg = <4>;
+	};
+};
+
+* QCA ag71xx Ethernet driver
+
+Required properties:
+- compatible : Should be "qca,ag71xx-eth"
+- reg : Address and length of the register set for the device
+- reg-names : Memory resource name
+- reset-bit : Rest bitmap for this device
+- interrupts : Interrupt resourse
+- interrupt-names : Interrupt resource name
+- mdio-handle : The phandle for the PHY connected to this ethernet controller
+
+Optional properties:
+- eth-cfg : The value is to configure GMAC Register(ETH_CFG), the bit definition
+            is different of platforms, refer to the user manual for detail.
+- phy-mode : < phy_mode> phy_mask speed duplex>
+            phy_mode: 0 invalid, 1 MII, 2 GMII, 3 SGMII, 4 TBI, 5 RMII, 6 RGMII,
+                         7 RGMII_ID, 8 RGMII_RXID, 9 RGMII_TXID, 10 RTBI, 11 SMII
+- phy_mask: Phy mask
+- force-speed :  10 10M, 100 100M, 1000 1000M
+- force-duplex : 0 half, 1 full
+- fifo-cfg : <fifo_cfg1 fifo_cfg2 fifo_cfg3>
+            The values of fifo Registers, refer to user manual for detail.
+- eth-pll-data : <pll_10 pll_100 pll_1000>
+            The values of pll Registers, refer to user manual for detail.
+- builtin-switch :  <phy4_mii_en phy_poll_mask>
+            phy4_mii_en: Enable phy4 MII
+            phy_poll_mask: Phy polling mask
+
+Example:
+
+eth0: ethernet@19000000 {
+	compatible = "qca,ag71xx-eth";
+	reg = <0x19000000 0x200>,
+		<0x18070000 0x14>;
+	reg-names = "mac_base",
+		    "cfg_base";
+	mdio-handle = <&mdio0>;
+	eth-pll-data = <0x1313 0 0x86000000>;
+	phy-mode = <7>;
+	phy-mask = <1>;
+	force-speed = <1000>;
+	force-duplex = <1>;
+	max-frame-len = <4095>;
+	desc-pktlen-mask = <0x3fff>;
+	reset-bit = <0x200>;
+	has-gbit = <1>;
+	ar724x-support = <1>;
+	qca955x-support = <1>;
+	fifo-cfg = <0x0010ffff 0x015500aa 0x01f00140>;
+	interrupts = <4>;
+	interrupt-names = "mac_irq";
+};

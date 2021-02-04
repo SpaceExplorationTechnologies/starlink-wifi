@@ -1,0 +1,13 @@
+Index: libgcrypt-1.6.1/mpi/ec.c
+===================================================================
+--- libgcrypt-1.6.1.orig/mpi/ec.c	2014-01-29 15:18:38.000000000 +0530
++++ libgcrypt-1.6.1/mpi/ec.c	2016-06-24 16:21:02.778316657 +0530
+@@ -40,7 +40,7 @@
+ void
+ _gcry_mpi_point_log (const char *name, mpi_point_t point, mpi_ec_t ctx)
+ {
+-  gcry_mpi_t x, y;
++  gcry_mpi_t x = NULL, y = NULL;
+   char buf[100];
+ 
+   if (!point)

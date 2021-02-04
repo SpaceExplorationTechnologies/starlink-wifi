@@ -1,0 +1,14 @@
+Index: avs-device-sdk-1.7.0/CMakeLists.txt
+===================================================================
+--- avs-device-sdk-1.7.0.orig/CMakeLists.txt	2018-04-20 13:41:06.285779059 +0530
++++ avs-device-sdk-1.7.0/CMakeLists.txt	2018-04-20 13:41:06.281779058 +0530
+@@ -7,6 +7,9 @@
+     set(HAS_EXTERNAL_MEDIA_PLAYER_ADAPTERS ON)
+ endif()
+ 
++set(CMAKE_BINARY_DIR ${CMAKE_BINARY_DIR}/../build)
++add_definitions(-D_GLIBCXX_USE_C99=1)
++
+ include(build/BuildDefaults.cmake)
+ include(tools/Testing.cmake)
+ 

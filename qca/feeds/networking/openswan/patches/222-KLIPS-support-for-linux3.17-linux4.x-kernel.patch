@@ -1,0 +1,138 @@
+diff -Nur a/linux/include/openswan/ipsec_kversion.h openswan-2.6.41/linux/include/openswan/ipsec_kversion.h
+--- a/linux/include/openswan/ipsec_kversion.h	2016-10-14 16:29:36.413497094 -0700
++++ openswan-2.6.41/linux/include/openswan/ipsec_kversion.h	2016-10-14 16:38:04.253482060 -0700
+@@ -524,5 +524,9 @@
+ # endif
+ #endif
+ 
++# if LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0)
++typedef struct ctl_table ctl_table;
++#endif
++
+ #endif /* _OPENSWAN_KVERSIONS_H */
+ 
+diff -Nur a/linux/include/openswan/ipsec_param2.h openswan-2.6.41/linux/include/openswan/ipsec_param2.h
+--- a/linux/include/openswan/ipsec_param2.h	2016-10-14 16:29:36.413497094 -0700
++++ openswan-2.6.41/linux/include/openswan/ipsec_param2.h	2016-10-14 16:38:04.253482060 -0700
+@@ -27,8 +27,12 @@
+ 
+ /* kernels > 2.4.102 */
+ #if defined(IP_SELECT_IDENT) && defined(IP_SELECT_IDENT_NEW2)
+-#undef KLIPS_IP_SELECT_IDENT(iph, skb)
+-#define KLIPS_IP_SELECT_IDENT(iph, skb) __ip_select_ident(skb, 1)
++#undef KLIPS_IP_SELECT_IDENT
++# if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 1, 0))
++#  define KLIPS_IP_SELECT_IDENT(iph, skb) __ip_select_ident(skb, 1)
++# else
++#  define KLIPS_IP_SELECT_IDENT(iph, skb) __ip_select_ident(dev_net(skb->dev), iph, 1)
++#endif
+ #endif
+ 
+ #if !defined(HAVE_CURRENT_UID)
+diff -Nur a/linux/net/ipsec/ipsec_mast.c openswan-2.6.41/linux/net/ipsec/ipsec_mast.c
+--- a/linux/net/ipsec/ipsec_mast.c	2016-10-14 16:29:36.417497094 -0700
++++ openswan-2.6.41/linux/net/ipsec/ipsec_mast.c	2016-10-14 16:38:04.253482060 -0700
+@@ -965,7 +965,11 @@
+ 	snprintf(name, IFNAMSIZ, MAST_DEV_FORMAT, vifnum);
+ 	
+ #ifdef alloc_netdev
+-	im = alloc_netdev(sizeof(struct mastpriv), name, ipsec_mast_netdev_setup);
++	im = alloc_netdev(sizeof(struct mastpriv), name,
++# if LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0)
++       NET_NAME_UNKNOWN,
++#endif
++	ipsec_mast_netdev_setup);
+ #else
+ 	im = (struct net_device *)kmalloc(sizeof(struct net_device),GFP_KERNEL);
+ #endif
+diff -Nur a/linux/net/ipsec/ipsec_tunnel.c openswan-2.6.41/linux/net/ipsec/ipsec_tunnel.c
+--- a/linux/net/ipsec/ipsec_tunnel.c	2016-10-14 16:29:36.413497094 -0700
++++ openswan-2.6.41/linux/net/ipsec/ipsec_tunnel.c	2016-10-14 16:38:04.253482060 -0700
+@@ -2109,7 +2109,11 @@
+ 
+ 	sprintf(name, IPSEC_DEV_FORMAT, ifnum);
+ #ifdef alloc_netdev
+-	dev_ipsec = alloc_netdev(sizeof(struct ipsecpriv), name, ipsec_tunnel_netdev_setup);
++	dev_ipsec = alloc_netdev(sizeof(struct ipsecpriv), name,
++# if LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0)
++	NET_NAME_UNKNOWN,
++#endif
++	ipsec_tunnel_netdev_setup);
+ #else
+ 	dev_ipsec = (struct net_device*)kmalloc(sizeof(struct net_device), GFP_KERNEL);
+ #endif
+diff -Nur a/linux/net/ipsec/pfkey_v2.c openswan-2.6.41/linux/net/ipsec/pfkey_v2.c
+--- a/linux/net/ipsec/pfkey_v2.c	2016-10-14 16:29:36.413497094 -0700
++++ openswan-2.6.41/linux/net/ipsec/pfkey_v2.c	2016-10-14 16:39:06.513480216 -0700
+@@ -119,9 +119,13 @@
+ DEBUG_NO_STATIC int pfkey_release(struct socket *sock);
+ 
+ #ifdef NET_26
++# if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 1, 0)
++DEBUG_NO_STATIC int pfkey_sendmsg(struct socket *sock, struct msghdr *msg, size_t len);
++DEBUG_NO_STATIC int pfkey_recvmsg(struct socket *sock, struct msghdr *msg, size_t size, int flags);
++# else
+ DEBUG_NO_STATIC int pfkey_sendmsg(struct kiocb *iocb, struct socket *sock, struct msghdr *msg, size_t len);
+-DEBUG_NO_STATIC int pfkey_recvmsg(struct kiocb *kiocb, struct socket *sock, struct msghdr *msg
+-				  , size_t size, int flags);
++DEBUG_NO_STATIC int pfkey_recvmsg(struct kiocb *kiocb, struct socket *sock, struct msghdr *msg, size_t size, int flags);
++#endif
+ #else
+ DEBUG_NO_STATIC int pfkey_sendmsg(struct socket *sock, struct msghdr *msg, int len, struct scm_cookie *scm);
+ DEBUG_NO_STATIC int pfkey_recvmsg(struct socket *sock, struct msghdr *msg, int size, int flags, struct scm_cookie *scm);
+@@ -902,7 +906,11 @@
+ 
+ DEBUG_NO_STATIC int
+ #ifdef NET_26
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 1, 0)
++pfkey_sendmsg(struct socket *sock, struct msghdr *msg, size_t len)
++#else
+ pfkey_sendmsg(struct kiocb *iocb, struct socket *sock, struct msghdr *msg, size_t len)
++#endif
+ #else
+ pfkey_sendmsg(struct socket *sock, struct msghdr *msg, int len, struct scm_cookie *scm)
+ #endif
+@@ -986,7 +994,11 @@
+ 		SENDERR(ENOBUFS);
+ 	}
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0)
+ 	memcpy_fromiovec((void *)pfkey_msg, msg->msg_iov, len);
++#else
++	memcpy_from_msg((void *)pfkey_msg, msg, len);
++#endif
+ 
+ 	if(pfkey_msg->sadb_msg_version != PF_KEY_V2) {
+ 		KLIPS_PRINT(1 || debug_pfkey,
+@@ -1088,11 +1100,18 @@
+ 
+ DEBUG_NO_STATIC int
+ #ifdef NET_26
++# if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 1, 0)
++pfkey_recvmsg(struct socket *sock,
++              struct msghdr *msg,
++	      size_t size,
++	      int flags)
++# else
+ pfkey_recvmsg(struct kiocb *kiocb
+ 	      , struct socket *sock
+ 	      , struct msghdr *msg
+ 	      , size_t size
+ 	      , int flags)
++# endif
+ #else
+ pfkey_recvmsg(struct socket *sock
+ 	      , struct msghdr *msg
+@@ -1160,7 +1179,12 @@
+ 		msg->msg_flags |= MSG_TRUNC;
+ 	}
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0)
+ 	skb_copy_datagram_iovec(skb, 0, msg->msg_iov, size);
++#else
++	skb_copy_datagram_msg(skb, 0, msg, size);
++#endif
++
+ #ifdef HAVE_KERNEL_TSTAMP
+ 	sk->sk_stamp = skb->tstamp;
+ #elif defined(HAVE_TSTAMP)

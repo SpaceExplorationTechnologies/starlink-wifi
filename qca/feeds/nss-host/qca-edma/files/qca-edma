@@ -1,0 +1,102 @@
+#!/bin/sh /etc/rc.common
+#
+# Copyright (c) 2015-2018, The Linux Foundation. All rights reserved.
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
+
+START=15
+
+start() {
+        c0_map=`cat /proc/sys/net/edma/core0_completion_affinity`
+        c1_map=`cat /proc/sys/net/edma/core1_completion_affinity`
+        c2_map=`cat /proc/sys/net/edma/core2_completion_affinity`
+        c3_map=`cat /proc/sys/net/edma/core3_completion_affinity`
+
+	for tx_irq_q0_q3 in 0 1 2 3
+	do
+		tx_irq_num=`grep -m1 edma_eth_tx$tx_irq_q0_q3 /proc/interrupts | cut -d ':' -f 1 | tail -n1 | tr -d ' '`
+			[ -n "$tx_irq_num" ] && echo $c0_map > /proc/irq/$tx_irq_num/smp_affinity
+	done
+
+	for tx_irq_q4_q7 in 4 5 6 7
+	do
+		tx_irq_num=`grep -m1 edma_eth_tx$tx_irq_q4_q7 /proc/interrupts | cut -d ':' -f 1 | tail -n1 | tr -d ' '`
+			[ -n "$tx_irq_num" ] && echo $c1_map > /proc/irq/$tx_irq_num/smp_affinity
+	done
+
+	for tx_irq_q8_q11 in 8 9 10 11
+	do
+		tx_irq_num=`grep -m1 edma_eth_tx$tx_irq_q8_q11 /proc/interrupts | cut -d ':' -f 1 | tail -n1 | tr -d ' '`
+			[ -n "$tx_irq_num" ] && echo $c2_map > /proc/irq/$tx_irq_num/smp_affinity
+	done
+
+	for tx_irq_q12_q15 in 12 13 14 15
+	do
+		tx_irq_num=`grep -m1 edma_eth_tx$tx_irq_q12_q15 /proc/interrupts | cut -d ':' -f 1 | tail -n1 | tr -d ' '`
+			[ -n "$tx_irq_num" ] && echo $c3_map > /proc/irq/$tx_irq_num/smp_affinity
+	done
+
+        for rx_irq_q0_q1 in 0 1
+	do
+		rx_irq_num=`grep -m1 edma_eth_rx$rx_irq_q0_q1 /proc/interrupts | cut -d ':' -f 1 | tail -n1 | tr -d ' '`
+			[ -n "$rx_irq_num" ] && echo 1 > /proc/irq/$rx_irq_num/smp_affinity
+	done
+
+	for rx_irq_q2_q3 in 2 3
+	do
+		rx_irq_num=`grep -m1 edma_eth_rx$rx_irq_q2_q3 /proc/interrupts | cut -d ':' -f 1 | tail -n1 | tr -d ' '`
+			[ -n "$rx_irq_num" ] && echo 2 > /proc/irq/$rx_irq_num/smp_affinity
+	done
+
+        for rx_irq_q4_q5 in 4 5
+        do
+		rx_irq_num=`grep -m1 edma_eth_rx$rx_irq_q4_q5 /proc/interrupts | cut -d ':' -f 1 | tail -n1 | tr -d ' '`
+			[ -n "$rx_irq_num" ] && echo 4 > /proc/irq/$rx_irq_num/smp_affinity
+	done
+
+	for rx_irq_q6_q7 in 6 7
+	do
+		rx_irq_num=`grep -m1 edma_eth_rx$rx_irq_q6_q7 /proc/interrupts | cut -d ':' -f 1 | tail -n1 | tr -d ' '`
+			[ -n "$rx_irq_num" ] && echo 8 > /proc/irq/$rx_irq_num/smp_affinity
+	done
+
+	for eth_interface in 0 1
+	do
+		for tx_queue in 0 1 2 3
+		do
+			val=$(( 2 ** $tx_queue))
+			echo $val > /sys/class/net/eth$eth_interface/queues/tx-$tx_queue/xps_cpus
+		done
+	done
+
+	for eth_interface in 0 1
+	do
+		for rx_queue in 0 1 2 3
+		do
+			echo 256 > /sys/class/net/eth$eth_interface/queues/rx-$rx_queue/rps_flow_cnt
+		done
+
+	done
+
+	echo 1024 > /proc/sys/net/core/rps_sock_flow_entries
+
+	ethtool -K eth0 gro off
+	ethtool -K eth1 gro off
+
+#	The following command should be uncommented to Disable RSS and Enable ACL
+#	echo 2 > /proc/sys/net/edma/edma_disable_rss
+#	echo 0x64206420 > /proc/sys/net/edma/rss_acl_queue_map
+}
+
+

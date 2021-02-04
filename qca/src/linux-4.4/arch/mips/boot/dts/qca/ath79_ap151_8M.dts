@@ -1,0 +1,249 @@
+/* Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+
+#include "ath79.dtsi"
+
+/ {
+	compatible = "qca,ap151", "qca,ath79";
+	model = "QCA AP151 Board";
+
+	aliases {
+		serial0 = "/ahb/apb/uart@18020000";
+		ehci_0 = &ehci0;
+		ehci_1 = &ehci1;
+		eth0 = "/ahb/ethernet@19000000";
+		eth1 = "/ahb/ethernet@1a000000";
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x2000000>;
+	};
+
+	chosen {
+		bootargs = "board=DTB console=ttyS0,115200 mtdparts=spi0.0:256k(u-boot)ro,64k(u-boot-env),6336k(rootfs),1472k(kernel),64k(art),7808k@0x50000(firmware) rootfstype=squashfs,jffs2 noinitrd crashkernel=10M@20M";
+	};
+
+	extosc: oscillator {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <25000000>;
+	};
+
+	ahb {
+		apb {
+			uart@18020000 {
+				status = "okay";
+			};
+
+			gpio@18040000 {
+				val,gpio = <
+					36 2
+					35 15
+					34 16
+					17 21
+					16 22
+				>;
+			};
+
+			pll-controller@18050000 {
+				clocks = <&extosc>;
+			};
+
+			ehci0: usb@1b000000 {
+				compatible = "qca,ath79-ehci";
+				reg = <0x1b000000 0x200>;
+				interrupt-parent = <&ip3_int>;
+				interrupts = <0>;
+				has-transaction-translator;
+				qca_force_host_mode;
+				qca_force_16bit_ptw;
+				caps-offset = <0x100>;
+				status = "okay";
+			};
+
+			ehci1: usb@1b400000 {
+				compatible = "qca,ath79-ehci";
+				reg = <0x1b400000 0x200>;
+				interrupt-parent = <&ip3_int>;
+				interrupts = <1>;
+				has-transaction-translator;
+				qca_force_host_mode;
+				qca_force_16bit_ptw;
+				caps-offset = <0x100>;
+				status = "okay";
+			};
+
+			pci: pci@0x16000000 {
+				compatible = "qca,ar724x-pci";
+				reg = <0x16000000 0x1000>,
+				      <0x18280000 0x100>,
+				      <0x18250000 0x1000>,
+				      <0x12000000 0x02000000>,
+					<1 1>;
+				reg-names = "cfg_base","ctrl_base","crp_base",
+						"mem_base","io_base";
+				interrupt-parent = <&ip3_int>;
+				interrupts = <2>;
+				status = "okay";
+			};
+		};
+
+		spi_0: spi@1f000000 {
+			status = "okay";
+			m25p80@0 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				compatible = "n25q128a11";
+				linux,modalias = "m25p80", "n25q128a11";
+				reg = <0>;
+				spi-max-frequency = <25000000>;
+			};
+		};
+
+		mdio1: mdio@1a000000 {
+			compatible = "qca,ag71xx-mdio";
+			reg = <0x1a000000 0x200>;
+			phy-mask = <0>;
+			builtin-switch = <1>;
+			ar934x-support = <0>;
+			reset-bit = <0x800100>;
+			phy0: ethernet-phy@0 {
+				reg = <0>;
+			};
+			phy1: ethernet-phy@1 {
+				reg = <1>;
+			};
+			phy2: ethernet-phy@2 {
+				reg = <2>;
+			};
+			phy3: ethernet-phy@3 {
+				reg = <3>;
+			};
+			phy4: ethernet-phy@4 {
+				reg = <4>;
+			};
+		};
+
+		eth0: ethernet@19000000 {
+			compatible = "qca,ag71xx-eth";
+			reg = <0x19000000 0x200>,
+			      <0x18070000 0x14>;
+			reg-names = "mac_base",
+				    "cfg_base";
+			mdio-handle = <&mdio1>;
+			eth-pll-data = <0 0 0>;
+			phy-mode = <1>;
+			phy-mask = <0x10>;
+			force-speed = <100>;
+			force-duplex = <1>;
+			max-frame-len = <4095>;
+			desc-pktlen-mask = <0x3fff>;
+			reset-bit = <0x200>;
+			has-gbit = <1>;
+			ar724x-support = <1>;
+			qca955x-support = <0>;
+			qca9561-support = <1>;
+			qca956x-support;
+			fifo-cfg = <0x0010ffff 0x015500aa 0x01f00140>;
+			interrupts = <4>;
+			interrupt-names = "mac_irq";
+			local-mac-address = [ 00 00 00 00 00 00 ];
+		};
+
+		eth1: ethernet@1a000000 {
+			compatible = "qca,ag71xx-eth";
+			reg = <0x1a000000 0x200>;
+			reg-names = "mac_base";
+			mdio-handle = <&mdio1>;
+			eth-pll-data = <0 0 0>;
+			phy-mode = <2>;
+			phy-mask = <0>;
+			force-speed = <1000>;
+			force-duplex = <1>;
+			max-frame-len = <4095>;
+			desc-pktlen-mask = <0x3fff>;
+			reset-bit = <0x2000>;
+			has-gbit = <1>;
+			ar724x-support = <1>;
+			qca955x-support = <0>;
+			qca956x-support;
+			fifo-cfg = <0x0010ffff 0x015500aa 0x01f00140>;
+			builtin-switch = <1 0x10>;
+			interrupts = <5>;
+			interrupt-names = "mac_irq";
+			local-mac-address = [ 00 00 00 00 00 00 ];
+		};
+	};
+
+	gpio-keys-polled {
+		compatible = "gpio-keys-polled";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		poll-interval = <20>;
+
+		button@0 {
+			label = "WPS button";
+			linux,code = <KEY_WPS_BUTTON>;
+			gpios = <&gpio 14 GPIO_ACTIVE_LOW>;
+			debounce-interval = <60>;
+		};
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		led@0 {
+			label = "ap151:green:wps";
+			gpios = <&gpio 1 GPIO_ACTIVE_LOW>;
+		};
+
+		led@1 {
+			label = "ap151:green:wlan";
+			gpios = <&gpio 19 GPIO_ACTIVE_LOW>;
+		};
+
+		led@2 {
+			label = "ap151:green:wan";
+			gpios = <&gpio 2 GPIO_ACTIVE_LOW>;
+		};
+
+		led@3 {
+			label = "ap151:green:lan1";
+			gpios = <&gpio 15 GPIO_ACTIVE_LOW>;
+		};
+
+		led@4 {
+			label = "ap151:green:lan2";
+			gpios = <&gpio 16 GPIO_ACTIVE_LOW>;
+		};
+
+		led@5 {
+			label = "ap151:green:lan3";
+			gpios = <&gpio 21 GPIO_ACTIVE_LOW>;
+		};
+
+		led@6 {
+			label = "ap151:green:lan4";
+			gpios = <&gpio 22 GPIO_ACTIVE_LOW>;
+		};
+	};
+};

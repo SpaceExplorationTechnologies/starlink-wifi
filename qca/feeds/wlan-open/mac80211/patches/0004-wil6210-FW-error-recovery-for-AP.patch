@@ -1,0 +1,56 @@
+--- a/drivers/net/wireless/ath/wil6210/main.c
++++ b/drivers/net/wireless/ath/wil6210/main.c
+@@ -18,6 +18,7 @@
+ #include <linux/moduleparam.h>
+ #include <linux/if_arp.h>
+ #include <linux/etherdevice.h>
++#include <linux/rtnetlink.h>
+ 
+ #include "wil6210.h"
+ #include "txrx.h"
+@@ -392,6 +393,7 @@ static void wil_fw_error_worker(struct w
+ 						fw_error_worker);
+ 	struct net_device *ndev = wil->main_ndev;
+ 	struct wireless_dev *wdev;
++	int rc;
+ 
+ 	wil_dbg_misc(wil, "fw error worker\n");
+ 
+@@ -425,6 +427,7 @@ static void wil_fw_error_worker(struct w
+ 	if (wil_wait_for_recovery(wil) != 0)
+ 		return;
+ 
++	rtnl_lock();
+ 	mutex_lock(&wil->mutex);
+ 	/* Needs adaptation for multiple VIFs
+ 	 * need to go over all VIFs and consider the appropriate
+@@ -440,8 +443,19 @@ static void wil_fw_error_worker(struct w
+ 		break;
+ 	case NL80211_IFTYPE_AP:
+ 	case NL80211_IFTYPE_P2P_GO:
+-		wil_info(wil, "No recovery for AP-like interface\n");
+-		/* recovery in these modes is done by upper layers */
++		if (no_fw_recovery) /* upper layers do recovery */
++			break;
++		/* upper layers will see down/up events */
++		wil_info(wil, "Recovery for AP-like interface - ifdown...\n");
++		mutex_unlock(&wil->mutex); /* protected by rtnl_lock */
++		dev_close(ndev); /* never returns error */
++		msleep(1000);
++		wil_info(wil, "... ifup...\n");
++		rc = dev_open(ndev);
++		if (rc)
++			wil_err(wil, "dev_open: %d\n", rc);
++		mutex_lock(&wil->mutex);
++		wil_info(wil, "... completed\n");
+ 		break;
+ 	default:
+ 		wil_err(wil, "No recovery - unknown interface type %d\n",
+@@ -449,6 +463,7 @@ static void wil_fw_error_worker(struct w
+ 		break;
+ 	}
+ 	mutex_unlock(&wil->mutex);
++	rtnl_unlock();
+ }
+ 
+ static int wil_find_free_vring(struct wil6210_priv *wil)

@@ -1,0 +1,13 @@
+Index: dosfstools-3.0.28/src/check.c
+===================================================================
+--- dosfstools-3.0.28.orig/src/check.c	2015-05-16 06:26:17.000000000 +0530
++++ dosfstools-3.0.28/src/check.c	2016-06-21 17:02:11.462040475 +0530
+@@ -581,7 +581,7 @@
+ 	if (!(file->dir_ent.attr & ATTR_DIR) && le32toh(file->dir_ent.size) <=
+ 	    (uint64_t)clusters * fs->cluster_size) {
+ 	    printf
+-		("%s\n  File size is %u bytes, cluster chain length is > %lu "
++		("%s\n  File size is %u bytes, cluster chain length is > %llu "
+ 		 "bytes.\n  Truncating file to %u bytes.\n", path_name(file),
+ 		 le32toh(file->dir_ent.size),
+ 		 (uint64_t)clusters * fs->cluster_size,

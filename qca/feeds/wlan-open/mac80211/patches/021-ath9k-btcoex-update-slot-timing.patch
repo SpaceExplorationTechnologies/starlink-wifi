@@ -1,0 +1,22 @@
+--- a/drivers/net/wireless/ath/ath9k/btcoex.c
++++ b/drivers/net/wireless/ath/ath9k/btcoex.c
+@@ -69,8 +69,8 @@ void ath9k_hw_init_btcoex_hw(struct ath_
+ 		.bt_priority_time = 2,
+ 		.bt_first_slot_time = 5,
+ 		.bt_hold_rx_clear = true,
+-		.wl_active_time = 0x20,
+-		.wl_qc_time = 0x20,
++		.wl_active_time = 0x0,
++		.wl_qc_time = 0x0,
+ 	};
+ 	bool rxclear_polarity = ath_bt_config.bt_rxclear_polarity;
+ 	u8 time_extend = ath_bt_config.bt_time_extend;
+@@ -80,7 +80,7 @@ void ath9k_hw_init_btcoex_hw(struct ath_
+ 		rxclear_polarity = !ath_bt_config.bt_rxclear_polarity;
+ 
+ 	if (AR_SREV_SOC(ah)) {
+-		first_slot_time = 0x1d;
++		first_slot_time = 0x12;
+ 		time_extend = 0xa;
+ 
+ 		btcoex_hw->bt_coex_mode3 =

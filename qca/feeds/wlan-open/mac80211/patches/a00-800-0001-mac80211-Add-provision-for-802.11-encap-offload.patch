@@ -1,0 +1,30 @@
+--- a/include/net/mac80211.h
++++ b/include/net/mac80211.h
+@@ -2084,6 +2084,9 @@ struct ieee80211_txq {
+  * @IEEE80211_HW_DOESNT_SUPPORT_QOS_NDP: The driver (or firmware) doesn't
+  *	support QoS NDP for AP probing - that's most likely a driver bug.
+  *
++ * @IEEE80211_HW_SUPPORTS_80211_ENCAP: Hardware/driver supports 802.11
++ *	encap for data frames.
++ *
+  * @NUM_IEEE80211_HW_FLAGS: number of hardware flags, used for sizing arrays
+  */
+ enum ieee80211_hw_flags {
+@@ -2129,6 +2132,7 @@ enum ieee80211_hw_flags {
+ 	IEEE80211_HW_SUPPORTS_TDLS_BUFFER_STA,
+ 	IEEE80211_HW_DEAUTH_NEED_MGD_TX_PREP,
+ 	IEEE80211_HW_DOESNT_SUPPORT_QOS_NDP,
++	IEEE80211_HW_SUPPORTS_80211_ENCAP,
+ 
+ 	/* keep last, obviously */
+ 	NUM_IEEE80211_HW_FLAGS
+--- a/net/mac80211/debugfs.c
++++ b/net/mac80211/debugfs.c
+@@ -214,6 +214,7 @@ static const char *hw_flag_names[] = {
+ 	FLAG(SUPPORTS_TDLS_BUFFER_STA),
+ 	FLAG(DEAUTH_NEED_MGD_TX_PREP),
+ 	FLAG(DOESNT_SUPPORT_QOS_NDP),
++	FLAG(SUPPORTS_80211_ENCAP),
+ #undef FLAG
+ };
+ 

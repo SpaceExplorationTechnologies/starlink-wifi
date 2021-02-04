@@ -1,0 +1,13 @@
+--- a/packaging/defaults/linux
++++ b/packaging/defaults/linux
+@@ -11,8 +11,8 @@ MODULE_GOO_LIST=irq_stat netif_rx regist
+ MODULE_GOO_LIST+=kmalloc __kfree_skb __ip_select_ident alloc_skb
+ MODULE_GOO_LIST+=icmp_send ip_fragment sock_register 
+ 
+-MODULE_DEF_INCLUDE=${OPENSWANSRCDIR}/packaging/linus/config-all.h
+-MODULE_DEFCONFIG?=${KLIPSSRC}/defconfig
++MODULE_DEF_INCLUDE=${OPENSWANSRCDIR}/packaging/ocf/config-all.h
++MODULE_DEFCONFIG?=${OPENSWANSRCDIR}/packaging/ocf/defconfig
+ MODBUILDDIR?=${OPENSWANSRCDIR}/modobj
+ MOD26BUILDDIR?=${OPENSWANSRCDIR}/modobj26
+ 

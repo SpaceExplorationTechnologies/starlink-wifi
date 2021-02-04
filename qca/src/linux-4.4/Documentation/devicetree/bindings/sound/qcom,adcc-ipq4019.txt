@@ -1,0 +1,17 @@
+* Qualcomm Technologies IPQ4019 ASoC audio clock driver
+
+This node models the Qualcomm Technologies IPQ4019 ASoC audio clock driver
+
+Required properties:
+
+- compatible	 : "qcom,adcc-ipq4019"
+- reg		 : should have the stereo register address, length
+
+Example:
+adcc: clock-controller@7700038 {
+	compatible = "qcom,adcc-ipq4019";
+	#clock-cells = <1>;
+	#reset-cells = <1>;
+	reg = <0x7700038 0x1DC>;
+	status = "disabled";
+};

@@ -1,0 +1,19 @@
+#!/bin/sh
+# Copyright (c) 2013 The Linux Foundation. All rights reserved.
+
+. /lib/functions.sh
+. /lib/functions/network.sh
+
+config_load pppoe
+local iface
+config_get iface "relay" server
+[ -n "${iface}" -a ${INTERFACE} = ${iface} ] || return 0
+
+case "$ACTION" in
+	ifup)
+		/etc/init.d/pppoe-relay restart
+	;;
+	ifdown)
+		/etc/init.d/pppoe-relay stop
+	;;
+esac

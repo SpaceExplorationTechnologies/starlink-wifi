@@ -1,0 +1,12 @@
+config	QCA_85XX_SWITCH
+	tristate "Driver for 841x, 851x, 861x, 871x family of switches"
+	select SWCONFIG
+	---help---
+	 Driver for 841x, 851x, 861x, 871x family of switches
+
+config AQ_PHY
+        tristate "Driver for Aquantia PHY"
+        depends on MDIO_GPIO
+        ---help---
+        Supports the Aquantia PHY
+

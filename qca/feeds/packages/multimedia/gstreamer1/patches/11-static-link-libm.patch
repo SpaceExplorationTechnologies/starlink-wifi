@@ -1,0 +1,10 @@
+--- a/configure.ac
++++ b/configure.ac
+@@ -474,7 +474,7 @@
+
+ dnl check for libm, for sin()
+ LT_LIB_M
+-AC_SUBST(LIBM)
++AC_SUBST(LIBM, "")
+
+ dnl *** checks for header files ***

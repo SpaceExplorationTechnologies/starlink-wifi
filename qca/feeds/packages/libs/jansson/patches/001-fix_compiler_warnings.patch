@@ -1,0 +1,13 @@
+Index: jansson-2.7/src/hashtable_seed.c
+===================================================================
+--- jansson-2.7.orig/src/hashtable_seed.c	2014-10-02 10:29:26.000000000 +0530
++++ jansson-2.7/src/hashtable_seed.c	2016-06-24 15:58:16.631241184 +0530
+@@ -164,7 +164,7 @@
+ }
+ 
+ static uint32_t generate_seed() {
+-    uint32_t seed;
++    uint32_t seed = 0;
+     int done = 0;
+ 
+ #if !defined(_WIN32) && defined(USE_URANDOM)

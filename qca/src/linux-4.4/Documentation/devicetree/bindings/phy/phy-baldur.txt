@@ -1,0 +1,34 @@
+Qualcomm Technologies, Inc. BALDUR PHY
+--------------------------------------
+
+This file contains documentation for the USB BALDUR PHY found in Qualcomm
+Technologies, Inc. IPQ40XX SoCs.
+
+Required properties:
+- compatible		: must be "qca,baldur-usb-hsphy"
+- reg			: register ranges as listed in the reg-names property
+- reg-names		: "phy_base"
+- #phy-cells		: determine the number of cells that should be given
+			  in the phandle while referencing this phy. It must
+			  be zero.
+- resets		: list of phandle and reset specifier pairs. There
+			  should be two entries, one for the whole phy and one
+			  for the port.
+- reset-names           : list of reset signal names. Should be "por_rst"
+			  and "srif_rst".
+
+Optional properties:
+- qca,host		: To determine host or device mode.
+
+Example:
+		usb3_hs_phy: hsphy@a6000 {
+			compatible = "qca,baldur-usb-hsphy";
+			reg = <0xa6000 0x40>;
+			reg-names = "phy_base";
+			resets = <&gcc USB3_HSPHY_POR_ARES>, <&gcc USB3_HSPHY_S_ARES>;
+			reset-names = "por_rst", "srif_rst";
+			qca,host = <1>;
+			#phy-cells = <0>;
+
+			status = "ok";
+		};

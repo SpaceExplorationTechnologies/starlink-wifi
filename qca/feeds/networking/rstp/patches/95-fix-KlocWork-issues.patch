@@ -1,0 +1,448 @@
+diff --git a/bridge_track.c b/bridge_track.c
+index d229dd6..f04e6cc 100644
+--- a/bridge_track.c
++++ b/bridge_track.c
+@@ -96,7 +96,7 @@ void instance_begin(struct ifdata *br)
+ {
+ 	if (current_br) {
+ 		ERROR("BUG: Trying to set instance over existing instance.");
+-		ERROR("%d", *(int *)0);	/* ABORT */
++		exit(1); /* ABORT */
+ 	}
+ 	current_br = br;
+ 	STP_IN_instance_begin(br->stp);
+@@ -417,7 +417,7 @@ static int stp_enabled(struct ifdata *br)
+ {
+ 	char path[40 + IFNAMSIZ];
+ 	int ret;
+-	sprintf(path, "/sys/class/net/%s/bridge/stp_state", br->name);
++	snprintf(path, sizeof(path), "/sys/class/net/%s/bridge/stp_state", br->name);
+ 	FILE *f = fopen(path, "r");
+ 	if (!f) {
+ 		LOG("Open %s failed", path);
+@@ -745,7 +745,7 @@ STP_OUT_flush_lt(IN int port_index, IN int vlan_id,
+ 	char fname[128];
+ 	if (port_index == 0) {	/* i.e. passed port_index was 0 */
+ 		struct ifdata *port;
+-		sprintf(fname, "/sys/class/net/%s/bridge/flush",
++		snprintf(fname, sizeof(fname), "/sys/class/net/%s/bridge/flush",
+ 			current_br->name);
+ 		flush_port(fname);
+ 
+@@ -756,7 +756,7 @@ STP_OUT_flush_lt(IN int port_index, IN int vlan_id,
+ 		struct ifdata *port = find_port(port_index);
+ 		TST(port != NULL, 0);
+ 		if(switch_port_flush_fdb(port->name)) {
+-			sprintf(fname, "/sys/class/net/%s/brif/%s/flush",
++			snprintf(fname, sizeof(fname), "/sys/class/net/%s/brif/%s/flush",
+ 				current_br->name, port->name);
+ 			flush_port(fname);
+ 		}
+@@ -765,7 +765,7 @@ STP_OUT_flush_lt(IN int port_index, IN int vlan_id,
+ 		for (port = current_br->port_list; port; port = port->port_next) {
+ 			if (port->port_index != port_index) {
+ 				if(switch_port_flush_fdb(port->name)) {
+-					sprintf(fname,
++					snprintf(fname, sizeof(fname),
+ 						"/sys/class/net/%s/brif/%s/flush",
+ 						current_br->name, port->name);
+ 					flush_port(fname);
+@@ -982,8 +982,11 @@ int CTL_set_bridge_config(int br_index, UID_STP_CFG_T * cfg)
+ 	INFO("bridge %d, flags %#lx", br_index, cfg->field_mask);
+ 	CTL_CHECK_BRIDGE;
+ 	int r;
++	BITMAP_T ports;
++	BitmapClear(&ports);
++
+ 	instance_begin(br);
+-	r = STP_IN_stpm_set_cfg(0, NULL, cfg);
++	r = STP_IN_stpm_set_cfg(0, &ports, cfg);
+ 	if (r) {
+ 		ERROR("Error setting bridge config for %d: %s", br_index,
+ 		      STP_IN_get_error_explanation(r));
+diff --git a/brmon.c b/brmon.c
+index 1a6eeb3..4695c9e 100644
+--- a/brmon.c
++++ b/brmon.c
+@@ -66,8 +66,10 @@ static int dump_msg(const struct sockaddr_nl *who, struct nlmsghdr *n,
+ 		(const char*)RTA_DATA(tb[IFLA_IFNAME]));
+ 
+ 	if (tb[IFLA_MASTER]) {
++	   char *name;
+ 	   master = *(int*)RTA_DATA(tb[IFLA_MASTER]);
+-	   fprintf(fp, "master %s ", rstp_if_indextoname(master, b1));
++	   name = rstp_if_indextoname(master, b1);
++	   fprintf(fp, "master %s ", (name ? name : "null"));
+ 	}
+ 
+ 	fprintf(fp, "\n");
+diff --git a/ctl_cli_wrap.c b/ctl_cli_wrap.c
+index b7c5985..38db436 100644
+--- a/ctl_cli_wrap.c
++++ b/ctl_cli_wrap.c
+@@ -54,7 +54,7 @@ const char *CTL_error_explanation(int err_no)
+ 		return ctl_error_names[err_no - Err_Dummy_Start - 1];
+ 
+ 	static char buf[32];
+-	sprintf(buf, "Unknown error code %d", err_no);
++	snprintf(buf, sizeof(buf), "Unknown error code %d", err_no);
+ 	return buf;
+ }
+ 
+diff --git a/ctl_main.c b/ctl_main.c
+index d3b2714..7ab34d5 100644
+--- a/ctl_main.c
++++ b/ctl_main.c
+@@ -518,6 +518,7 @@ static int set_bridge_cfg_value(int br_index, unsigned long value,
+ 	char *val_name;
+ 	int rc;
+ 
++	memset(&uid_cfg, 0, sizeof(uid_cfg));
+ 	uid_cfg.field_mask = val_mask;
+ 	switch (val_mask) {
+ 	case BR_CFG_STATE:
+@@ -616,7 +617,7 @@ set_port_cfg_value(int br_index, int port_index,
+ 	int rc;
+ 	char *val_name;
+ 
+-	BitmapClear(&uid_cfg.port_bmp);
++	memset(&uid_cfg, 0, sizeof(uid_cfg));
+ 	uid_cfg.field_mask = val_mask;
+ 	switch (val_mask) {
+ 	case PT_CFG_MCHECK:
+diff --git a/ctl_socket.h b/ctl_socket.h
+index d931b1e..d029184 100644
+--- a/ctl_socket.h
++++ b/ctl_socket.h
+@@ -27,9 +27,12 @@
+ 
+ #include <sys/types.h>
+ #include <string.h>
++#include <net/if.h>
+ 
+ #include "ctl_functions.h"
+ 
++#define RSTP_UNIX_PATH_MAX 108
++
+ struct ctl_msg_hdr {
+ 	int cmd;
+ 	int lin;
+@@ -41,7 +44,7 @@ struct ctl_msg_hdr {
+  do {\
+   (sa)->sun_family = AF_UNIX; \
+   memset((sa)->sun_path, 0, sizeof((sa)->sun_path)); \
+-  strcpy((sa)->sun_path + 1, (string)); \
++  strlcpy((sa)->sun_path + 1, (string), (RSTP_UNIX_PATH_MAX - 1)); \
+  } while (0)
+ 
+ #define RSTP_SERVER_SOCK_NAME ".rstp_server"
+@@ -160,7 +163,7 @@ struct add_bridge_IN {
+ struct add_bridge_OUT {
+ };
+ #define add_bridge_COPY_IN \
+-  ({ strncpy(in->name, name, sizeof(in->name)); })
++  ({ strlcpy(in->name, name, sizeof(in->name)); })
+ #define add_bridge_COPY_OUT ({ (void)0; })
+ #define add_bridge_CALL (in->name)
+ 
+@@ -176,7 +179,7 @@ struct add_bridge_port_IN {
+ struct add_bridge_port_OUT {
+ };
+ #define add_bridge_port_COPY_IN \
+-  ({ strncpy(in->br_name, br_name, sizeof(in->br_name)); strncpy(in->pt_name, pt_name, sizeof(in->pt_name)); })
++  ({ strlcpy(in->br_name, br_name, sizeof(in->br_name)); strlcpy(in->pt_name, pt_name, sizeof(in->pt_name)); })
+ #define add_bridge_port_COPY_OUT ({ (void)0; })
+ #define add_bridge_port_CALL (in->br_name, in->pt_name)
+ 
+@@ -193,7 +196,7 @@ struct if_indextoname_OUT {
+ };
+ #define if_indextoname_COPY_IN \
+   ({ in->ifindex = ifindex; })
+-#define if_indextoname_COPY_OUT ({ strcpy(ifname, out->ifname); })
++#define if_indextoname_COPY_OUT ({ strlcpy(ifname, out->ifname, IFNAMSIZ); })
+ #define if_indextoname_CALL (in->ifindex, out->ifname)
+ 
+ #if 0
+@@ -208,7 +211,7 @@ struct if_nametoindex_OUT {
+ 	unsigned int ifindex;
+ };
+ #define if_nametoindex_COPY_IN \
+-  ({ strncpy(in->ifname, ifname, sizeof(in->ifname)); })
++  ({ strlcpy(in->ifname, ifname, sizeof(in->ifname)); })
+ #define if_nametoindex_COPY_OUT ({ *ifindex = out->ifindex; })
+ #define if_nametoindex_CALL (in->ifname, &out->ifindex)
+ 
+diff --git a/ctl_socket_client.c b/ctl_socket_client.c
+index dcd0739..622e150 100644
+--- a/ctl_socket_client.c
++++ b/ctl_socket_client.c
+@@ -52,7 +52,7 @@ int ctl_client_init(void)
+ 
+ 	struct sockaddr_un sa;
+ 	char tmpname[64];
+-	sprintf(tmpname, "RSTPCTL_%d", getpid());
++	snprintf(tmpname, sizeof(tmpname), "RSTPCTL_%d", getpid());
+ 	set_socket_address(&sa, tmpname);
+ 	/* We need this bind. The autobind on connect isn't working properly.
+ 	   The server doesn't get a proper sockaddr in recvmsg if we don't do this.
+@@ -123,6 +123,7 @@ int send_ctl_message(int cmd, void *inbuf, int lin, void *outbuf, int *lout,
+ 		int timeout = 5000;	/* 5 s */
+ 		int r;
+ 
++		memset(&pfd, 0, sizeof(pfd));
+ 		pfd.fd = fd;
+ 		pfd.events = POLLIN;
+ 		do {
+diff --git a/epoll_loop.c b/epoll_loop.c
+index 9ecf778..f14d056 100644
+--- a/epoll_loop.c
++++ b/epoll_loop.c
+@@ -29,6 +29,7 @@
+ #include <sys/time.h>
+ #include <time.h>
+ #include <stdio.h>
++#include <string.h>
+ #include <unistd.h>
+ 
+ #include "bridge_ctl.h"
+@@ -113,6 +114,7 @@ int epoll_main_loop(void)
+ 		int timeout;
+ 
+ 		struct timeval tv;
++		memset(&tv, 0, sizeof(tv));
+ 		gettimeofday(&tv, NULL);
+ 		timeout = time_diff(&nexttimeout, &tv);
+ 		if (timeout < 0) {
+diff --git a/log.h b/log.h
+index 1452438..ee95e59 100644
+--- a/log.h
++++ b/log.h
+@@ -70,7 +70,7 @@ static inline void dump_hex(void *b, int l)
+ 	int i, j;
+ 	for (i = 0; i < l; i += 16) {
+ 		for (j = 0; j < 16 && i + j < l; j++)
+-			sprintf(logbuf + j * 3, " %02x", buf[i + j]);
++			snprintf(logbuf + j * 3, (sizeof(logbuf) - (j * 3)), " %02x", buf[i + j]);
+ 		PRINT(LOG_LEVEL_INFO, "%s", logbuf);
+ 	}
+ 	PRINT(LOG_LEVEL_INFO, "\n");
+diff --git a/main.c b/main.c
+index 311dc7d..b41a8c4 100644
+--- a/main.c
++++ b/main.c
+@@ -145,6 +145,10 @@ void vDprintf(int level, const char *fmt, va_list ap)
+ 		struct tm *local_tm;
+ 		time(&clock);
+ 		local_tm = localtime(&clock);
++		if (!local_tm) {
++			return;
++		}
++
+ 		int l =
+ 		    strftime(logbuf, sizeof(logbuf) - 1, "%F %T ", local_tm);
+ 		vsnprintf(logbuf + l, sizeof(logbuf) - l - 1, fmt, ap);
+diff --git a/netif_utils.c b/netif_utils.c
+index 4e96d5a..ec82800 100644
+--- a/netif_utils.c
++++ b/netif_utils.c
+@@ -63,7 +63,7 @@ int get_hwaddr(char *ifname, unsigned char *hwaddr)
+ 		return 0;
+ 
+ 	memset(&ifr, 0, sizeof(ifr));
+-	strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
++	strlcpy(ifr.ifr_name, ifname, IFNAMSIZ);
+ 	if (ioctl(netsock, SIOCGIFHWADDR, &ifr) < 0) {
+ 		ERROR("%s: get hw address failed: %m", ifname);
+ 		return -1;
+@@ -76,7 +76,7 @@ int ethtool_get_speed_duplex(char *ifname, int *speed, int *duplex)
+ {
+ 	struct ifreq ifr;
+ 	memset(&ifr, 0, sizeof(ifr));
+-	strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
++	strlcpy(ifr.ifr_name, ifname, IFNAMSIZ);
+ 	struct ethtool_cmd ecmd;
+ 
+ 	if(0 == switch_port_get_speed_duplex(ifname, speed, duplex))
+@@ -109,7 +109,7 @@ int get_link_status(const char *name)
+ 
+ 	if((s = socket(AF_INET, SOCK_DGRAM, 0)) <= 0) return 0;
+ 
+-	strncpy(ifr.ifr_name, name, sizeof(ifr.ifr_name));
++	strlcpy(ifr.ifr_name, name, sizeof(ifr.ifr_name));
+ 
+ 	if(0 != ioctl(s, SIOCGIFFLAGS, &ifr)) {
+ 		close(s);
+@@ -130,7 +130,7 @@ char *rstp_if_indextoname(unsigned int ifindex, char *ifname)
+ 
+ 	sw_port = find_switch_port_by_index(ifindex);
+ 	if(sw_port) {
+-		strcpy(ifname, sw_port->name);
++		strlcpy(ifname, sw_port->name, 64);
+ 		return ifname;
+ 	}
+ 	else
+@@ -157,7 +157,7 @@ unsigned int rstp_if_nametoindex(const char *ifname)
+ int is_bridge(char *if_name)
+ {
+ 	char path[32 + IFNAMSIZ];
+-	sprintf(path, "/sys/class/net/%s/bridge", if_name);
++	snprintf(path, sizeof(path), "/sys/class/net/%s/bridge", if_name);
+ 	return (access(path, R_OK) == 0);
+ }
+ 
+@@ -171,14 +171,14 @@ int is_bridge_slave(char *br_name, char *if_name)
+ 		return ret;
+ 
+ 	char path[32 + 2 * IFNAMSIZ];
+-	sprintf(path, "/sys/class/net/%s/brif/%s", br_name, if_name);
++	snprintf(path, sizeof(path), "/sys/class/net/%s/brif/%s", br_name, if_name);
+ 	return (access(path, R_OK) == 0);
+ }
+ 
+ int get_bridge_portno(char *if_name)
+ {
+ 	char path[32 + IFNAMSIZ];
+-	sprintf(path, "/sys/class/net/%s/brport/port_no", if_name);
++	snprintf(path, sizeof(path), "/sys/class/net/%s/brport/port_no", if_name);
+ 	char buf[128];
+ 	int fd;
+ 	long res = -1;
+diff --git a/qca_switch.c b/qca_switch.c
+index ffc817a..3be9b5f 100644
+--- a/qca_switch.c
++++ b/qca_switch.c
+@@ -283,7 +283,7 @@ void qca_switch_load_ports(void)
+ 				break;
+ 
+ 			++index;
+-			match = sscanf(index, "%s %s %s %d %s", switch_type, control_channel, data_channel, &port_num, port_name);
++			match = sscanf(index, "%64s %64s %64s %d %64s", switch_type, control_channel, data_channel, &port_num, port_name);
+ 			if(match > 0) {
+ 				create_switch_port(switch_type, control_channel, data_channel, port_num, port_name);
+ 			}
+diff --git a/rstplib/cli.c b/rstplib/cli.c
+index a8e844e..0bd0f1e 100644
+--- a/rstplib/cli.c
++++ b/rstplib/cli.c
+@@ -71,7 +71,7 @@ int cli_count_words (char* line)
+ 
+   ptr = strchr (line, '\n');
+   if (ptr) *ptr = '\0';
+-  strncpy (pool, line, MAX_CLI_BUFF);
++  strlcpy (pool, line, MAX_CLI_BUFF);
+   pool[MAX_CLI_BUFF - 1] = '\0';
+ 
+   for (cnt = 0;; cnt++) {
+diff --git a/rstplib/port.c b/rstplib/port.c
+index 4d4e377..771d8fa 100644
+--- a/rstplib/port.c
++++ b/rstplib/port.c
+@@ -46,6 +46,7 @@ STP_port_create (STPM_T* stpm, int port_index)
+   UID_STP_PORT_CFG_T port_cfg;
+   register int   iii;
+   unsigned short port_prio;
++  const char *port_name = NULL;
+ 
+   /* check, if the port has just been added */
+   for (this = stpm->ports; this; this = this->next) {
+@@ -59,7 +60,8 @@ STP_port_create (STPM_T* stpm, int port_index)
+   this->owner = stpm;
+   this->machines = NULL;
+   this->port_index = port_index;
+-  this->port_name = strdup (STP_OUT_get_port_name (port_index));
++  port_name = STP_OUT_get_port_name(port_index);
++  this->port_name = (port_name ? strdup(port_name) : NULL);
+   this->uptime = 0;
+ 
+   STP_OUT_get_init_port_cfg (stpm->vlan_id, port_index, &port_cfg);
+diff --git a/rstplib/stp_in.c b/rstplib/stp_in.c
+index 31a2c9f..10f7c86 100644
+--- a/rstplib/stp_in.c
++++ b/rstplib/stp_in.c
+@@ -450,7 +450,7 @@ STP_IN_stpm_get_state (IN int vlan_id, OUT UID_STP_STATE_T* entry)
+     return STP_Vlan_Had_Not_Yet_Been_Created;
+   }
+ 
+-  strncpy (entry->vlan_name, this->name, NAME_LEN);
++  strlcpy (entry->vlan_name, this->name, NAME_LEN);
+   entry->vlan_id = this->vlan_id;
+   _conv_br_id_2_uid (&this->rootPrio.root_bridge, &entry->designated_root);
+   entry->root_path_cost = this->rootPrio.root_path_cost;
+@@ -481,7 +481,7 @@ STP_IN_stpm_get_name_by_vlan_id (int vlan_id, char* name, size_t buffsize)
+   for (stpm = STP_stpm_get_the_list (); stpm; stpm = stpm->next) {
+     if (vlan_id ==  stpm->vlan_id) {
+       if (stpm->name)
+-        strncpy (name, stpm->name, buffsize);
++        strlcpy (name, stpm->name, buffsize);
+       else
+         memset (name, 0, buffsize);
+       iret = 0;
+diff --git a/rstplib/stp_to.c b/rstplib/stp_to.c
+index c5dc8e1..b89f5e3 100644
+--- a/rstplib/stp_to.c
++++ b/rstplib/stp_to.c
+@@ -136,7 +136,7 @@ const char *
+ STP_OUT_get_port_name (IN int port_index)
+ {
+   static char tmp[4];
+-  sprintf (tmp, "p%02d", (int) port_index);
++  snprintf (tmp, sizeof(tmp), "p%02d", (int) port_index);
+   return tmp;
+   //return port2str (port_index, &sys_config);
+ }
+diff --git a/rstplib/stpmgmt.c b/rstplib/stpmgmt.c
+index 8b7090f..462e96d 100644
+--- a/rstplib/stpmgmt.c
++++ b/rstplib/stpmgmt.c
+@@ -49,6 +49,8 @@ STP_IN_stpm_create (int vlan_id, char* name, BITMAP_T* port_bmp)
+     this->BrTimes.HelloTime = init_cfg.hello_time;
+     this->BrTimes.ForwardDelay = init_cfg.forward_delay;
+     this->ForceVersion = (PROTOCOL_VERSION_T) init_cfg.force_version;
++  } else {
++    return -1;
+   }
+ #ifdef ORIG
+ #else
+diff --git a/rstplib/uid_sock.c b/rstplib/uid_sock.c
+index d872a10..6b983c5 100644
+--- a/rstplib/uid_sock.c
++++ b/rstplib/uid_sock.c
+@@ -43,17 +43,17 @@ static int Socket(int family, int type, int protocol)
+ }
+ 
+ #define UID_SET_SOCKET_ID(SPTR, X)	\
+-	strncpy((SPTR)->socket_id, (X),SOCKET_NAME_LENGTH); \
++	strlcpy((SPTR)->socket_id, (X),SOCKET_NAME_LENGTH); \
+         (SPTR)->socket_id[SOCKET_NAME_LENGTH - 1] = '\0';
+ 
+ #define UID_SET_SOCKET_SERVER_ID(SPTR, X)	\
+ 	(SPTR)->serverAddr.sun_path[0] = '\0';				\
+-	strncpy((SPTR)->serverAddr.sun_path + 1, (X),SOCKET_NAME_LENGTH - 1);	\
++	strlcpy((SPTR)->serverAddr.sun_path + 1, (X),SOCKET_NAME_LENGTH - 1);	\
+         (SPTR)->serverAddr.sun_path[SOCKET_NAME_LENGTH - 1] = '\0';
+ 
+ #define UID_SET_SOCKET_CLIENT_ID(SPTR, X)       \
+ 	(SPTR)->clientAddr.sun_path[0] = '\0';				\
+-	strncpy((SPTR)->clientAddr.sun_path + 1, (X),SOCKET_NAME_LENGTH - 1); \
++	strlcpy((SPTR)->clientAddr.sun_path + 1, (X),SOCKET_NAME_LENGTH - 1); \
+         (SPTR)->clientAddr.sun_path[SOCKET_NAME_LENGTH - 1] = '\0';
+ 
+ int
+@@ -92,7 +92,7 @@ int UiD_SocketInit(UID_SOCKET_T* s,
+ 
+   switch (binding) {
+     case UID_BIND_AS_CLIENT:
+-      strncpy (s->socket_id, tmpnam(NULL),SOCKET_NAME_LENGTH );
++      strlcpy (s->socket_id, tmpnam(NULL),SOCKET_NAME_LENGTH );
+       UID_SET_SOCKET_CLIENT_ID(s,s->socket_id );      
+       if (bind(s->sock_fd, (SA *)&(s->clientAddr), SIZE_OF_ADDRESS) < 0) {
+ 	return -2;
+@@ -105,7 +105,7 @@ int UiD_SocketInit(UID_SOCKET_T* s,
+ 
+     case UID_BIND_AS_SERVER:
+       unlink(socket_id);
+-      strncpy (s->socket_id, socket_id, SOCKET_NAME_LENGTH);
++      strlcpy (s->socket_id, socket_id, SOCKET_NAME_LENGTH);
+       UID_SET_SOCKET_SERVER_ID(s,s->socket_id);
+       
+       if (bind(s->sock_fd, (SA *)&(s->serverAddr), SIZE_OF_ADDRESS) < 0) {

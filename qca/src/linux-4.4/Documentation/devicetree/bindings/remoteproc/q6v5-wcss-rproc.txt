@@ -1,0 +1,59 @@
+QCA Wakeup Q6-WCSS Remoteproc Driver
+=====================================
+
+The IPQ807x family of devices uses a Q6-WCSS DSP co-processor. The Q6-WCSS
+requires a firmware binary to boot. The q6-wcss remoteproc driver handles
+the loading of firmware and booting of q6-wcss.
+
+Q6v5 WCSS Device Node:
+======================
+A q6v5-wcss device node is used to represent the Q6-WCSS processor
+instance within the SoC. It is needed as child node to SOC parent node
+through which it is accessible to the IPQ807x.
+
+Required properties:
+--------------------
+- compatible:		Should be one of,
+				"qcom,q6v5-wcss-rproc" for IPQ807x SoCs
+- reg:			Should contain the address ranges for the Q6-WCSS
+			internal memory regions, QDSP6SS_PUB. The parent node
+			should provide an appropriate range property for
+			properly translating these into bus addresses.
+- firmware:		Name of firmware file to be used for loading and
+			booting the q6-wcss remote processor.
+- interrupt-extended	Used to tell the incoming interrupts through SMP2P
+- interrupt-names	Names of incoming interrupts
+- qcom,smem-states	Output from APPS to Q6 processor
+- qcom,smem-state-names Names of the output values from APPS to Q6 processor
+- qca,emulation		States that this driver is used on emulation platform
+- qca,auto-restart      states that q6 is restarted after receiving error fatal
+			from q6
+- qca,extended-intc	notifies that virtual interrupt controller is used
+			instead of virtual GPIOs
+- qca,secure		notifies that TZ is used for bringing q6 out of reset
+
+Example:
+--------
+/* IPQ807x */
+soc {
+	q6v5_wcss@0x0AD00000 {
+		compatible = "qcom,rproc-q6v5-wcss";
+		firmware = "q6-wcss-boot";
+		reg = <0xC900000 0x4040>;
+		interrupts-extended = <&intc 0 325 1>,
+					<&wcss_smp2p_in 0 0>,
+					<&wcss_smp2p_in 1 0>,
+					<&wcss_smp2p_in 3 0>;
+		interrupt-names = "wdog",
+				  "fatal",
+				  "handover",
+				  "stop-ack";
+		qcom,smem-states = <&wcss_smp2p_out 0>,
+				   <&wcss_smp2p_out 1>;
+		qcom,smem-state-names = "shutdown",
+					"stop";
+
+		qca,emulation = <1>;
+	};
+	...
+};

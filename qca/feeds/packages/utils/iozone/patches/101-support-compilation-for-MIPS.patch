@@ -1,0 +1,68 @@
+diff --git a/src/current/makefile b/src/current/makefile
+index ec7beae..e92fc99 100644
+--- a/src/current/makefile
++++ b/src/current/makefile
+@@ -50,6 +50,7 @@ all:
+ 	@echo "        ->   IRIX64               (64bit)   <-"
+ 	@echo "        ->   linux                (32bit)   <-"
+ 	@echo "        ->   linux-arm            (32bit)   <-"
++	@echo "        ->   linux-mips           (32bit)   <-"
+ 	@echo "        ->   linux-AMD64          (64bit)   <-"
+ 	@echo "        ->   linux-ia64           (64bit)   <-"
+ 	@echo "        ->   linux-powerpc        (32bit)   <-"
+@@ -209,7 +210,7 @@ linux-powerpc64: iozone_linux-powerpc64.o  libbif.o libasync.o fileop_linux-ppc6
+ 	$(CC)  -O3 -Dlinux pit_server-linux-powerpc64.o $(FLAG64BIT) -o pit_server
+ 		
+ #
+-# GNU 'C' compiler Linux build with threads, largefiles, async I/O
++# GNU 'C' compiler Linux build with threads, largefiles, no async I/O
+ #
+ linux-arm:	iozone_linux-arm.o  libbif.o fileop_linux-arm.o pit_server.o
+ 	$(CC) -O3 $(LDFLAGS) iozone_linux-arm.o libbif.o \
+@@ -218,6 +219,15 @@ linux-arm:	iozone_linux-arm.o  libbif.o fileop_linux-arm.o pit_server.o
+ 	$(CC) -O3 -Dlinux pit_server.o -o pit_server
+ 
+ #
++# GNU 'C' compiler Linux build with threads, largefiles, no async I/O
++#
++linux-mips:	iozone_linux-mips.o  libbif.o fileop_linux-mips.o pit_server.o
++	$(CC) -O3 $(LDFLAGS) iozone_linux-mips.o libbif.o \
++		-lrt -lpthread -o iozone
++	$(CC) -O3 -Dlinux fileop_linux-mips.o -o fileop
++	$(CC) -O3 -Dlinux pit_server.o -o pit_server
++
++#
+ # GNU 'C' compiler Linux build with threads, largefiles, async I/O 
+ #
+ linux-AMD64:	iozone_linux-AMD64.o  libbif.o libasync.o fileop_linux-AMD64.o pit_server.o
+@@ -937,6 +947,12 @@ fileop_linux-arm.o:  fileop.c
+ 	@echo ""
+ 	$(GCC) -Wall -c -O3 $(CFLAGS) fileop.c -o fileop_linux-arm.o
+ 
++fileop_linux-mips.o:  fileop.c
++	@echo ""
++	@echo "Building fileop for Linux-mips"
++	@echo ""
++	$(GCC) -Wall -c -O3 $(CFLAGS) fileop.c -o fileop_linux-mips.o
++
+ fileop_linux-s390.o:  fileop.c
+ 	@echo ""
+ 	@echo "Building fileop for Linux-S390"
+@@ -986,6 +1002,17 @@ iozone_linux-arm.o:	iozone.c libbif.c
+ 	#$(CC) -c -O3 -Dunix -Dlinux -DHAVE_ANSIC_C \
+         #	-D_LARGEFILE64_SOURCE $(CFLAGS) libasync.c  -o libasync.o
+ 
++iozone_linux-mips.o:	iozone.c libbif.c
++	@echo ""
++	@echo "Building iozone for Linux-mips"
++	@echo ""
++	$(CC) -c -O3 -Dunix -DHAVE_ANSIC_C -DHAVE_PREAD \
++		-DNAME='"linux-mips"' -DLINUX_ARM -DSHARED_MEM \
++		-Dlinux -D_LARGEFILE64_SOURCE $(CFLAGS) iozone.c \
++		-o iozone_linux-mips.o
++	$(CC) -c -O3 -Dunix -DHAVE_ANSIC_C -D_LARGEFILE64_SOURCE \
++		-DSHARED_MEM -Dlinux $(CFLAGS) libbif.c -o libbif.o
++
+ iozone_linux-AMD64.o:	iozone.c libbif.c libasync.c 
+ 	@echo ""
+ 	@echo "Building iozone for Linux-AMD64"

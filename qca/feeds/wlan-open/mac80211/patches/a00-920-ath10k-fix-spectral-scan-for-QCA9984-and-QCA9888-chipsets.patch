@@ -1,0 +1,129 @@
+--- a/drivers/net/wireless/ath/ath10k/core.c
++++ b/drivers/net/wireless/ath/ath10k/core.c
+@@ -101,6 +101,7 @@ static const struct ath10k_hw_params ath
+ 		.hw_ops = &qca988x_ops,
+ 		.decap_align_bytes = 4,
+ 		.spectral_bin_discard = 0,
++		.spectral_bin_offset = 0,
+ 		.vht160_mcs_rx_highest = 0,
+ 		.vht160_mcs_tx_highest = 0,
+ 		.n_cipher_suites = 8,
+@@ -132,6 +133,7 @@ static const struct ath10k_hw_params ath
+ 		.hw_ops = &qca988x_ops,
+ 		.decap_align_bytes = 4,
+ 		.spectral_bin_discard = 0,
++		.spectral_bin_offset = 0,
+ 		.vht160_mcs_rx_highest = 0,
+ 		.vht160_mcs_tx_highest = 0,
+ 		.n_cipher_suites = 8,
+@@ -165,6 +167,7 @@ static const struct ath10k_hw_params ath
+ 		.hw_ops = &qca988x_ops,
+ 		.decap_align_bytes = 4,
+ 		.spectral_bin_discard = 0,
++		.spectral_bin_offset = 0,
+ 		.vht160_mcs_rx_highest = 0,
+ 		.vht160_mcs_tx_highest = 0,
+ 		.n_cipher_suites = 8,
+@@ -197,6 +200,7 @@ static const struct ath10k_hw_params ath
+ 		.hw_ops = &qca988x_ops,
+ 		.decap_align_bytes = 4,
+ 		.spectral_bin_discard = 0,
++		.spectral_bin_offset = 0,
+ 		.vht160_mcs_rx_highest = 0,
+ 		.vht160_mcs_tx_highest = 0,
+ 		.n_cipher_suites = 8,
+@@ -229,6 +233,7 @@ static const struct ath10k_hw_params ath
+ 		.hw_ops = &qca988x_ops,
+ 		.decap_align_bytes = 4,
+ 		.spectral_bin_discard = 0,
++		.spectral_bin_offset = 0,
+ 		.vht160_mcs_rx_highest = 0,
+ 		.vht160_mcs_tx_highest = 0,
+ 		.n_cipher_suites = 8,
+@@ -261,6 +266,7 @@ static const struct ath10k_hw_params ath
+ 		.hw_ops = &qca988x_ops,
+ 		.decap_align_bytes = 4,
+ 		.spectral_bin_discard = 0,
++		.spectral_bin_offset = 0,
+ 		.vht160_mcs_rx_highest = 0,
+ 		.vht160_mcs_tx_highest = 0,
+ 		.n_cipher_suites = 8,
+@@ -296,6 +302,7 @@ static const struct ath10k_hw_params ath
+ 		.target_cpu_freq = 176000000,
+ 		.decap_align_bytes = 4,
+ 		.spectral_bin_discard = 0,
++		.spectral_bin_offset = 0,
+ 		.vht160_mcs_rx_highest = 0,
+ 		.vht160_mcs_tx_highest = 0,
+ 		.n_cipher_suites = 8,
+@@ -334,6 +341,7 @@ static const struct ath10k_hw_params ath
+ 		.hw_ops = &qca99x0_ops,
+ 		.decap_align_bytes = 1,
+ 		.spectral_bin_discard = 4,
++		.spectral_bin_offset = 0,
+ 		.vht160_mcs_rx_highest = 0,
+ 		.vht160_mcs_tx_highest = 0,
+ 		.n_cipher_suites = 11,
+@@ -373,6 +381,7 @@ static const struct ath10k_hw_params ath
+ 		.hw_ops = &qca99x0_ops,
+ 		.decap_align_bytes = 1,
+ 		.spectral_bin_discard = 12,
++		.spectral_bin_offset = 8,
+ 
+ 		/* Can do only 2x2 VHT160 or 80+80. 1560Mbps is 4x4 80Mhz
+ 		 * or 2x2 160Mhz, long-guard-interval.
+@@ -415,6 +424,7 @@ static const struct ath10k_hw_params ath
+ 		.hw_ops = &qca99x0_ops,
+ 		.decap_align_bytes = 1,
+ 		.spectral_bin_discard = 12,
++		.spectral_bin_offset = 8,
+ 
+ 		/* Can do only 1x1 VHT160 or 80+80. 780Mbps is 2x2 80Mhz or
+ 		 * 1x1 160Mhz, long-guard-interval.
+@@ -451,6 +461,7 @@ static const struct ath10k_hw_params ath
+ 		.hw_ops = &qca988x_ops,
+ 		.decap_align_bytes = 4,
+ 		.spectral_bin_discard = 0,
++		.spectral_bin_offset = 0,
+ 		.vht160_mcs_rx_highest = 0,
+ 		.vht160_mcs_tx_highest = 0,
+ 		.n_cipher_suites = 8,
+@@ -485,6 +496,7 @@ static const struct ath10k_hw_params ath
+ 		.target_cpu_freq = 176000000,
+ 		.decap_align_bytes = 4,
+ 		.spectral_bin_discard = 0,
++		.spectral_bin_offset = 0,
+ 		.vht160_mcs_rx_highest = 0,
+ 		.vht160_mcs_tx_highest = 0,
+ 		.n_cipher_suites = 8,
+@@ -524,6 +536,7 @@ static const struct ath10k_hw_params ath
+ 		.hw_ops = &qca99x0_ops,
+ 		.decap_align_bytes = 1,
+ 		.spectral_bin_discard = 4,
++		.spectral_bin_offset = 0,
+ 		.vht160_mcs_rx_highest = 0,
+ 		.vht160_mcs_tx_highest = 0,
+ 		.n_cipher_suites = 11,
+--- a/drivers/net/wireless/ath/ath10k/hw.h
++++ b/drivers/net/wireless/ath/ath10k/hw.h
+@@ -596,6 +596,9 @@ struct ath10k_hw_params {
+ 
+ 	/* target supporting retention restore on ddr */
+ 	bool rri_on_ddr;
++
++	/* Number of bytes to be the offset for each FFT sample */
++	int spectral_bin_offset;
+ };
+ 
+ struct htt_rx_desc;
+--- a/drivers/net/wireless/ath/ath10k/spectral.c
++++ b/drivers/net/wireless/ath/ath10k/spectral.c
+@@ -145,7 +145,7 @@ int ath10k_spectral_process_fft(struct a
+ 	fft_sample->noise = __cpu_to_be16(phyerr->nf_chains[chain_idx]);
+ 
+ 	bins = (u8 *)fftr;
+-	bins += sizeof(*fftr);
++	bins += sizeof(*fftr) + ar->hw_params.spectral_bin_offset;
+ 
+ 	fft_sample->tsf = __cpu_to_be64(tsf);
+ 

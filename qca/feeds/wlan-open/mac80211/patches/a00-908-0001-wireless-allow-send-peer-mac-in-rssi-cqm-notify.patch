@@ -1,0 +1,188 @@
+--- a/include/net/cfg80211.h
++++ b/include/net/cfg80211.h
+@@ -5699,6 +5699,7 @@ void cfg80211_mgmt_tx_status(struct wireless_dev *wdev, u64 cookie,
+ /**
+  * cfg80211_cqm_rssi_notify - connection quality monitoring rssi event
+  * @dev: network device
++ * @peer: peer's MAC address
+  * @rssi_event: the triggered RSSI event
+  * @rssi_level: new RSSI level value or 0 if not available
+  * @gfp: context flags
+@@ -5706,7 +5707,7 @@ void cfg80211_mgmt_tx_status(struct wireless_dev *wdev, u64 cookie,
+  * This function is called when a configured connection quality monitoring
+  * rssi threshold reached event occurs.
+  */
+-void cfg80211_cqm_rssi_notify(struct net_device *dev,
++void cfg80211_cqm_rssi_notify(struct net_device *dev, const u8 *peer,
+ 			      enum nl80211_cqm_rssi_threshold_event rssi_event,
+ 			      s32 rssi_level, gfp_t gfp);
+ 
+--- a/include/net/mac80211.h
++++ b/include/net/mac80211.h
+@@ -5399,6 +5399,7 @@ void ieee80211_resume_disconnect(struct ieee80211_vif *vif);
+  *	rssi threshold triggered
+  *
+  * @vif: &struct ieee80211_vif pointer from the add_interface callback.
++ * @peer: peer's MAC address
+  * @rssi_event: the RSSI trigger event type
+  * @rssi_level: new RSSI level value or 0 if not available
+  * @gfp: context flags
+@@ -5407,7 +5408,7 @@ void ieee80211_resume_disconnect(struct ieee80211_vif *vif);
+  * monitoring is configured with an rssi threshold, the driver will inform
+  * whenever the rssi level reaches the threshold.
+  */
+-void ieee80211_cqm_rssi_notify(struct ieee80211_vif *vif,
++void ieee80211_cqm_rssi_notify(struct ieee80211_vif *vif, const u8 *peer,
+ 			       enum nl80211_cqm_rssi_threshold_event rssi_event,
+ 			       s32 rssi_level,
+ 			       gfp_t gfp);
+--- a/net/mac80211/mlme.c
++++ b/net/mac80211/mlme.c
+@@ -3433,14 +3433,14 @@ static void ieee80211_rx_mgmt_beacon(struct ieee80211_sub_if_data *sdata,
+ 		    (last_event == 0 || sig < last_event - hyst)) {
+ 			ifmgd->last_cqm_event_signal = sig;
+ 			ieee80211_cqm_rssi_notify(
+-				&sdata->vif,
++				&sdata->vif, NULL,
+ 				NL80211_CQM_RSSI_THRESHOLD_EVENT_LOW,
+ 				sig, GFP_KERNEL);
+ 		} else if (sig > thold &&
+ 			   (last_event == 0 || sig > last_event + hyst)) {
+ 			ifmgd->last_cqm_event_signal = sig;
+ 			ieee80211_cqm_rssi_notify(
+-				&sdata->vif,
++				&sdata->vif, NULL,
+ 				NL80211_CQM_RSSI_THRESHOLD_EVENT_HIGH,
+ 				sig, GFP_KERNEL);
+ 		}
+@@ -3457,14 +3457,14 @@ static void ieee80211_rx_mgmt_beacon(struct ieee80211_sub_if_data *sdata,
+ 		    (last_event == 0 || last_event >= low)) {
+ 			ifmgd->last_cqm_event_signal = sig;
+ 			ieee80211_cqm_rssi_notify(
+-				&sdata->vif,
++				&sdata->vif, NULL,
+ 				NL80211_CQM_RSSI_THRESHOLD_EVENT_LOW,
+ 				sig, GFP_KERNEL);
+ 		} else if (sig > high &&
+ 			   (last_event == 0 || last_event <= high)) {
+ 			ifmgd->last_cqm_event_signal = sig;
+ 			ieee80211_cqm_rssi_notify(
+-				&sdata->vif,
++				&sdata->vif, NULL,
+ 				NL80211_CQM_RSSI_THRESHOLD_EVENT_HIGH,
+ 				sig, GFP_KERNEL);
+ 		}
+@@ -5069,16 +5069,16 @@ void ieee80211_mgd_stop(struct ieee80211_sub_if_data *sdata)
+ 	sdata_unlock(sdata);
+ }
+ 
+-void ieee80211_cqm_rssi_notify(struct ieee80211_vif *vif,
++void ieee80211_cqm_rssi_notify(struct ieee80211_vif *vif, const u8 *peer,
+ 			       enum nl80211_cqm_rssi_threshold_event rssi_event,
+ 			       s32 rssi_level,
+ 			       gfp_t gfp)
+ {
+ 	struct ieee80211_sub_if_data *sdata = vif_to_sdata(vif);
+ 
+-	trace_api_cqm_rssi_notify(sdata, rssi_event, rssi_level);
++	trace_api_cqm_rssi_notify(sdata, peer, rssi_event, rssi_level);
+ 
+-	cfg80211_cqm_rssi_notify(sdata->dev, rssi_event, rssi_level, gfp);
++	cfg80211_cqm_rssi_notify(sdata->dev, peer, rssi_event, rssi_level, gfp);
+ }
+ EXPORT_SYMBOL(ieee80211_cqm_rssi_notify);
+ 
+--- a/net/mac80211/trace.h
++++ b/net/mac80211/trace.h
+@@ -1999,27 +1999,29 @@ TRACE_EVENT(api_connection_loss,
+ );
+ 
+ TRACE_EVENT(api_cqm_rssi_notify,
+-	TP_PROTO(struct ieee80211_sub_if_data *sdata,
++	TP_PROTO(struct ieee80211_sub_if_data *sdata, const u8 *peer,
+ 		 enum nl80211_cqm_rssi_threshold_event rssi_event,
+ 		 s32 rssi_level),
+ 
+-	TP_ARGS(sdata, rssi_event, rssi_level),
++	TP_ARGS(sdata, peer, rssi_event, rssi_level),
+ 
+ 	TP_STRUCT__entry(
+ 		VIF_ENTRY
++		__array(char, peer, ETH_ALEN)
+ 		__field(u32, rssi_event)
+ 		__field(s32, rssi_level)
+ 	),
+ 
+ 	TP_fast_assign(
+ 		VIF_ASSIGN;
++		memcpy(__entry->peer, peer, ETH_ALEN);
+ 		__entry->rssi_event = rssi_event;
+ 		__entry->rssi_level = rssi_level;
+ 	),
+ 
+ 	TP_printk(
+-		VIF_PR_FMT " event:%d rssi:%d",
+-		VIF_PR_ARG, __entry->rssi_event, __entry->rssi_level
++		VIF_PR_FMT ", peer: %pM  event:%d rssi:%d",
++		VIF_PR_ARG, __entry->peer, __entry->rssi_event, __entry->rssi_level
+ 	)
+ );
+ 
+--- a/net/wireless/nl80211.c
++++ b/net/wireless/nl80211.c
+@@ -14598,7 +14598,7 @@ static void cfg80211_send_cqm(struct sk_buff *msg, gfp_t gfp)
+ 				NL80211_MCGRP_MLME, gfp);
+ }
+ 
+-void cfg80211_cqm_rssi_notify(struct net_device *dev,
++void cfg80211_cqm_rssi_notify(struct net_device *dev, const u8 *peer,
+ 			      enum nl80211_cqm_rssi_threshold_event rssi_event,
+ 			      s32 rssi_level, gfp_t gfp)
+ {
+@@ -14606,7 +14606,7 @@ void cfg80211_cqm_rssi_notify(struct net_device *dev,
+ 	struct wireless_dev *wdev = dev->ieee80211_ptr;
+ 	struct cfg80211_registered_device *rdev = wiphy_to_rdev(wdev->wiphy);
+ 
+-	trace_cfg80211_cqm_rssi_notify(dev, rssi_event, rssi_level);
++	trace_cfg80211_cqm_rssi_notify(dev, peer, rssi_event, rssi_level);
+ 
+ 	if (WARN_ON(rssi_event != NL80211_CQM_RSSI_THRESHOLD_EVENT_LOW &&
+ 		    rssi_event != NL80211_CQM_RSSI_THRESHOLD_EVENT_HIGH))
+@@ -14621,7 +14621,7 @@ void cfg80211_cqm_rssi_notify(struct net_device *dev,
+ 			rssi_level = wdev->cqm_config->last_rssi_event_value;
+ 	}
+ 
+-	msg = cfg80211_prepare_cqm(dev, NULL, gfp);
++	msg = cfg80211_prepare_cqm(dev, peer, gfp);
+ 	if (!msg)
+ 		return;
+ 
+--- a/net/wireless/trace.h
++++ b/net/wireless/trace.h
+@@ -2601,21 +2601,23 @@ TRACE_EVENT(cfg80211_mgmt_tx_status,
+ );
+ 
+ TRACE_EVENT(cfg80211_cqm_rssi_notify,
+-	TP_PROTO(struct net_device *netdev,
++	TP_PROTO(struct net_device *netdev, const u8 *peer,
+ 		 enum nl80211_cqm_rssi_threshold_event rssi_event,
+ 		 s32 rssi_level),
+-	TP_ARGS(netdev, rssi_event, rssi_level),
++	TP_ARGS(netdev, peer, rssi_event, rssi_level),
+ 	TP_STRUCT__entry(
+ 		NETDEV_ENTRY
++		MAC_ENTRY(peer)
+ 		__field(enum nl80211_cqm_rssi_threshold_event, rssi_event)
+ 		__field(s32, rssi_level)
+ 	),
+ 	TP_fast_assign(
+ 		NETDEV_ASSIGN;
++		MAC_ASSIGN(peer, peer);
+ 		__entry->rssi_event = rssi_event;
+ 		__entry->rssi_level = rssi_level;
+ 	),
+-	TP_printk(NETDEV_PR_FMT ", rssi event: %d, level: %d",
++	TP_printk(NETDEV_PR_FMT ", peer: "MAC_PR_FMT ", rssi event: %d, level: %d",
+ 		  NETDEV_PR_ARG, __entry->rssi_event, __entry->rssi_level)
+ );
+ 

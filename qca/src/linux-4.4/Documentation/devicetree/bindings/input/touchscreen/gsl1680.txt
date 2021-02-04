@@ -1,0 +1,13 @@
+* GSL1680, 1680 Capacitive Touchscreen Controller
+
+Required properties:
+- compatible: must be "gsl1680_ts"
+- reg: slave address of touch screen controller.
+- status : enabled or disabled.
+
+Example:
+	lcd_ts: lcd_ts@40 {
+		compatible = "qca,gsl1680_ts"
+		reg = <0x40;
+		status = "disabled"
+	};

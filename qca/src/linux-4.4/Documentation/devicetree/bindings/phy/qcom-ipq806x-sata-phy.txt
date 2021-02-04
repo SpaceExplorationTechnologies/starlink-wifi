@@ -1,0 +1,40 @@
+Qualcomm IPQ806x SATA PHY Controller
+------------------------------------
+
+SATA PHY nodes are defined to describe on-chip SATA Physical layer controllers.
+Each SATA PHY controller should have its own node.
+
+Required properties:
+- compatible: compatible list, contains "qcom,ipq806x-sata-phy"
+- reg: offset and length of the SATA PHY register set;
+- #phy-cells: must be zero
+- clocks: must be exactly one entry
+- clock-names: must be "cfg"
+
+Optional properties:
+
+All of the HSIO properties below should be present for a certain
+characterization requirement.
+If any one of property is missed, all others are ignored and default HSIO
+characterization settings will be used by the driver.
+- tx_preemph_gen3: Tx driver de-emphasis value in the case where the PHY is
+  running at the gen3 rate
+- rx_eq: Fixed value of the RX equalizer
+- mpll: mpll settings in MPLL_LOOP_CTL register
+- term_off: Termination offset in TX_OVRD_DRV_HI register
+
+Example:
+	sata_phy: sata-phy@1b400000 {
+		compatible = "qcom,ipq806x-sata-phy";
+		reg = <0x1b400000 0x200>;
+
+		clocks = <&gcc SATA_PHY_CFG_CLK>;
+		clock-names = "cfg";
+
+		#phy-cells = <0>;
+
+		tx_preemph_gen3 = <0x0F>;
+		rx_eq = <0x03>;
+		mpll = <0x0>;
+		term_off = <0x0>;
+	};

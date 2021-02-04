@@ -1,0 +1,747 @@
+--- a/drivers/net/wireless/ath/ath10k/Makefile
++++ b/drivers/net/wireless/ath/ath10k/Makefile
+@@ -14,7 +14,8 @@ ath10k_core-y += mac.o \
+ 		 hw.o \
+ 		 p2p.o \
+ 		 swap.o \
+-		 fwlog.o
++		 fwlog.o \
++		 debug_smart_ant.o
+ 
+ ath10k_core-$(CPTCFG_ATH10K_SPECTRAL) += spectral.o
+ ath10k_core-$(CPTCFG_NL80211_TESTMODE) += testmode.o
+--- a/drivers/net/wireless/ath/ath10k/core.h
++++ b/drivers/net/wireless/ath/ath10k/core.h
+@@ -872,6 +872,14 @@ struct ath10k_peer_ratecode_list {
+ 	u8 rt_count[WMI_RATE_COUNT_MAX];
+ };
+ 
++#define ATH10K_PPDU_SIZE_MAX		32
++
++struct ath10k_smart_ant_info {
++	u8 rx_antenna;
++	bool enabled;
++	u32 tx_ppdu_end[ATH10K_PPDU_SIZE_MAX];
++};
++
+ struct ath10k {
+ 	struct ath_common ath_common;
+ 	struct ieee80211_hw *hw;
+@@ -1128,6 +1136,8 @@ struct ath10k {
+ 	struct work_struct fwlog_tx_work;
+ 	struct sk_buff_head fwlog_tx_queue;
+ 
++	struct ath10k_smart_ant_info smart_ant_info;
++
+ 	/* must be last */
+ 	u8 drv_priv[0] __aligned(sizeof(void *));
+ };
+--- a/drivers/net/wireless/ath/ath10k/debug.c
++++ b/drivers/net/wireless/ath/ath10k/debug.c
+@@ -2387,6 +2387,8 @@ int ath10k_debug_register(struct ath10k *ar)
+ 	debugfs_create_file("pktlog_filter", 0644, ar->debug.debugfs_phy, ar,
+ 			    &fops_pktlog_filter);
+ 
++	ath10k_smart_ant_debugfs_init(ar);
++
+ 	ath10k_init_pktlog(ar);
+ 
+ 	debugfs_create_file("quiet_period", 0644, ar->debug.debugfs_phy, ar,
+--- a/drivers/net/wireless/ath/ath10k/debug.h
++++ b/drivers/net/wireless/ath/ath10k/debug.h
+@@ -44,6 +44,7 @@ enum ath10k_debug_mask {
+ 	ATH10K_DBG_USB		= 0x00040000,
+ 	ATH10K_DBG_USB_BULK	= 0x00080000,
+ 	ATH10K_DBG_SNOC		= 0x00100000,
++	ATH10K_DBG_SMART_ANT    = 0x01000000,
+ 	ATH10K_DBG_FWLOG        = 0x10000000,
+ 	ATH10K_DBG_ANY		= 0xffffffff,
+ };
+@@ -201,6 +202,7 @@ static inline u32 ath10k_debug_get_fw_dbglog_level(struct ath10k *ar)
+ 	return ar->debug.fw_dbglog_level;
+ }
+ 
++void ath10k_smart_ant_debugfs_init(struct ath10k *ar);
+ #else
+ 
+ static inline int ath10k_debug_start(struct ath10k *ar)
+@@ -268,6 +270,7 @@ static inline u32 ath10k_debug_get_fw_dbglog_level(struct ath10k *ar)
+ #define ath10k_debug_get_et_strings NULL
+ #define ath10k_debug_get_et_sset_count NULL
+ #define ath10k_debug_get_et_stats NULL
++#define ath10k_smart_ant_debugfs_init NULL
+ 
+ #endif /* CPTCFG_ATH10K_DEBUGFS */
+ #ifdef CPTCFG_MAC80211_DEBUGFS
+index 0000000..2c88a33
+--- /dev/null
++++ b/drivers/net/wireless/ath/ath10k/debug_smart_ant.c
+@@ -0,0 +1,356 @@
++/*
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ *
++ * Permission to use, copy, modify, and/or distribute this software for
++ * any purpose with or without fee is hereby granted, provided that the
++ * above copyright notice and this permission notice appear in all copies.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
++ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ */
++
++#include "core.h"
++#include "wmi-ops.h"
++#include "debug.h"
++#include "smart_ant.h"
++
++static ssize_t ath10k_write_sa_enable_ops(struct file *file,
++					  const char __user *user_buf,
++					  size_t count, loff_t *ppos)
++{
++	struct ath10k *ar = file->private_data;
++	int ret;
++	u8 enable;
++
++	if (!ath10k_smart_ant_enabled(ar))
++		return -ENOTSUPP;
++
++	if (kstrtou8_from_user(user_buf, count, 0, &enable))
++		return -EINVAL;
++
++	if (ar->smart_ant_info.enabled == enable)
++		return count;
++
++	mutex_lock(&ar->conf_mutex);
++	if (enable) {
++		ret = ath10k_wmi_pdev_enable_smart_ant(ar,
++				WMI_SMART_ANT_MODE_PARALLEL,
++				ATH10K_SMART_ANT_DEFAULT_ANT,
++				ATH10K_SMART_ANT_DEFAULT_ANT);
++		if (ret)
++			goto exit;
++
++		ret = ath10k_wmi_pdev_pktlog_enable(ar,
++				ATH10K_PKTLOG_SMART_ANT);
++		if (ret)
++			goto exit;
++	} else {
++		ret = ath10k_wmi_pdev_disable_smart_ant(ar,
++				WMI_SMART_ANT_MODE_PARALLEL, 0, 0);
++		if (ret)
++			goto exit;
++
++		ath10k_wmi_pdev_pktlog_enable(ar, ATH10K_PKTLOG_SMART_ANT);
++	}
++	ar->smart_ant_info.enabled = enable;
++
++	ath10k_dbg(ar, ATH10K_DBG_SMART_ANT, "Smart antenna %s\n",
++		   enable ? "enabled" : "disabled");
++exit:
++	mutex_unlock(&ar->conf_mutex);
++	if (ret)
++		return ret;
++
++	return count;
++}
++
++static ssize_t ath10k_read_sa_enable_ops(struct file *file, char __user *ubuf,
++					 size_t count, loff_t *ppos)
++{
++	struct ath10k *ar = file->private_data;
++	char buf[4];
++	int len = 0;
++
++	if (!ath10k_smart_ant_enabled(ar))
++		return -ENOTSUPP;
++
++	len = scnprintf(buf, sizeof(buf) - len, "%d\n",
++			ar->smart_ant_info.enabled);
++
++	return simple_read_from_buffer(ubuf, count, ppos, buf, len);
++}
++
++static const struct file_operations fops_sa_enable_ops = {
++	.write = ath10k_write_sa_enable_ops,
++	.read = ath10k_read_sa_enable_ops,
++	.open = simple_open,
++	.owner = THIS_MODULE,
++	.llseek = default_llseek,
++};
++
++static ssize_t ath10k_write_sa_tx_ant_ops(struct file *file,
++					  const char __user *user_buf,
++					  size_t count, loff_t *ppos)
++{
++	struct ath10k *ar = file->private_data;
++	u32 ants[WMI_SMART_ANT_RATE_SERIES_MAX], txant;
++	u8 mac_addr[ETH_ALEN];
++	struct ieee80211_sta *sta;
++	struct ath10k_sta *arsta;
++	int ret, i, vdev_id, len;
++	char *token, *sptr;
++	char buf[64];
++
++	if (!ath10k_smart_ant_enabled(ar))
++		return -ENOTSUPP;
++
++	len = min(count, sizeof(buf) - 1);
++	if (copy_from_user(buf, user_buf, len))
++		return -EFAULT;
++
++	buf[len] = '\0';
++	sptr = buf;
++	for (i = 0; i < ETH_ALEN - 1; i++) {
++		token = strsep(&sptr, ":");
++		if (!token)
++			return -EINVAL;
++
++		if (kstrtou8(token, 16, &mac_addr[i]))
++			return -EINVAL;
++	}
++
++	token = strsep(&sptr, " ");
++	if (!token)
++		return -EINVAL;
++
++	if (kstrtou8(token, 16, &mac_addr[i]))
++		return -EINVAL;
++
++	if (kstrtou32(sptr, 0, &txant))
++		return -EINVAL;
++
++	if (txant > ((1 << ar->num_rf_chains) - 1)) {
++		ath10k_err(ar, "Invalid tx antenna config\n");
++		return -EINVAL;
++	}
++
++	rcu_read_lock();
++
++	sta = ieee80211_find_sta_by_ifaddr(ar->hw, mac_addr, NULL);
++	if (!sta) {
++		ath10k_err(ar, "Sta entry not found\n");
++		rcu_read_unlock();
++		return -EINVAL;
++	}
++
++	arsta = (struct ath10k_sta *)sta->drv_priv;
++	vdev_id = arsta->arvif->vdev_id;
++
++	rcu_read_unlock();
++
++	for (i = 0; i < WMI_SMART_ANT_RATE_SERIES_MAX; i++)
++		ants[i] = txant;
++
++	ath10k_dbg(ar, ATH10K_DBG_SMART_ANT, "Smart antenna set tx antenna to %d\n",
++		   txant);
++	mutex_lock(&ar->conf_mutex);
++	ret = ath10k_wmi_peer_set_smart_tx_ant(ar, vdev_id, mac_addr,
++			ants, WMI_SMART_ANT_RATE_SERIES_MAX);
++	mutex_unlock(&ar->conf_mutex);
++
++	if (!ret)
++		ret = count;
++
++	return ret;
++}
++
++static const struct file_operations fops_sa_tx_ant_ops = {
++	.write = ath10k_write_sa_tx_ant_ops,
++	.open = simple_open,
++	.owner = THIS_MODULE,
++	.llseek = default_llseek,
++};
++
++static ssize_t ath10k_read_sa_rx_ant_ops(struct file *file, char __user *ubuf,
++					 size_t count, loff_t *ppos)
++{
++	char buf[4];
++	struct ath10k *ar = file->private_data;
++	int len = 0;
++
++	len = scnprintf(buf, sizeof(buf) - len, "%d\n",
++			ar->smart_ant_info.rx_antenna);
++
++	return simple_read_from_buffer(ubuf, count, ppos, buf, len);
++}
++
++static ssize_t ath10k_write_sa_rx_ant_ops(struct file *file,
++					  const char __user *user_buf,
++					  size_t count, loff_t *ppos)
++{
++	struct ath10k *ar = file->private_data;
++	u8 rxant;
++	int ret;
++
++	if (!ath10k_smart_ant_enabled(ar))
++		return -ENOTSUPP;
++
++	if (kstrtou8_from_user(user_buf, count, 0, &rxant))
++		return -EINVAL;
++
++	if (rxant > ((1 << ar->num_rf_chains) - 1)) {
++		ath10k_err(ar, "Invalid Rx antenna config\n");
++		return -EINVAL;
++	}
++
++	ath10k_dbg(ar, ATH10K_DBG_SMART_ANT,
++		   "Setting Rx antenna to %d\n", rxant);
++
++	mutex_lock(&ar->conf_mutex);
++	ret = ath10k_wmi_pdev_set_rx_ant(ar, rxant);
++	mutex_unlock(&ar->conf_mutex);
++
++	if (!ret)
++		ret = count;
++
++	return ret;
++}
++
++static const struct file_operations fops_sa_rx_ant_ops = {
++	.read = ath10k_read_sa_rx_ant_ops,
++	.write = ath10k_write_sa_rx_ant_ops,
++	.open = simple_open,
++	.owner = THIS_MODULE,
++	.llseek = default_llseek,
++};
++
++static ssize_t ath10k_write_sa_train_info_ops(struct file *file,
++					      const char __user *user_buf,
++					      size_t count, loff_t *ppos)
++{
++	struct ath10k *ar = file->private_data;
++	u8 mac_addr[ETH_ALEN];
++	struct ieee80211_sta *sta;
++	struct ath10k_sta *arsta;
++	struct wmi_peer_sant_set_train_arg arg;
++	int ret, i, vdev_id, len;
++	u32 rate_mask = 0;
++	char *token, *sptr;
++	char buf[128];
++
++	if (!ath10k_smart_ant_enabled(ar))
++		return -ENOTSUPP;
++
++	len = min(count, sizeof(buf) - 1);
++	if (copy_from_user(buf, user_buf, len))
++		return -EFAULT;
++
++	buf[len] = '\0';
++	sptr = buf;
++	for (i = 0; i < ETH_ALEN - 1; i++) {
++		token = strsep(&sptr, ":");
++		if (!token)
++			return -EINVAL;
++
++		if (kstrtou8(token, 16, &mac_addr[i]))
++			return -EINVAL;
++	}
++
++	token = strsep(&sptr, " ");
++	if (!token)
++		return -EINVAL;
++
++	if (kstrtou8(token, 16, &mac_addr[i]))
++		return -EINVAL;
++
++	token = strsep(&sptr, " ");
++	if (!token)
++		return -EINVAL;
++	if (kstrtou32(token, 16, &arg.rates[0]))
++		return -EINVAL;
++
++	token = strsep(&sptr, " ");
++	if (!token)
++		return -EINVAL;
++	if (kstrtou32(token, 0, &arg.antennas[0]))
++		return -EINVAL;
++
++	if (kstrtou32(sptr, 0, &arg.num_pkts))
++		return -EINVAL;
++
++	for (i = 0; i < WMI_SMART_ANT_RATE_SERIES_MAX; i++) {
++		arg.rates[i] = arg.rates[0];
++		arg.antennas[i] = arg.antennas[0];
++	}
++
++	if (arg.antennas[0] > ((1 << ar->num_rf_chains) - 1)) {
++		ath10k_err(ar, "Invalid tx ant for trianing\n");
++		return -EINVAL;
++	}
++	/* TODO: Validate rate input */
++	rcu_read_lock();
++
++	sta = ieee80211_find_sta_by_ifaddr(ar->hw, mac_addr, NULL);
++	if (!sta) {
++		ath10k_err(ar, "Sta entry not found\n");
++		rcu_read_unlock();
++		return -EINVAL;
++	}
++
++	for (i = 0; i <= sta->bandwidth; i++)
++		rate_mask |= (0xff << (8 * i));
++
++	if ((arg.rates[0] & rate_mask) != arg.rates[0]) {
++		ath10k_err(ar, "Invalid rates for training\n");
++		rcu_read_unlock();
++		return -EINVAL;
++	}
++
++	arsta = (struct ath10k_sta *)sta->drv_priv;
++	vdev_id = arsta->arvif->vdev_id;
++
++	rcu_read_unlock();
++
++	ath10k_dbg(ar, ATH10K_DBG_SMART_ANT, "Training for peer %pM num_pkts:%d\n",
++		   mac_addr, arg.num_pkts);
++	for (i = 0; i < WMI_SMART_ANT_RATE_SERIES_MAX; i++) {
++		ath10k_dbg(ar, ATH10K_DBG_SMART_ANT, "rate[%d] 0x%x antenna[%d] %d\n",
++			   i, arg.rates[i], i, arg.antennas[i]);
++	}
++
++	mutex_lock(&ar->conf_mutex);
++	ret = ath10k_wmi_peer_set_smart_ant_train_info(ar, vdev_id,
++						       mac_addr, &arg);
++	mutex_unlock(&ar->conf_mutex);
++	if (!ret)
++		ret = count;
++
++	return ret;
++}
++
++static const struct file_operations fops_sa_train_info_ops = {
++	.write = ath10k_write_sa_train_info_ops,
++	.open = simple_open,
++	.owner = THIS_MODULE,
++	.llseek = default_llseek,
++};
++
++void ath10k_smart_ant_debugfs_init(struct ath10k *ar)
++{
++	debugfs_create_file("smart_ant_enable", S_IRUSR | S_IWUSR,
++			    ar->debug.debugfs_phy, ar, &fops_sa_enable_ops);
++
++	debugfs_create_file("smart_ant_tx_ant", S_IWUSR,
++			    ar->debug.debugfs_phy, ar, &fops_sa_tx_ant_ops);
++
++	debugfs_create_file("smart_ant_rx_ant", S_IRUSR | S_IWUSR,
++			    ar->debug.debugfs_phy, ar, &fops_sa_rx_ant_ops);
++
++	debugfs_create_file("smart_ant_train_info", S_IWUSR,
++			    ar->debug.debugfs_phy, ar, &fops_sa_train_info_ops);
++}
+--- a/drivers/net/wireless/ath/ath10k/smart_ant.h
++++ b/drivers/net/wireless/ath/ath10k/smart_ant.h
+@@ -14,18 +14,153 @@
+  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+  */
+ 
++#include "debug.h"
++#include "txrx.h"
++#include "wmi-ops.h"
++
++#ifndef _SMART_ANT_H_
++#define _SMART_ANT_H_
++
++#define ATH10K_TX_FEEDBACK_CONFIG_DEFAULT 0xe4
++
++#define ATH10K_SMART_ANT_PKTLOG_TYPE_TXCTL	1
++#define ATH10K_SMART_ANT_PKTLOG_TYPE_TXSTATS	2
++
++#define ATH10K_SMART_ANT_FEEDBACK	29
++
++#define ATH10K_SMART_ANT_NPKTS		29
++#define ATH10K_SMART_ANT_NPKTS_M	0xffff
++#define ATH10K_SMART_ANT_NPKTS_S	0
++
++#define ATH10K_SMART_ANT_NBAD		29
++#define ATH10K_SMART_ANT_NBAD_M		0x1fff0000
++#define ATH10K_SMART_ANT_NBAD_S		16
++
++#define ATH10K_SMART_ANT_COMB_FB	29
++#define ATH10K_SMART_ANT_COMB_FB_M	0x60000000
++#define ATH10K_SMART_ANT_COMB_FB_S	29
++
++#define ATH10K_SMART_ANT_TRAIN_PKT	29
++#define ATH10K_SMART_ANT_TRAIN_PKT_M	0x80000000
++#define ATH10K_SMART_ANT_TRAIN_PKT_S	31
++
++#define ATH10K_RX_ANT_MASK	0x00ffffff
++
++#define ATH10K_TXC_PEERID	1
++#define ATH10K_TXC_FTYPE	13
++#define ATH10K_TXC_FTYPE_M	0x3c00000
++#define ATH10K_TXC_FTYPE_S	22
++#define ATH10K_FTYPE_DATA	0
++
++#define ATH10K_TXC_ANT_S0	18
++#define ATH10K_TXC_ANT_S0_M	0x00ffffff
++#define ATH10K_TXC_ANT_S0_S	0
++
++#define ATH10K_TXC_ANT_S1	19
++#define ATH10K_TXC_ANT_S1_M	0x00ffffff
++#define ATH10K_TXC_ANT_S1_S	0
++
++#define ATH10K_TXC_S0_RATE_BW20		22
++#define ATH10K_TXC_S0_RATE_BW20_M	0xff000000
++#define ATH10K_TXC_S0_RATE_BW20_S	24
++
++#define ATH10K_TXC_S0_RATE_BW40		26
++#define ATH10K_TXC_S0_RATE_BW40_M	0xff000000
++#define ATH10K_TXC_S0_RATE_BW40_S	16
++
++#define ATH10K_TXC_S0_RATE_BW80		30
++#define ATH10K_TXC_S0_RATE_BW80_M	0xff000000
++#define ATH10K_TXC_S0_RATE_BW80_S	8
++
++#define ATH10K_TXC_S0_RATE_BW160	34
++#define ATH10K_TXC_S0_RATE_BW160_M	0xff000000
++#define ATH10K_TXC_S0_RATE_BW160_S	0
++
++#define ATH10K_TXC_S1_RATE_BW20		38
++#define ATH10K_TXC_S1_RATE_BW20_M	0xff000000
++#define ATH10K_TXC_S1_RATE_BW20_S	24
++
++#define ATH10K_TXC_S1_RATE_BW40		42
++#define ATH10K_TXC_S1_RATE_BW40_M	0xff000000
++#define ATH10K_TXC_S1_RATE_BW40_S	16
++
++#define ATH10K_TXC_S1_RATE_BW80		46
++#define ATH10K_TXC_S1_RATE_BW80_M	0xff000000
++#define ATH10K_TXC_S1_RATE_BW80_S	8
++
++#define ATH10K_TXC_S1_RATE_BW160	50
++#define ATH10K_TXC_S1_RATE_BW160_M	0xff000000
++#define ATH10K_TXC_S1_RATE_BW160_S	0
++
++#define TXCS_MS(desc, info) \
++		((__le32_to_cpu(desc[info]) & info## _M) >> info## _S)
++
++#define ATH10K_SMART_ANT_DEFAULT_ANT	2
++
++enum ath10k_smart_ant_rtcount {
++	ATH10K_SMART_ANT_RTCNT_LEGACY,
++	ATH10K_SMART_ANT_RTCNT_20,
++	ATH10K_SMART_ANT_RTCNT_40,
++	ATH10K_SMART_ANT_RTCNT_80,
++	ATH10K_SMART_ANT_RTCNT_MAX,
++};
++
++static char *rate_code_map[] = { "Legacy CCK/OFDM",
++				 "VHT/HT 20",
++				 "VHT/HT 40",
++				 "VHT80" };
++
++static inline void smart_ant_dbg_ratelist(struct ath10k *ar,
++				struct ath10k_peer_ratecode_list *rtcode,
++				enum ath10k_smart_ant_rtcount mode)
++{
++	u8 *rlist;
++	u8 rcount;
++	int i;
++
++	switch (mode) {
++	case ATH10K_SMART_ANT_RTCNT_LEGACY:
++		rlist = rtcode->rtcode_legacy;
++		break;
++	case ATH10K_SMART_ANT_RTCNT_20:
++		rlist = rtcode->rtcode_20;
++		break;
++	case ATH10K_SMART_ANT_RTCNT_40:
++		rlist = rtcode->rtcode_40;
++		break;
++	case ATH10K_SMART_ANT_RTCNT_80:
++		rlist = rtcode->rtcode_80;
++		break;
++	case ATH10K_SMART_ANT_RTCNT_MAX:
++	default:
++		ath10k_info(ar, "Not a valid mode\n");
++		return;
++	}
++
++	rcount = rtcode->rt_count[mode];
++	ath10k_dbg(ar, ATH10K_DBG_SMART_ANT,
++		   "rate code list for mode %s\n", rate_code_map[mode]);
++	for (i = 0; i < rcount; i++)
++		ath10k_dbg(ar, ATH10K_DBG_SMART_ANT, "0x%x\n", rlist[i]);
++}
++
+ /* This API is to process rx feedback such as rssi, PER and antennas.
+  * Based on the stats a better antenna combination can be found for rx.
+  * Better rx antenna can be configured using ath10k_wmi_pdev_set_rx_ant().
+  */
+ 
+-#ifndef _SMART_ANT_H_
+-#define _SMART_ANT_H_
+-
+ static inline void
+ ath10k_smart_ant_proc_rx_feedback(struct ath10k *ar,
+ 				  struct htt_rx_desc *rx_desc)
+ {
++	struct ath10k_smart_ant_info *sa_info = &ar->smart_ant_info;
++
++	if (!(__le32_to_cpu(rx_desc->attention.flags) &
++	     RX_ATTENTION_FLAGS_LAST_MPDU))
++		return;
++
++	sa_info->rx_antenna = __le32_to_cpu(rx_desc->ppdu_end.qca988x.info0) &
++			      ATH10K_RX_ANT_MASK;
+ }
+ 
+ /* This API is to process tx feedback information such as tx rate
+@@ -40,6 +175,84 @@ ath10k_smart_ant_proc_rx_feedback(struct ath10k *ar,
+ static inline void
+ ath10k_smart_ant_proc_tx_feedback(struct ath10k *ar, u8 *data)
+ {
++	struct ath10k_pktlog_hdr *pl_hdr = (struct ath10k_pktlog_hdr *)data;
++	u16 log_type = __le16_to_cpu(pl_hdr->log_type);
++	struct ath10k_peer *peer;
++	struct ath10k_smart_ant_info *info = &ar->smart_ant_info;
++
++	if (!ath10k_smart_ant_enabled(ar))
++		return;
++
++	if (log_type != ATH10K_SMART_ANT_PKTLOG_TYPE_TXCTL &&
++	    log_type != ATH10K_SMART_ANT_PKTLOG_TYPE_TXSTATS)
++		return;
++
++	if (log_type == ATH10K_SMART_ANT_PKTLOG_TYPE_TXSTATS) {
++		memcpy((u8 *)info->tx_ppdu_end, pl_hdr->payload,
++		       sizeof(info->tx_ppdu_end));
++	} else {
++		struct ieee80211_sta *sta;
++		u32 *tx_ctrl_desc, *tx_status_desc;
++		u32 peer_id;
++		u32 ftype;
++		u8 peer_mac[ETH_ALEN];
++
++		tx_status_desc = info->tx_ppdu_end;
++		tx_ctrl_desc = (u32 *)pl_hdr->payload;
++
++		peer_id = __le32_to_cpu(tx_ctrl_desc[ATH10K_TXC_PEERID]);
++		ftype = TXCS_MS(tx_ctrl_desc, ATH10K_TXC_FTYPE);
++
++		if (ftype != ATH10K_FTYPE_DATA)
++			return;
++
++		if (!tx_status_desc[ATH10K_SMART_ANT_FEEDBACK])
++			return;
++
++		spin_lock_bh(&ar->data_lock);
++		peer = ath10k_peer_find_by_id(ar, peer_id);
++		if (!peer) {
++			spin_unlock_bh(&ar->data_lock);
++			return;
++		}
++		ether_addr_copy(peer_mac, peer->addr);
++		spin_unlock_bh(&ar->data_lock);
++
++		rcu_read_lock();
++		sta = ieee80211_find_sta_by_ifaddr(ar->hw, peer_mac, NULL);
++		if (!sta) {
++			rcu_read_unlock();
++			ath10k_dbg(ar, ATH10K_DBG_SMART_ANT,
++				   "Sta entry for %pM not found\n", peer_mac);
++			return;
++		}
++
++		rcu_read_unlock();
++
++		ath10k_dbg(ar, ATH10K_DBG_SMART_ANT,
++			   "Tx feeback for peer %pM\n", peer_mac);
++
++		ath10k_dbg(ar, ATH10K_DBG_SMART_ANT,
++			   "Tx feedback: num_combined_feedback %d num_pkts %d num_bad %d is_training %s\n",
++			   TXCS_MS(tx_status_desc, ATH10K_SMART_ANT_COMB_FB),
++			   TXCS_MS(tx_status_desc, ATH10K_SMART_ANT_NPKTS),
++			   TXCS_MS(tx_status_desc, ATH10K_SMART_ANT_NBAD),
++			   TXCS_MS(tx_status_desc, ATH10K_SMART_ANT_TRAIN_PKT) ?
++			   "true" : "false");
++
++		ath10k_dbg(ar, ATH10K_DBG_SMART_ANT,
++			   "Tx feedback: tx_antenna[0] %d tx_antenna[1] %d rate_mcs[0] 0x%x rate_mcs[1] 0x%x\n",
++			   TXCS_MS(tx_ctrl_desc, ATH10K_TXC_ANT_S0),
++			   TXCS_MS(tx_ctrl_desc, ATH10K_TXC_ANT_S1),
++			   TXCS_MS(tx_ctrl_desc, ATH10K_TXC_S0_RATE_BW20) |
++			   TXCS_MS(tx_ctrl_desc, ATH10K_TXC_S0_RATE_BW40) |
++			   TXCS_MS(tx_ctrl_desc, ATH10K_TXC_S0_RATE_BW80) |
++			   TXCS_MS(tx_ctrl_desc, ATH10K_TXC_S0_RATE_BW160),
++			   TXCS_MS(tx_ctrl_desc, ATH10K_TXC_S1_RATE_BW20) |
++			   TXCS_MS(tx_ctrl_desc, ATH10K_TXC_S1_RATE_BW40) |
++			   TXCS_MS(tx_ctrl_desc, ATH10K_TXC_S1_RATE_BW80) |
++			   TXCS_MS(tx_ctrl_desc, ATH10K_TXC_S1_RATE_BW160));
++	}
+ }
+ 
+ /* In AP mode, this API notifies of disassociation of a station.
+@@ -49,6 +262,11 @@ ath10k_smart_ant_proc_tx_feedback(struct ath10k *ar, u8 *data)
+ static inline void
+ ath10k_smart_ant_sta_disconnect(struct ath10k *ar, struct ieee80211_sta *sta)
+ {
++	if (!ath10k_smart_ant_enabled(ar))
++		return;
++
++	ath10k_dbg(ar, ATH10K_DBG_SMART_ANT,
++		   "Smart antenna disconnect for %pM\n", sta->addr);
+ }
+ 
+ /* In AP mode, this API is to notify of association of a station. Station
+@@ -60,6 +278,55 @@ static inline int
+ ath10k_smart_ant_sta_connect(struct ath10k *ar, struct ath10k_vif *arvif,
+ 			     struct ieee80211_sta *sta)
+ {
++	 struct wmi_smart_ant_sta_cfg_arg arg;
++	 struct ath10k_sta *arsta = (struct ath10k_sta *)sta->drv_priv;
++	 int i, ret;
++
++	if (!ath10k_smart_ant_enabled(ar) || !ar->smart_ant_info.enabled)
++		return 0;
++
++	 lockdep_assert_held(&ar->conf_mutex);
++
++	if (arvif->vdev_type != WMI_VDEV_TYPE_AP ||
++	    arvif->vdev_subtype != WMI_VDEV_SUBTYPE_NONE) {
++		ath10k_dbg(ar, ATH10K_DBG_SMART_ANT,
++			   "Smart antenna logic not enabled for non-AP interface\n");
++		return 0;
++	}
++
++	ath10k_dbg(ar, ATH10K_DBG_SMART_ANT,
++		   "Smart antenna connect for %pM\n", sta->addr);
++
++	for (i = 0; i < ATH10K_SMART_ANT_RTCNT_MAX; i++)
++		smart_ant_dbg_ratelist(ar, &ar->ratecode_list, i);
++
++	/* Configure to get feedback for every N PPDUs.
++	 * ATH10K_TX_FEEDBACK_CONFIG_DEFAULT - b2:b0 Number of PPDUs
++	 * during non-training and b5:b3 during training.
++	 */
++	arg.num_cfg = 1;
++	arg.cfg[0] = ATH10K_TX_FEEDBACK_CONFIG_DEFAULT;
++	arg.vdev_id = arsta->arvif->vdev_id;
++	ether_addr_copy(arg.mac_addr.addr, sta->addr);
++
++	ath10k_dbg(ar, ATH10K_DBG_SMART_ANT,
++		   "%s mac %pM vdev_id %d num_cfg %d\n",
++		   __func__, arg.mac_addr.addr, arg.vdev_id, arg.num_cfg);
++
++	for (i = 0; i < arg.num_cfg; i++) {
++		ath10k_dbg(ar, ATH10K_DBG_SMART_ANT,
++			   "cfg[%d] 0x%x\n", i, arg.cfg[i]);
++	}
++
++	/* Configure feedback option for this station, i.e tx feedback
++	 * for how many PPDUs during training and non-training period.
++	 */
++	ret = ath10k_wmi_peer_cfg_smart_ant(ar, &arg);
++
++	if (ret) {
++		ath10k_warn(ar, "Failed to set feedback config\n");
++		return ret;
++	}
+ 	return 0;
+ }
+ 

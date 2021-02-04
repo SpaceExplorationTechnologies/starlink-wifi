@@ -1,0 +1,12 @@
+diff -Nur a/xl2tpd.c xl2tpd-devel-20150930/xl2tpd.c
+--- a/xl2tpd.c	2017-11-07 13:43:10.052462598 -0800
++++ xl2tpd-devel-20150930/xl2tpd.c	2017-11-07 13:43:34.136461885 -0800
+@@ -1502,8 +1502,6 @@
+     if (lac->t)
+     {
+         lac_disconnect (lac->t->ourtid);
+-        lac->t->lac = NULL;
+-        lac->t->self->lac = NULL;
+     }
+     if (lac->c)
+     {

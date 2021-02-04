@@ -1,0 +1,38 @@
+Qualcomm Process Voltage Scaling Tables
+
+The node name is required to be "qcom,pvs". There shall only be one
+such node present in the root of the tree.
+
+PROPERTIES
+
+- qcom,pvs-format-a or qcom,pvs-format-b:
+	Usage: required
+	Value type: <empty>
+	Definition: Indicates the format of qcom,speedX-pvsY-bin-vZ properties.
+		    If qcom,pvs-format-a is used the table is two columns
+		    (frequency and voltage in that order). If qcom,pvs-format-b 		    is used the table is three columns (frequency, voltage,
+		    and current in that order).
+
+- qcom,speedX-pvsY-bin-vZ:
+	Usage: required
+	Value type: <prop-encoded-array>
+	Definition: The PVS table corresponding to the speed bin X, pvs bin Y,
+		    and version Z.
+Example:
+
+	qcom,pvs {
+		qcom,pvs-format-a;
+		qcom,speed0-pvs0-bin-v0 =
+			<  384000000  950000 >,
+			<  486000000  975000 >,
+			<  594000000 1000000 >,
+			<  702000000 1025000 >,
+			<  810000000 1075000 >,
+			<  918000000 1100000 >,
+			< 1026000000 1125000 >,
+			< 1134000000 1175000 >,
+			< 1242000000 1200000 >,
+			< 1350000000 1225000 >,
+			< 1458000000 1237500 >,
+			< 1512000000 1250000 >;
+	};

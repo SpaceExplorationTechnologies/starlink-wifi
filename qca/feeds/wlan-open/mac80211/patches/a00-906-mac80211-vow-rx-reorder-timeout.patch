@@ -1,0 +1,67 @@
+--- a/net/mac80211/main.c
++++ b/net/mac80211/main.c
+@@ -33,6 +33,11 @@
+ #include "led.h"
+ #include "debugfs.h"
+ 
++unsigned int mac80211_reorder_timeout = 0;
++
++module_param_named(reorder_timeout, mac80211_reorder_timeout, uint, 0644);
++MODULE_PARM_DESC(reorder_timeout, "aggregation reorder timeout in msecs");
++
+ void ieee80211_configure_filter(struct ieee80211_local *local)
+ {
+ 	u64 mc;
+@@ -1254,6 +1259,10 @@ static int __init ieee80211_init(void)
+ 	BUILD_BUG_ON(offsetof(struct ieee80211_tx_info, driver_data) +
+ 		     IEEE80211_TX_INFO_DRIVER_DATA_SIZE > sizeof(skb->cb));
+ 
++	/* HT_RX_REORDER_BUF_TIMEOUT converted to msecs */
++       if(!mac80211_reorder_timeout)
++                mac80211_reorder_timeout = jiffies_to_msecs( HZ / 2 );
++
+ 	ret = rc80211_minstrel_init();
+ 	if (ret)
+ 		return ret;
+--- a/net/mac80211/rx.c
++++ b/net/mac80211/rx.c
+@@ -35,6 +35,8 @@
+ #include "rate.h"
+ #include "debugfs_sta.h"
+ 
++extern unsigned int mac80211_reorder_timeout;
++
+ static inline void ieee80211_rx_stats(struct net_device *dev, u32 len)
+ {
+ 	struct pcpu_sw_netstats *tstats = this_cpu_ptr(netdev_tstats(dev));
+@@ -1027,9 +1029,11 @@ static void ieee80211_release_reorder_frames(struct ieee80211_sub_if_data *sdata
+  * can be released for processing. This may also release other skb's from the
+  * reorder buffer if there are no additional gaps between the frames.
+  *
++ * #define HT_RX_REORDER_BUF_TIMEOUT (HZ / 2)
++ * assigned to mac80211_reorder_timeout in ieee80211_init()
++ *
+  * Callers must hold tid_agg_rx->reorder_lock.
+  */
+-#define HT_RX_REORDER_BUF_TIMEOUT (HZ / 10)
+ 
+ static void ieee80211_sta_reorder_release(struct ieee80211_sub_if_data *sdata,
+ 					  struct tid_ampdu_rx *tid_agg_rx,
+@@ -1056,7 +1060,7 @@ static void ieee80211_sta_reorder_release(struct ieee80211_sub_if_data *sdata,
+ 			}
+ 			if (skipped &&
+ 			    !time_after(jiffies, tid_agg_rx->reorder_time[j] +
+-					HT_RX_REORDER_BUF_TIMEOUT))
++					msecs_to_jiffies(mac80211_reorder_timeout)))
+ 				goto set_release_timer;
+ 
+ 			/* don't leave incomplete A-MSDUs around */
+@@ -1097,7 +1101,7 @@ static void ieee80211_sta_reorder_release(struct ieee80211_sub_if_data *sdata,
+ 		if (!tid_agg_rx->removed)
+ 			mod_timer(&tid_agg_rx->reorder_timer,
+ 				  tid_agg_rx->reorder_time[j] + 1 +
+-				  HT_RX_REORDER_BUF_TIMEOUT);
++				  msecs_to_jiffies(mac80211_reorder_timeout));
+ 	} else {
+ 		del_timer(&tid_agg_rx->reorder_timer);
+ 	}

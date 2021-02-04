@@ -1,0 +1,19 @@
+Index: alsa-lib-1.0.28/src/conf/alsa.conf
+===================================================================
+--- alsa-lib-1.0.28.orig/src/conf/alsa.conf	2014-06-17 18:04:19.000000000 +0530
++++ alsa-lib-1.0.28/src/conf/alsa.conf	2017-08-14 15:53:37.267085774 +0530
+@@ -248,6 +248,14 @@
+ 	}
+ }
+ 
++pcm.gcs_io {
++        @args [ FORMAT ]
++                type gcs_io
++                rate 16000
++                channels 6
++        format $FORMAT
++}
++
+ pcm.plug {
+ 	@args [ SLAVE ]
+ 	@args.SLAVE {

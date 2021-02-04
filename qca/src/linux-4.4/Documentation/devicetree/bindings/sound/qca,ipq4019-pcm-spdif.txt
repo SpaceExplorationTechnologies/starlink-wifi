@@ -1,0 +1,15 @@
+* Qualcomm Technologies IPQ4019 ASoC SPDIF platform driver
+
+This node models the Qualcomm Technologies IPQ4019 ASoC SPDIF platform driver
+
+Required properties:
+
+- compatible	 : "qca,ipq4019-pcm-spdif"
+- reg		 : should have the stereo register address, length
+
+Example:
+tdmplatform: qca-pcm-spdif@7707000 {
+	compatible = "qca,ipq4019-pcm-spdif";
+	reg = <0x7709000 0x1000>;
+	status = "disabled";
+};

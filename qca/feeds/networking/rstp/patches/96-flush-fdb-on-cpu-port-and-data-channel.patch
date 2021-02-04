@@ -1,0 +1,81 @@
+diff --git a/qca_switch.c b/qca_switch.c
+index 3be9b5f..ad7c77a 100644
+--- a/qca_switch.c
++++ b/qca_switch.c
+@@ -50,10 +50,14 @@ struct txAtherosHeader
+ 
+ static unsigned short atheros_header_type;
+ 
++static int cpu_port = -1;
++static int mirrot_port = -1;
+ 
+ /*switch driver API start*/
+ int switch_driver_fd = -1;
+ 
++int qca_switch_flush_data_channel_fdb(struct switch_port *sw_port);
++
+ a_uint32_t sw_api_param_nums(a_uint32_t api_id)
+ {
+ 	switch(api_id) {
+@@ -219,7 +223,13 @@ int qca_switch_set_stp_state(struct switch_port *sw_port, int state)
+ 	if(state >= (sizeof(qca_stp_state_map)/sizeof(qca_stp_state_map[0])))
+ 		return -1;
+ 
+-	return sw_uk_exec(SW_API_STP_PT_STATE_SET, 0, 0, sw_port->priv.port_num, (a_uint32_t)qca_stp_state_map[state]);
++	if(sw_uk_exec(SW_API_STP_PT_STATE_SET, 0, 0, sw_port->priv.port_num, (a_uint32_t)qca_stp_state_map[state]))
++		return -1;
++
++	if(qca_stp_state_map[state] == QCA_STP_STATE_DISABLE || qca_stp_state_map[state] == QCA_STP_STATE_BLOCK)
++		qca_switch_flush_data_channel_fdb(sw_port);
++
++	return 0;
+ }
+ 
+ int qca_switch_get_speed(struct switch_port *sw_port)
+@@ -246,12 +256,35 @@ int qca_switch_get_duplex(struct switch_port *sw_port)
+ 	return duplex;
+ }
+ 
++int qca_switch_flush_data_channel_fdb(struct switch_port *sw_port)
++{
++	char cmd[128], result[16];
++
++	snprintf(cmd, sizeof(cmd), "echo 1 > /sys/class/net/%s/brport/flush", sw_port->priv.data_channel);
++	run_cmd(cmd, result, sizeof(result));
++
++	return 0;
++}
++
+ int qca_switch_flush_fdb(struct switch_port *sw_port)
+ {
+ 	if(!sw_port)
+ 		return -1;
+ 
+-	return sw_uk_exec(SW_API_FDB_DELPORT, 0, sw_port->priv.port_num, 0);
++	if (sw_uk_exec(SW_API_FDB_DELPORT, 0, sw_port->priv.port_num, 0))
++		return -1;
++
++	if (cpu_port >= 0) {
++		sw_uk_exec(SW_API_FDB_DELPORT, 0, cpu_port, 0);
++	}
++
++	if (mirrot_port >= 0) {
++		sw_uk_exec(SW_API_FDB_DELPORT, 0, mirrot_port, 0);
++	}
++
++	qca_switch_flush_data_channel_fdb(sw_port);
++
++	return 0;
+ }
+ 
+ int qca_switch_destroy_port(struct switch_port *sw_port)
+@@ -312,9 +345,6 @@ fal_fdb_entry_t resv_entry =
+ 	A_FALSE,		      /*white_list_en*/
+ };
+ 
+-static int cpu_port = -1;
+-static int mirrot_port = -1;
+-
+ /*configure switch to allow sending/receiving bpdu on switch*/
+ int qca_switch_enable_rx_tx_bpdu(void)
+ {

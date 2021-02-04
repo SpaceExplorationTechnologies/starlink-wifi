@@ -1,0 +1,103 @@
+* Qualcomm Technologies Inc. NSS CRYPTO Driver.
+
+This driver is responsible for setting up the ipq807x crypto engine.
+The driver is responsible for initialization of crypto engine, downloading
+of crypto engine firmware, allocating a dma, setting up context record.
+
+Required properties:
+- compatible: "qcom,nss-crypto"
+- qcom,max-contexts: Maximum number of supported context
+- qcom,max-context-size: Maximum context size in words supported by HW.
+- ranges: used when there is a reg_map in child node.
+
+* eip197_node: This is the first child node that denotes that this driver supports eip197 crypto engine.
+
+Required properties:
+- compatible: "qcom,eip197".
+- reg-names: Indicates various resources passed to driver by name.
+- reg: physical address and length of the register set for the device.
+- qcom,dma-mask: Max dma rings supported, each bit represent a ring number
+- qcom,transform-enabled: Whether Packet for tranformation will be sent from host or not.
+- qcom,aes128-cbc: Enable crypto algorithm
+- qcom,aes192-cbc: Enable crypto algorithm
+- qcom,aes256-cbc: Enable crypto algorithm
+- qcom,aes128-ctr: Enable crypto algorithm
+- qcom,aes192-ctr: Enable crypto algorithm
+- qcom,aes256-ctr: Enable crypto algorithm
+- qcom,3des-cbc: Enable crypto algorithm
+- qcom,sha160-hash: Enable crypto algorithm
+- qcom,sha224-hash: Enable crypto algorithm
+- qcom,sha256-hash: Enable crypto algorithm
+- qcom,sha384-hash: Enable crypto algorithm
+- qcom,sha512-hash: Enable crypto algorithm
+- qcom,sha160-hmac: Enable crypto algorithm
+- qcom,sha256-hmac: Enable crypto algorithm
+- qcom,sha384-hmac: Enable crypto algorithm
+- qcom,sha512-hmac: Enable crypto algorithm
+- qcom,aes128-gcm-gmac: Enable crypto algorithm
+- qcom,aes192-gcm-gmac: Enable crypto algorithm
+- qcom,aes256-gcm-gmac: Enable crypto algorithm
+- qcom,aes128-cbc-sha160-hmac: Enable crypto algorithm
+- qcom,aes192-cbc-sha160-hmac: Enable crypto algorithm
+- qcom,aes256-cbc-sha160-hmac: Enable crypto algorithm
+- qcom,aes128-ctr-sha160-hmac: Enable crypto algorithm
+- qcom,aes192-ctr-sha160-hmac: Enable crypto algorithm
+- qcom,aes256-ctr-sha160-hmac: Enable crypto algorithm
+- qcom,3des-cbc-sha160-hmac: Enable crypto algorithm
+- qcom,aes128-cbc-sha256-hmac: Enable crypto algorithm
+- qcom,aes192-cbc-sha256-hmac: Enable crypto algorithm
+- qcom,aes256-cbc-sha256-hmac: Enable crypto algorithm
+- qcom,aes128-ctr-sha256-hmac: Enable crypto algorithm
+- qcom,aes192-ctr-sha256-hmac: Enable crypto algorithm
+- qcom,aes256-ctr-sha256-hmac: Enable crypto algorithm
+- qcom,3des-cbc-sha256-hmac: Enable crypto algorithm
+
+* engine0: First engine for EIP197 block. Some crypto HW can support multiple engine.
+
+Required properties:
+- reg_offset: offset within the base register for this engine.
+- qcom,ifpp-enabled: Enable EIP classification core Firmware.
+- qcom,ipue-enabled: Enable EIP classification core Firmware.
+- qcom,ofpp-enabled: Enable EIP classification core Firmware.
+- qcom,opue-enabled: Enable EIP classification core Firmware.
+
+example:
+	qcom,nss_crypto {
+		compatible = "qcom,nss-crypto";
+		qcom,max-contexts = <16>;
+		qcom,max-context-size = <32>;
+		ranges;
+
+		eip197_node {
+			compatible = "qcom,eip197";
+			reg-names = "crypto_pbase";
+			reg = <0x39800000 0x7ffff>;
+			qcom,dma-mask = <0xff>;
+			qcom,transform-enabled;
+			qcom,aes128-cbc;
+			qcom,aes192-cbc;
+			qcom,aes256-cbc;
+			qcom,3des-cbc;
+			qcom,sha1-hmac;
+			qcom,aes128-gcm-gmac;
+			qcom,aes192-gcm-gmac;
+			qcom,aes256-gcm-gmac;
+			qcom,aes128-cbc-sha1-hmac;
+			qcom,aes192-cbc-sha1-hmac;
+			qcom,aes256-cbc-sha1-hmac;
+			qcom,3des-cbc-sha1-hmac;
+			qcom,aes128-cbc-sha256-hmac;
+			qcom,aes192-cbc-sha256-hmac;
+			qcom,aes256-cbc-sha256-hmac;
+			qcom,3des-cbc-sha256-hmac;
+
+			engine0 {
+				reg_offset = <0x80000>;
+				qcom,ifpp-enabled;
+				qcom,ipue-enabled;
+				qcom,ofpp-enabled;
+				qcom,opue-enabled;
+			};
+		};
+	};
+

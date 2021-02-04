@@ -1,0 +1,140 @@
+diff -Nur luci-0.11.1/applications/luci-upnp/luasrc/view/upnp_status.htm b/applications/luci-upnp/luasrc/view/upnp_status.htm
+--- luci-0.11.1/applications/luci-upnp/luasrc/view/upnp_status.htm	2012-12-18 21:58:22.000000000 +0800
++++ b/applications/luci-upnp/luasrc/view/upnp_status.htm	2013-11-26 15:32:14.979247884 +0800
+@@ -53,6 +53,7 @@
+ <fieldset class="cbi-section">
+ 	<legend><%:Active UPnP Redirects%></legend>
+ 	<table class="cbi-section-table" id="upnp_status_table">
++	<tbody>
+ 		<tr class="cbi-section-table-titles">
+ 			<th class="cbi-section-table-cell"><%:Protocol%></th>
+ 			<th class="cbi-section-table-cell"><%:External Port%></th>
+@@ -63,5 +64,6 @@
+ 		<tr class="cbi-section-table-row">
+ 			<td colspan="5"><em><br /><%:Collecting data...%></em></td>
+ 		</tr>
++	</tbody>
+ 	</table>
+ </fieldset>
+diff -Nur luci-0.11.1/modules/admin-full/luasrc/view/admin_network/lease_status.htm b/modules/admin-full/luasrc/view/admin_network/lease_status.htm
+--- luci-0.11.1/modules/admin-full/luasrc/view/admin_network/lease_status.htm	2012-08-17 23:06:46.000000000 +0800
++++ b/modules/admin-full/luasrc/view/admin_network/lease_status.htm	2013-11-26 15:29:55.959242984 +0800
+@@ -90,6 +90,7 @@
+ <fieldset class="cbi-section">
+ 	<legend><%:Active DHCP Leases%></legend>
+ 	<table class="cbi-section-table" id="lease_status_table">
++	<tbody>
+ 		<tr class="cbi-section-table-titles">
+ 			<th class="cbi-section-table-cell"><%:Hostname%></th>
+ 			<th class="cbi-section-table-cell"><%:IPv4-Address%></th>
+@@ -99,12 +100,14 @@
+ 		<tr class="cbi-section-table-row">
+ 			<td colspan="4"><em><br /><%:Collecting data...%></em></td>
+ 		</tr>
++	</tbody>
+ 	</table>
+ </fieldset>
+ 
+ <fieldset class="cbi-section" style="display:none">
+ 	<legend><%:Active DHCPv6 Leases%></legend>
+ 	<table class="cbi-section-table" id="lease6_status_table">
++	<tbody>
+ 		<tr class="cbi-section-table-titles">
+ 			<th class="cbi-section-table-cell"><%:Hostname%></th>
+ 			<th class="cbi-section-table-cell"><%:IPv6-Address%></th>
+@@ -114,5 +117,6 @@
+ 		<tr class="cbi-section-table-row">
+ 			<td colspan="4"><em><br /><%:Collecting data...%></em></td>
+ 		</tr>
++	</tbody>
+ 	</table>
+ </fieldset>
+diff -Nur luci-0.11.1/modules/admin-full/luasrc/view/admin_network/wifi_overview.htm b/modules/admin-full/luasrc/view/admin_network/wifi_overview.htm
+--- luci-0.11.1/modules/admin-full/luasrc/view/admin_network/wifi_overview.htm	2013-01-18 22:08:37.000000000 +0800
++++ b/modules/admin-full/luasrc/view/admin_network/wifi_overview.htm	2013-11-26 15:30:54.771245054 +0800
+@@ -418,6 +418,7 @@
+ 
+ 	<fieldset class="cbi-section">
+ 		<table class="cbi-section-table" style="margin:10px" id="iw-assoclist">
++		<tbody>
+ 			<tr class="cbi-section-table-titles">
+ 				<th class="cbi-section-table-cell"></th>
+ 				<th class="cbi-section-table-cell"><%:SSID%></th>
+@@ -433,6 +434,7 @@
+ 					<em><%:Collecting data...%></em>
+ 				</td>
+ 			</tr>
++		</tbody>
+ 		</table>
+ 	</fieldset>
+ </div>
+diff -Nur luci-0.11.1/modules/admin-full/luasrc/view/admin_status/connections.htm b/modules/admin-full/luasrc/view/admin_status/connections.htm
+--- luci-0.11.1/modules/admin-full/luasrc/view/admin_status/connections.htm	2012-12-18 21:58:22.000000000 +0800
++++ b/modules/admin-full/luasrc/view/admin_status/connections.htm	2013-11-26 15:28:43.087240409 +0800
+@@ -354,6 +354,7 @@
+ 
+ 	<div class="cbi-section-node">
+ 		<table class="cbi-section-table" id="connections">
++		<tbody>
+ 			<tr class="cbi-section-table-titles">
+ 				<th class="cbi-section-table-cell"><%:Network%></th>
+ 				<th class="cbi-section-table-cell"><%:Protocol%></th>
+@@ -363,6 +364,7 @@
+ 			</tr>
+ 
+ 			<tr><td colspan="5"><em><%:Collecting data...%></em></td></tr>
++		</tbody>
+ 		</table>
+ 	</div>
+ </fieldset>
+diff -Nur luci-0.11.1/modules/admin-full/luasrc/view/admin_status/index.htm b/modules/admin-full/luasrc/view/admin_status/index.htm
+--- luci-0.11.1/modules/admin-full/luasrc/view/admin_status/index.htm	2013-11-26 14:51:55.899162550 +0800
++++ b/modules/admin-full/luasrc/view/admin_status/index.htm	2013-11-26 15:26:21.803235425 +0800
+@@ -558,6 +558,7 @@
+ 	<legend><%:DHCP Leases%></legend>
+ 
+ 	<table class="cbi-section-table" id="lease_status_table">
++	<tbody>
+ 		<tr class="cbi-section-table-titles">
+ 			<th class="cbi-section-table-cell"><%:Hostname%></th>
+ 			<th class="cbi-section-table-cell"><%:IPv4-Address%></th>
+@@ -567,6 +568,7 @@
+ 		<tr class="cbi-section-table-row">
+ 			<td colspan="4"><em><br /><%:Collecting data...%></em></td>
+ 		</tr>
++	</tbody>
+ 	</table>
+ </fieldset>
+ 
+@@ -574,6 +576,7 @@
+ 	<legend><%:DHCPv6 Leases%></legend>
+ 
+ 	<table class="cbi-section-table" id="lease6_status_table">
++	<tbody>
+ 		<tr class="cbi-section-table-titles">
+ 			<th class="cbi-section-table-cell"><%:Hostname%></th>
+ 			<th class="cbi-section-table-cell"><%:IPv6-Address%></th>
+@@ -583,6 +586,7 @@
+ 		<tr class="cbi-section-table-row">
+ 			<td colspan="4"><em><br /><%:Collecting data...%></em></td>
+ 		</tr>
++	</tbody>
+ 	</table>
+ </fieldset>
+ <% end %>
+@@ -600,6 +604,7 @@
+ 	<legend><%:Associated Stations%></legend>
+ 
+ 	<table class="cbi-section-table" id="wifi_assoc_table">
++	<tbody>
+ 		<tr class="cbi-section-table-titles">
+ 			<th class="cbi-section-table-cell">&#160;</th>
+ 			<th class="cbi-section-table-cell"><%:MAC-Address%></th>
+@@ -612,6 +617,7 @@
+ 		<tr class="cbi-section-table-row">
+ 			<td colspan="7"><em><br /><%:Collecting data...%></em></td>
+ 		</tr>
++	</tbody>
+ 	</table>
+ </fieldset>
+ <% end %>

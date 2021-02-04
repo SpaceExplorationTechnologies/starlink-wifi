@@ -1,0 +1,252 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{83B3BF0D-14E6-4520-9BFF-DBF429BE18DB}</ProjectGuid>
+    <RootNamespace>art2</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectName>libtlvutil_VS2012</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <ReferencePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\libtlvutil;$(ReferencePath)</ReferencePath>
+    <ReferencePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\libtlvutil;$(ReferencePath)</ReferencePath>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
+    <ReferencePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\libtlvutil;$(ReferencePath)</ReferencePath>
+    <ReferencePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\libtlvutil;$(ReferencePath)</ReferencePath>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\..\include;.\genParmTemplate\outputTemplate;..\include;..\..\..\include\tlv1;..\..\..\..\..\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG_PKTLOG;REMOVE_PKT_LOG;_DEBUG;_WINDOWS;WIN32;_CONSOLE;_MLD;NO_LIB_PRINT;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_HOST_SIM_TESTING;_FOR_HOST_TESTING;LIBTLVUTIL_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4293;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\Debug\libtlvutil.dll</OutputFile>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <ImportLibrary>.\Debug\libtlvutil.lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\..\include;.\genParmTemplate\outputTemplate;..\include;..\..\..\include\tlv1;..\..\..\..\..\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG_PKTLOG;REMOVE_PKT_LOG;_DEBUG;_WINDOWS;WIN32;_CONSOLE;_MLD;NO_LIB_PRINT;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_HOST_SIM_TESTING;_FOR_HOST_TESTING;LIBTLVUTIL_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4293;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\x64\Debug\libtlvutil.dll</OutputFile>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <ImportLibrary>.\x64\Debug\libtlvutil.lib</ImportLibrary>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\..\..\include;.\genParmTemplate\outputTemplate;..\include;..\..\..\include\tlv1;..\..\..\..\..\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG_PKTLOG;REMOVE_PKT_LOG;WIN32;NDEBUG;_WINDOWS;_MLD;NO_LIB_PRINT;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_HOST_SIM_TESTING;_FOR_HOST_TESTING;LIBTLVUTIL_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4293;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\Release\libtlvutil.dll</OutputFile>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <ImportLibrary>.\Release\libtlvutil.lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <PreBuildEvent>
+      <Command>staticTlvBuild.bat</Command>
+    </PreBuildEvent>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\..\..\include;.\genParmTemplate\outputTemplate;..\include;..\..\..\include\tlv1;..\..\..\..\..\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG_PKTLOG;REMOVE_PKT_LOG;WIN32;NDEBUG;_WINDOWS;_MLD;NO_LIB_PRINT;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_HOST_SIM_TESTING;_FOR_HOST_TESTING;LIBTLVUTIL_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4293;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\x64\Release\libtlvutil.dll</OutputFile>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <ImportLibrary>.\x64\Release\libtlvutil.lib</ImportLibrary>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy x64\Release\libtlvutil.dll package\
+copy x64\Release\libtlvutil.lib package\</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="cmdParmsTemplate.c" />
+    <ClCompile Include="genTxBinCmdTlv.c" />
+    <ClCompile Include="parseRxBinCmdTlv.c" />
+    <ClCompile Include="..\common\testUtil.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_calDoneParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_calDoneParmTxtTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_calParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_calParmTxtTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_nartCmdParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_nartCmdParmTxtTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_nartRspParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_nartRspParmTxtTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_pmParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_pmParmTxtTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_rspGenericParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_rspGenericParmTxtTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_rxParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_rxParmTxtTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_rxStatusParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_rxStatusParmTxtTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_setRegParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_setRegParmTxtTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_submitreportParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_submitreportParmTxtTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_txParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_txParmTxtTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_txStatusParmBinTemplate.c" />
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_txStatusParmTxtTemplate.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\include\tlv1\parseRxBinCmdTlv.h" />
+    <ClInclude Include="genTxBinCmdTlv.h" />
+    <ClInclude Include="..\include\otaHostCommon.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_calDoneParmTxtTemplate.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_calParmTxtTemplate.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_nartCmdParmTxtTemplate.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_nartRspParmTxtTemplate.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_pmParmTxtTemplate.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_rspGenericParmTxtTemplate.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_rxParmTxtTemplate.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_rxStatusParmTxtTemplate.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_setRegParmTxtTemplate.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_submitreportParmTxtTemplate.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_txParmTxtTemplate.h" />
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_txStatusParmTxtTemplate.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

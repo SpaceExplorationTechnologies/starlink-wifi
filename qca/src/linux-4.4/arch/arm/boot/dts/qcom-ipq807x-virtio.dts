@@ -1,0 +1,243 @@
+/dts-v1/;
+/*
+ * Copyright (c) 2016, The Linux Foundation. All rights reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+#include "qcom-ipq807x-soc.dtsi"
+#include "qcom-ipq807x-spmi-regulator.dtsi"
+
+/ {
+	#address-cells = <0x2>;
+	#size-cells = <0x2>;
+	model = "Qualcomm Technologies, Inc. IPQ807x-HK01";
+	compatible = "qcom,ipq807x-hk01", "qcom,ipq807x";
+	qcom,msm-id = <0x125 0x0>;
+	interrupt-parent = <&intc>;
+	qcom,board-id = <0x10 0x0>;
+
+	aliases {
+		sdhc1 = &sdhc_1; /* SDC1 eMMC slot */
+	};
+
+	soc: soc {
+		serial@78af000 {
+			interrupts = <0x0 0x1c 0x0>,
+					<0x0 377 0x1>,
+					<0x0 378 0x1>,
+					<0x0 379 0x1>;
+			serial_clk = <7372800>;
+		};
+	};
+
+	cpus {
+		#address-cells = <0x1>;
+		#size-cells = <0x0>;
+
+		cpu-map {
+
+			cluster0 {
+
+				core0 {
+					cpu = <&CPU0>;
+				};
+
+				core1 {
+					cpu = <&CPU1>;
+				};
+
+				core2 {
+					cpu = <&CPU2>;
+				};
+
+				core3 {
+					cpu = <&CPU3>;
+				};
+			};
+
+		};
+
+		CPU0: cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <0x0>;
+			enable-method = "qcom,arm-cortex-acc";
+			clocks = <&gcc GCC_DUMMY_CLK>;
+                        clock-names = "cpu";
+                        operating-points-v2 = <&cpu0_opp_table>;
+			cpu0-supply = <&s3>;
+                        voltage-tolerance = <1>;
+			qcom,acc = <&acc0>;
+			next-level-cache = <&L2_0>;
+
+			L2_0: l2-cache {
+				compatible = "arm,arch-cache";
+				cache-level = <0x2>;
+			};
+		};
+
+		CPU1: cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			enable-method = "qcom,arm-cortex-acc";
+			clocks = <&gcc GCC_DUMMY_CLK>;
+                        clock-names = "cpu";
+                        operating-points-v2 = <&cpu0_opp_table>;
+			cpu-supply = <&s3>;
+                        voltage-tolerance = <1>;
+			reg = <0x1>;
+			qcom,acc = <&acc1>;
+			next-level-cache = <&L2_0>;
+		};
+
+		CPU2: cpu@2 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			enable-method = "qcom,arm-cortex-acc";
+			clocks = <&gcc GCC_DUMMY_CLK>;
+                        clock-names = "cpu";
+                        operating-points-v2 = <&cpu0_opp_table>;
+			cpu-supply = <&s3>;
+                        voltage-tolerance = <1>;
+			reg = <0x2>;
+			qcom,acc = <&acc2>;
+			next-level-cache = <&L2_0>;
+		};
+
+		CPU3: cpu@3 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			enable-method = "qcom,arm-cortex-acc";
+			clocks = <&gcc GCC_DUMMY_CLK>;
+                        clock-names = "cpu";
+                        operating-points-v2 = <&cpu0_opp_table>;
+			cpu-supply = <&s3>;
+                        voltage-tolerance = <1>;
+			reg = <0x3>;
+			qcom,acc = <&acc3>;
+			next-level-cache = <&L2_0>;
+		};
+
+	};
+
+	cpu0_opp_table: opp_table0 {
+                compatible = "operating-points-v2";
+                opp-shared;
+
+                opp00 {
+                        opp-hz = /bits/ 64 <1036800000>;
+                        opp-microvolt = <670000>;
+                        clock-latency-ns = <200000>;
+                };
+                opp01 {
+                        opp-hz = /bits/ 64 <1689600000>;
+                        opp-microvolt = <735000>;
+                        clock-latency-ns = <200000>;
+                };
+                opp02 {
+                        opp-hz = /bits/ 64 <1843200000>;
+                        opp-microvolt = <800000>;
+                        clock-latency-ns = <200000>;
+                };
+                opp03 {
+                        opp-hz = /bits/ 64 <1958400000>;
+                        opp-microvolt = <850000>;
+                        clock-latency-ns = <200000>;
+                };
+                opp04 {
+                        opp-hz = /bits/ 64 <2016000000>;
+                        opp-microvolt = <905000>;
+                        clock-latency-ns = <200000>;
+                };
+                opp05 {
+                        opp-hz = /bits/ 64 <2208000000>;
+                        opp-microvolt = <990000>;
+                        clock-latency-ns = <200000>;
+                };
+        };
+
+	chosen {
+		bootargs = "console=ttyMSM0,115200,n8 clk_ignore_unused root=/dev/ram0 rw init=/init";
+	};
+};
+
+&soc {
+
+	acc0:clock-controller@b188000 {
+		compatible = "qcom,arm-cortex-acc";
+		reg = <0x0b188000 0x1000>;
+	};
+
+	acc1:clock-controller@b198000 {
+		compatible = "qcom,arm-cortex-acc";
+		reg = <0x0b198000 0x1000>;
+	};
+
+	acc2:clock-controller@b1a8000 {
+		compatible = "qcom,arm-cortex-acc";
+		reg = <0x0b1a8000 0x1000>;
+	};
+
+	acc3:clock-controller@b1b8000 {
+		compatible = "qcom,arm-cortex-acc";
+		reg = <0x0b1b8000 0x1000>;
+	};
+
+	q6v5_wcss@CD00000 {
+		qcom,emulation = <1>;
+	};
+
+	ess-switch@3a000000 {
+		status = "disabled";
+	};
+
+	pcie0: pci@20000000 {
+		compatible = "snps,dw-pcie";
+		reg =  <0x20000000 0xf1d
+			0x20000F20 0xa8
+			0x80000 0x2000
+			0x20100000 0x1000>;
+		reg-names = "dbi", "elbi", "parf", "config";
+		device_type = "pci";
+		linux,pci-domain = <0>;
+		bus-range = <0x00 0xff>;
+		num-lanes = <1>;
+		#address-cells = <3>;
+		#size-cells = <2>;
+
+		ranges = <0x81000000 0 0x20200000 0x20200000
+			  0 0x00100000   /* downstream I/O */
+			  0x82000000 0 0x20300000 0x20300000
+			  0 0x00d00000>; /* non-prefetchable memory */
+
+		interrupts = 	<0 52 0>,
+				<0 55 0>,
+				<0 56 0>,
+				<0 57 0>,
+				<0 59 0>,
+				<0 63 0>,
+				<0 68 0>;
+
+		interrupt-names = "msi";
+		#interrupt-cells = <1>;
+		interrupt-map-mask = <0 0 0 0x7>;
+		interrupt-map = <0 0 0 1 &intc 0 75
+				 IRQ_TYPE_LEVEL_HIGH>, /* int_a */
+				<0 0 0 2 &intc 0 78
+				 IRQ_TYPE_LEVEL_HIGH>, /* int_b */
+				<0 0 0 3 &intc 0 79
+				 IRQ_TYPE_LEVEL_HIGH>, /* int_c */
+				<0 0 0 4 &intc 0 83
+				 IRQ_TYPE_LEVEL_HIGH>; /* int_d */
+	};
+};

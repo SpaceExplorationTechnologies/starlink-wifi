@@ -1,0 +1,22 @@
+diff -Nur a/bridge_track.c b/bridge_track.c
+--- a/bridge_track.c	2015-04-03 16:13:27.109884142 -0700
++++ b/bridge_track.c	2015-04-03 16:13:54.125884822 -0700
+@@ -29,6 +29,7 @@
+ #include <unistd.h>
+ #include <net/if.h>
+ #include <stdlib.h>
++#include <netinet/in.h>
+ #include <linux/if_bridge.h>
+ #include <arpa/inet.h>
+ #include <sys/types.h>
+diff -Nur a/qca_switch.c b/qca_switch.c
+--- a/qca_switch.c	2015-04-03 16:13:27.109884142 -0700
++++ b/qca_switch.c	2015-04-03 16:14:04.325885079 -0700
+@@ -1,6 +1,7 @@
+ #include <stdarg.h>
+ #include <unistd.h>
+ #include <net/if.h>
++#include <netinet/in.h>
+ #include <linux/if_bridge.h>
+ #include <sys/types.h>
+ #include <arpa/inet.h>

@@ -1,0 +1,304 @@
+--- a/drivers/net/wireless/ath/ath10k/core.h
++++ b/drivers/net/wireless/ath/ath10k/core.h
+@@ -103,6 +103,9 @@
+  */
+ #define QCA_NL80211_VENDOR_ID 0x001374
+ 
++/* Number of TID target accepts from host */
++#define ATH10K_MAX_TIDS	0x8
++
+ struct ath10k;
+ 
+ /* enum qca_nl80211_vendor_subcmds - QCA nl80211 vendor command identifiers
+@@ -262,6 +265,7 @@ enum ath10k_skb_flags {
+ 	ATH10K_SKB_F_QOS = BIT(4),
+ 	ATH10K_SKB_F_NO_80211_ENCAP = BIT(5),
+ 	ATH10K_SKB_F_RAW_TX = BIT(6),
++	ATH10K_SKB_F_NOACK_TID = BIT(7),
+ };
+ 
+ struct ath10k_skb_cb {
+@@ -645,6 +649,9 @@ struct ath10k_sta {
+ 	u32 peer_ps_state;
+ 	enum nl80211_cqm_txrate_threshold_event last_event;
+ 	struct ath10k_cfr_capture cfr_capture;
++
++	/* TID bitmap for station's NoAck policy, protected by conf_mutex */
++	int noack_map;
+ };
+ 
+ #define ATH10K_VDEV_SETUP_TIMEOUT_HZ (5 * HZ)
+@@ -805,6 +812,9 @@ struct ath10k_vif {
+ 	struct work_struct ap_csa_work;
+ 	struct delayed_work connection_loss_work;
+ 	struct cfg80211_bitrate_mask bitrate_mask;
++
++	/* TID bitmap for station's NoAck policy, protected by conf_mutex */
++	int noack_map;
+ };
+ 
+ struct ath10k_vif_iter {
+--- a/drivers/net/wireless/ath/ath10k/mac.c
++++ b/drivers/net/wireless/ath/ath10k/mac.c
+@@ -3891,6 +3891,39 @@ static void ath10k_bss_disassoc(struct i
+ 	cancel_delayed_work_sync(&arvif->connection_loss_work);
+ }
+ 
++static int
++ath10k_mac_set_noack_tid_bitmap(struct ath10k *ar,
++				struct wmi_per_peer_per_tid_cfg_arg *arg,
++				int noack_map)
++{
++	int tid, ret;
++
++	for (tid = 0; tid < ATH10K_MAX_TIDS; tid++) {
++		if (noack_map & BIT(tid)) {
++			arg->ack_policy = WMI_PEER_TID_CONFIG_NOACK;
++			/* It is preferred to transmit the noack policy frames
++			 * in basic rate. for 5G -> 6Mbps 2G -> 1Mbps
++			 */
++			arg->rate_ctrl =
++				WMI_TID_CONFIG_RATE_CONTROL_DEFAULT_LOWEST_RATE;
++			arg->aggr_control = WMI_TID_CONFIG_AGGR_CONTROL_DISABLE;
++		} else {
++			arg->ack_policy = WMI_PEER_TID_CONFIG_ACK;
++			arg->rate_ctrl = WMI_TID_CONFIG_RATE_CONTROL_AUTO;
++			arg->aggr_control = WMI_TID_CONFIG_AGGR_CONTROL_ENABLE;
++		}
++
++		arg->tid = tid;
++		ret = ath10k_wmi_set_per_peer_per_tid_cfg(ar, arg);
++		if (ret) {
++			ath10k_warn(ar, "failed to set noack map for STA %pM for vdev %i: %d\n",
++				    arg->peer_macaddr.addr, arg->vdev_id, ret);
++			break;
++		}
++	}
++	return ret;
++}
++
+ static int ath10k_station_assoc(struct ath10k *ar,
+ 				struct ieee80211_vif *vif,
+ 				struct ieee80211_sta *sta,
+@@ -3898,6 +3931,7 @@ static int ath10k_station_assoc(struct a
+ {
+ 	struct ath10k_vif *arvif = (void *)vif->drv_priv;
+ 	struct wmi_peer_assoc_complete_arg peer_arg;
++	struct ath10k_sta *arsta = (struct ath10k_sta *)sta->drv_priv;
+ 	int ret = 0;
+ 
+ 	lockdep_assert_held(&ar->conf_mutex);
+@@ -3956,6 +3990,23 @@ static int ath10k_station_assoc(struct a
+ 		}
+ 	}
+ 
++	if (arvif->noack_map) {
++		struct wmi_per_peer_per_tid_cfg_arg arg = {};
++
++		arg.vdev_id = arvif->vdev_id;
++		ether_addr_copy(arg.peer_macaddr.addr, sta->addr);
++
++		ret = ath10k_mac_set_noack_tid_bitmap(ar, &arg,
++						      arvif->noack_map);
++		if (ret)
++			return ret;
++	}
++
++	/* Assign default noack_map value (-1) to newly connecting station.
++	 * This default value used to identify the station configured with
++	 * vif specific noack configuration rather than station specific.
++	 */
++	arsta->noack_map = -1;
+ 	return ret;
+ }
+ 
+@@ -4484,6 +4535,7 @@ static void ath10k_tx_h_add_p2p_noa_ie(s
+ static void ath10k_mac_tx_h_fill_cb(struct ath10k *ar,
+ 				    struct ieee80211_vif *vif,
+ 				    struct ieee80211_txq *txq,
++				    struct ieee80211_sta *sta,
+ 				    struct sk_buff *skb)
+ {
+ 	struct ieee80211_hdr *hdr = (void *)skb->data;
+@@ -4491,6 +4543,10 @@ static void ath10k_mac_tx_h_fill_cb(stru
+ 	struct ath10k_skb_cb *cb = ATH10K_SKB_CB(skb);
+ 	bool is_data = ieee80211_is_data(hdr->frame_control) ||
+ 			ieee80211_is_data_qos(hdr->frame_control);
++	struct ath10k_vif *arvif = (void *)vif->drv_priv;
++	int noack_map = arvif->noack_map;
++	struct ath10k_sta *arsta;
++	u8 tid, *p;
+ 
+ 	cb->flags = 0;
+ 	cb->vif = vif;
+@@ -4507,8 +4563,20 @@ static void ath10k_mac_tx_h_fill_cb(stru
+ 	if (ieee80211_is_mgmt(hdr->frame_control))
+ 		cb->flags |= ATH10K_SKB_F_MGMT;
+ 
+-	if (ieee80211_is_data_qos(hdr->frame_control))
++	if (ieee80211_is_data_qos(hdr->frame_control)) {
+ 		cb->flags |= ATH10K_SKB_F_QOS;
++		p = ieee80211_get_qos_ctl(hdr);
++		tid = (*p) & IEEE80211_QOS_CTL_TID_MASK;
++
++		if (sta) {
++			arsta = (struct ath10k_sta *)sta->drv_priv;
++			if (arsta->noack_map != -1)
++				noack_map = arsta->noack_map;
++		}
++
++		if (noack_map & BIT(tid))
++			cb->flags |= ATH10K_SKB_F_NOACK_TID;
++	}
+ 
+ 	/* Data frames encrypted in software will be posted to firmware
+ 	 * with tx encap mode set to RAW. One such case would be the
+@@ -4960,7 +5028,7 @@ int ath10k_mac_tx_push_txq(struct ieee80
+ 		return -ENOENT;
+ 	}
+ 
+-	ath10k_mac_tx_h_fill_cb(ar, vif, txq, skb);
++	ath10k_mac_tx_h_fill_cb(ar, vif, txq, sta, skb);
+ 
+ 	skb_len = skb->len;
+ 	txmode = ath10k_mac_tx_h_get_txmode(ar, vif, sta, skb);
+@@ -5230,7 +5298,7 @@ static void ath10k_mac_op_tx(struct ieee
+ 	bool is_presp;
+ 	int ret;
+ 
+-	ath10k_mac_tx_h_fill_cb(ar, vif, txq, skb);
++	ath10k_mac_tx_h_fill_cb(ar, vif, txq, sta, skb);
+ 
+ 	txmode = ath10k_mac_tx_h_get_txmode(ar, vif, sta, skb);
+ 	txpath = ath10k_mac_tx_h_get_txpath(ar, skb, txmode);
+@@ -8843,6 +8911,82 @@ static void ath10k_sta_statistics(struct
+ 	sinfo->filled |= 1ULL << NL80211_STA_INFO_TX_BITRATE;
+ }
+ 
++struct ath10k_mac_iter_noack_map_data {
++	int noack_map;
++	struct ieee80211_vif *curr_vif;
++	struct ath10k *ar;
++	struct wmi_per_peer_per_tid_cfg_arg *arg;
++};
++
++static void ath10k_mac_vif_stations_noack_map(void *data,
++					      struct ieee80211_sta *sta)
++{
++	struct ath10k_sta *arsta = (struct ath10k_sta *)sta->drv_priv;
++	struct ath10k_mac_iter_noack_map_data *iter_data = data;
++	struct ieee80211_vif *sta_vif = arsta->arvif->vif;
++
++	if (sta_vif != iter_data->curr_vif || arsta->noack_map != -1)
++		return;
++
++	ether_addr_copy(iter_data->arg->peer_macaddr.addr, sta->addr);
++
++	ath10k_mac_set_noack_tid_bitmap(iter_data->ar, iter_data->arg,
++					iter_data->noack_map);
++}
++
++static int ath10k_mac_op_set_noack_tid_bitmap(struct ieee80211_hw *hw,
++					      struct ieee80211_vif *vif,
++					      struct ieee80211_sta *sta,
++					      int noack_map)
++{
++	struct ath10k_vif *arvif = (void *)vif->drv_priv;
++	struct ath10k_mac_iter_noack_map_data data = {};
++	struct wmi_per_peer_per_tid_cfg_arg arg = {};
++	struct ath10k *ar = hw->priv;
++	struct ath10k_sta *arsta;
++	int ret;
++
++	mutex_lock(&ar->conf_mutex);
++
++	arg.vdev_id = arvif->vdev_id;
++	if (sta) {
++		arsta = (struct ath10k_sta *)sta->drv_priv;
++		ether_addr_copy(arg.peer_macaddr.addr, sta->addr);
++		if (arsta->noack_map == noack_map) {
++			ret = 0;
++			goto exit;
++		}
++
++		if (noack_map == -1)
++			ret = ath10k_mac_set_noack_tid_bitmap(ar, &arg,
++							      arvif->noack_map);
++		else
++			ret = ath10k_mac_set_noack_tid_bitmap(ar, &arg,
++							      noack_map);
++		if (!ret)
++			arsta->noack_map = noack_map;
++
++		goto exit;
++	}
++
++	ret = 0;
++	if (arvif->noack_map == noack_map)
++		goto exit;
++
++	data.curr_vif = vif;
++	data.noack_map = noack_map;
++	data.ar = ar;
++	data.arg = &arg;
++	ieee80211_iterate_stations_atomic(hw,
++					  ath10k_mac_vif_stations_noack_map,
++					  &data);
++	arvif->noack_map = noack_map;
++
++exit:
++	mutex_unlock(&ar->conf_mutex);
++	return ret;
++}
++
+ static const struct ieee80211_ops ath10k_ops = {
+ 	.tx				= ath10k_mac_op_tx,
+ 	.wake_tx_queue			= ath10k_mac_op_wake_tx_queue,
+@@ -8885,6 +9029,7 @@ static const struct ieee80211_ops ath10k
+ 	.switch_vif_chanctx		= ath10k_mac_op_switch_vif_chanctx,
+ 	.sta_pre_rcu_remove		= ath10k_mac_op_sta_pre_rcu_remove,
+ 	.sta_statistics			= ath10k_sta_statistics,
++	.set_noack_tid_bitmap           = ath10k_mac_op_set_noack_tid_bitmap,
+ 
+ 	CFG80211_TESTMODE_CMD(ath10k_tm_cmd)
+ 
+@@ -9574,6 +9719,12 @@ int ath10k_mac_register(struct ath10k *a
+  		wiphy_ext_feature_set(ar->hw->wiphy,
+ 			NL80211_EXT_FEATURE_ACK_SIGNAL_SUPPORT);
+ 
++	if (test_bit(WMI_SERVICE_PEER_TID_CONFIGS_SUPPORT, ar->wmi.svc_map))
++		wiphy_ext_feature_set(ar->hw->wiphy,
++				      NL80211_EXT_FEATURE_PER_STA_NOACK_MAP);
++	else
++		ar->ops->set_noack_tid_bitmap = NULL;
++
+ 	/*
+ 	 * on LL hardware queues are managed entirely by the FW
+ 	 * so we only advertise to mac we can do the queues thing
+--- a/drivers/net/wireless/ath/ath10k/txrx.c
++++ b/drivers/net/wireless/ath/ath10k/txrx.c
+@@ -111,18 +111,21 @@ int ath10k_txrx_tx_unref(struct ath10k_h
+ 	memset(&info->status, 0, sizeof(info->status));
+ 	trace_ath10k_txrx_tx_unref(ar, tx_done->msdu_id);
+ 
+-	if (!(info->flags & IEEE80211_TX_CTL_NO_ACK))
++	if (!(info->flags & IEEE80211_TX_CTL_NO_ACK) &&
++	    !(flags & ATH10K_SKB_F_NOACK_TID))
+ 		info->flags |= IEEE80211_TX_STAT_ACK;
+ 
+ 	if (tx_done->status == HTT_TX_COMPL_STATE_NOACK)
+ 		info->flags &= ~IEEE80211_TX_STAT_ACK;
+ 
+ 	if ((tx_done->status == HTT_TX_COMPL_STATE_ACK) &&
+-	    (info->flags & IEEE80211_TX_CTL_NO_ACK))
++	    ((info->flags & IEEE80211_TX_CTL_NO_ACK) ||
++	    (flags & ATH10K_SKB_F_NOACK_TID)))
+ 		info->flags |= IEEE80211_TX_STAT_NOACK_TRANSMITTED;
+ 
+ 	if (tx_done->status == HTT_TX_COMPL_STATE_DISCARD) {
+-		if (info->flags & IEEE80211_TX_CTL_NO_ACK)
++		if ((info->flags & IEEE80211_TX_CTL_NO_ACK) ||
++		    (flags & ATH10K_SKB_F_NOACK_TID))
+ 			info->flags &= ~IEEE80211_TX_STAT_NOACK_TRANSMITTED;
+ 		else
+ 			info->flags &= ~IEEE80211_TX_STAT_ACK;

@@ -1,0 +1,74 @@
+CC = $(TOOLPREFIX)gcc
+LD = $(TOOLPREFIX)ld
+#WORKAREA = /home/user/work/convergedFramework
+CMN_INCLUDE_DIR = ../../../../../include
+HALPHY_TOOLS_COMPONENT_DIR ?= ../../..
+TLV_ROOT = $(HALPHY_TOOLS_COMPONENT_DIR)/common/tlv2p0
+TLV2P0_INC_DIR = $(TLV_ROOT)/include
+COMMON_UTIL_SRC_DIR = $(HALPHY_TOOLS_COMPONENT_DIR)/common/util
+
+CFLAGS = -fPIC -D_DEBUG -DDEBUG -DLINUX -DLinux -DTEST_STANDALONE -D_HOST_SIM_TESTING -D_FOR_HOST_TESTING -fno-stack-protector -Wno-pointer-to-int-cast
+CFLAGS += -I$(CMN_INCLUDE_DIR) -I$(HALPHY_TOOLS_COMPONENT_DIR)/include -I$(TLV2P0_INC_DIR) -I$(TLV_ROOT)/common/output
+CFLAGS += -g
+
+#LDFLAGS	= -L$(WORKAREA)/TLV2p0/cmdEncoder/$(OS) -ltlvencoder
+LDFLAGS	=
+LDFLAGS_SO := -shared
+COMMON_DIR = $(TLV_ROOT)/common
+VPATH	:= . $(COMMON_DIR) $(COMMON_UTIL_SRC_DIR)
+
+EXTRA_SRCS := cmdRspParmsDict.c sysCmdRspParmsDict.c cmdRspParmsInternal.c testUtil.c
+EXTRA_HANDLER_SRCS := cmdTPCCALHandler.c cmdTPCCALPWRHandler.c cmdRegReadHandler.c cmdRegWriteHandler.c cmdRxGainCalHandler.c \
+	cmdBasicRspHandler.c cmdRxHandler.c cmdRxStatusHandler.c cmdTxHandler.c cmdTxStatusHandler.c \
+	cmdHwCalHandler.c cmdXtalCalHandler.c \
+	cmdCustOtpSpaceGetSize.c cmdCustOtpSpaceRead.c cmdCustOtpSpaceWrite.c \
+	cmdDPDComplete.c cmdGetTgtPwr.c cmdSetRegDmn.c \
+	cmdSetPCIEConfigParam.c cmdCommitOtpStream.c \
+	cmdMemReadHandler.c cmdMemWriteHandler.c cmdConfigHandler.c \
+	cmdDPDLoopbackTiming.c cmdDPDLoopbackAttn.c \
+	cmdDPDTrainingQuality.c cmdDPDAgc2Pwr.c cmdLMHWCALRSPHandler.c cmdLMHWCALHandler.c  \
+	cmdMoreSegmentHandler.c sysCmdTestData.c sysCmdGeneric.c sysCmdSetChannel.c  cmdLMRxHandler.c cmdLMTxHandler.c \
+	cmdAdcCaptureHandler.c cmdCalCalTimeHandler.c cmdRxDcoHandler.c cmdGenWaveformHandler.c cmdEnableDfeHandler.c cmdLMChannelListAndRspHandler.c	\
+	cmdLMGoHandler.c cmdLMQueryHandler.c cmdLMTxInitHandler.c cmdLMRxInitHandler.c\
+    cmdGenericUtfCmdHandler.c cmdNoiseFloorRead.c
+
+ifeq ($(OS),)
+OS := Linux
+endif
+
+ifeq ($(DEBUG),1)
+    CFLAGS += -g
+endif
+
+
+#BINCMDENCODER       = $(OS)/testEncoder.out
+#SRCS_BINCMDENCODER  := testEncoder.c $(EXTRA_SRCS)
+#OBJS_BINCMDENCODER  :=  $(patsubst %.c,$(OS)/%.o,$(SRCS_BINCMDENCODER))
+
+LIB_SO_PARSERTLV2   := $(OS)/libtlvparser.so
+LIB_PARSERTLV2      := $(OS)/libtlvparser.a
+SRCS_PARSERTLV2     := parseBinCmdStream_v2.c cmdHandlerTbl.c sysCmdHandlerTbl.c $(EXTRA_SRCS) $(EXTRA_HANDLER_SRCS)
+OBJS_PARSERTLV2     :=  $(patsubst %.c,$(OS)/%.o,$(SRCS_PARSERTLV2))
+
+all: dirs $(LIB_SO_PARSERTLV2) $(LIB_PARSERTLV2)
+
+dirs:
+	mkdir -p $(OS)
+
+#$(BINCMDENCODER): $(OBJS_BINCMDENCODER)
+#	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJS_BINCMDENCODER)
+
+$(LIB_PARSERTLV2): $(OS) $(OBJS_PARSERTLV2)
+	$(AR) rcs $@ $(OBJS_PARSERTLV2)
+
+$(LIB_SO_PARSERTLV2): $(OS) $(OBJS_PARSERTLV2)
+	$(LD) $(LDFLAGS_SO) -o $@ $(OBJS_PARSERTLV2)
+
+$(OS)/%.o : %.c
+	$(CC) -c $(CFLAGS) $< -o $@
+
+clean:
+	rm -rf $(OS)
+
+.PHONY:
+	clean all

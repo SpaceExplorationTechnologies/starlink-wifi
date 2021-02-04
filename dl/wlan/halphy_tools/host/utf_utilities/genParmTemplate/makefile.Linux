@@ -1,0 +1,42 @@
+CC  = $(TOOLPREFIX)gcc
+LD  = $(TOOLPREFIX)ld
+MDK_ROOT = $(WORKAREA)/host/tools/systemtools
+CFLAGS   =  -I. -I../include -DDEBUG -DLINUX -DLinux -I$(MDK_ROOT)/src2/include -I$(MDK_ROOT)/include -I$(WORKAREA)/include/systemtools/common -D_HOST_SIM_TESTING
+
+LDFLAGS	= 
+COMMON_DIR = ../common
+VPATH	:= $(COMMON_DIR)
+EXTRA_SRCS := 
+
+ifeq ($(OS),)
+OS := Linux
+endif
+
+OUT := .output
+
+ifeq ($(DEBUG),1)
+    CFLAGS += -g
+endif
+
+
+GENPARM   = $(OS)/genParmTemplate.out
+SRCS_GENPARM := genParmTemplate.c 
+OBJS_GENPARM :=  $(patsubst %.c,$(OS)/%.o,$(SRCS_GENPARM))
+
+all: dirs $(GENPARM) 
+
+dirs:
+	mkdir -p $(OS)
+	mkdir -p $(OUT)
+
+$(GENPARM): $(OBJS_GENPARM) 
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJS_GENPARM)
+
+$(OS)/%.o : %.c
+	$(CC) -c $(CFLAGS) $< -o $@
+
+clean:
+	rm -rf $(OS) 
+
+.PHONY:
+	clean all

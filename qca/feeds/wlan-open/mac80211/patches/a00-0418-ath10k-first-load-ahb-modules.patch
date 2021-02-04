@@ -1,0 +1,31 @@
+--- a/drivers/net/wireless/ath/ath10k/pci.c
++++ b/drivers/net/wireless/ath/ath10k/pci.c
+@@ -3727,23 +3727,23 @@ static int __init ath10k_pci_init(void)
+ {
+ 	int ret;
+ 
++	ret = ath10k_ahb_init();
++	if (ret)
++		printk(KERN_ERR "ahb init failed: %d\n", ret);
++
+ 	ret = pci_register_driver(&ath10k_pci_driver);
+ 	if (ret)
+ 		printk(KERN_ERR "failed to register ath10k pci driver: %d\n",
+ 		       ret);
+ 
+-	ret = ath10k_ahb_init();
+-	if (ret)
+-		printk(KERN_ERR "ahb init failed: %d\n", ret);
+-
+ 	return ret;
+ }
+ module_init(ath10k_pci_init);
+ 
+ static void __exit ath10k_pci_exit(void)
+ {
+-	pci_unregister_driver(&ath10k_pci_driver);
+ 	ath10k_ahb_exit();
++	pci_unregister_driver(&ath10k_pci_driver);
+ }
+ 
+ module_exit(ath10k_pci_exit);

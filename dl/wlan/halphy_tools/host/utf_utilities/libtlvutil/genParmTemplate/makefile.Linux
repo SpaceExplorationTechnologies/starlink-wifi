@@ -1,0 +1,43 @@
+CC = gcc
+LD = ld
+CMN_INCLUDE_DIR = ../../../../../../include
+HALPHY_TOOLS_COMPONENT_DIR ?= ../../../..
+TLV1_INC_DIR = $(HALPHY_TOOLS_COMPONENT_DIR)/include/tlv1
+
+CFLAGS = -DDEBUG -DLINUX -DLinux -D_HOST_SIM_TESTING
+CFLAGS +=  -I$(CMN_INCLUDE_DIR) -I$(HALPHY_TOOLS_COMPONENT_DIR)/include -I$(TLV1_INC_DIR)
+
+LDFLAGS	= 
+
+ifeq ($(OS),)
+OS := Linux
+endif
+
+OUT := outputTemplate
+
+ifeq ($(DEBUG),1)
+    CFLAGS += -g
+endif
+
+
+GENPARM   = $(OS)/genParmTemplate.out
+SRCS_GENPARM := genParmTemplate.c 
+OBJS_GENPARM :=  $(patsubst %.c,$(OS)/%.o,$(SRCS_GENPARM))
+
+all: dirs $(GENPARM) 
+
+dirs:
+	mkdir -p $(OS)
+	mkdir -p $(OUT)
+
+$(GENPARM): $(OBJS_GENPARM) 
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJS_GENPARM)
+
+$(OS)/%.o : %.c
+	$(CC) -c $(CFLAGS) $< -o $@
+
+clean:
+	rm -rf $(OS) 
+
+.PHONY:
+	clean all

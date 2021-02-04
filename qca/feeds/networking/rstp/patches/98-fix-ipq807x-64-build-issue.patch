@@ -1,0 +1,96 @@
+diff -Nur a/qca_switch.c b/qca_switch.c
+--- a/qca_switch.c	2017-08-11 12:33:15.037272295 -0700
++++ b/qca_switch.c	2017-08-11 12:29:40.513278646 -0700
+@@ -82,7 +82,7 @@
+ 
+ static sw_error_t sw_uk_exec(a_uint32_t api_id, ...)
+ {
+-	a_uint32_t value[SW_MAX_API_PARAM] = { 0 };
++	a_uintptr_t value[SW_MAX_API_PARAM] = { 0 };
+ 	a_uint32_t rtn = SW_OK, i;
+ 	sw_error_t rv;
+ 	va_list arg_ptr;
+@@ -98,11 +98,11 @@
+ 	}
+ 
+ 	value[0] = api_id;
+-	value[1] = (a_uint32_t)&rtn;
++	value[1] = (a_uintptr_t)&rtn;
+ 
+ 	va_start(arg_ptr, api_id);
+ 	for (i = 0; i < nr_param; i++) {
+-		value[i + 2] = va_arg(arg_ptr, a_uint32_t);
++		value[i + 2] = va_arg(arg_ptr, a_uintptr_t);
+ 	}
+ 	va_end(arg_ptr);
+ 
+@@ -118,7 +118,7 @@
+ {
+ 	int ret, status;
+ 
+-	ret = sw_uk_exec(SW_API_PT_LINK_STATUS_GET, 0, sw_port->priv.port_num, (a_uint32_t)(&status));
++	ret = sw_uk_exec(SW_API_PT_LINK_STATUS_GET, 0, sw_port->priv.port_num, (a_uintptr_t)&status);
+ 	if(!ret)
+ 		return status;
+ 	else
+@@ -223,7 +223,7 @@
+ 	if(state >= (sizeof(qca_stp_state_map)/sizeof(qca_stp_state_map[0])))
+ 		return -1;
+ 
+-	if(sw_uk_exec(SW_API_STP_PT_STATE_SET, 0, 0, sw_port->priv.port_num, (a_uint32_t)qca_stp_state_map[state]))
++	if(sw_uk_exec(SW_API_STP_PT_STATE_SET, 0, 0, sw_port->priv.port_num, (a_uintptr_t)qca_stp_state_map[state]))
+ 		return -1;
+ 
+ 	if(qca_stp_state_map[state] == QCA_STP_STATE_DISABLE || qca_stp_state_map[state] == QCA_STP_STATE_BLOCK)
+@@ -239,7 +239,7 @@
+ 	if(!sw_port)
+ 		return speed;
+ 
+-	sw_uk_exec(SW_API_PT_SPEED_GET, 0, sw_port->priv.port_num, (a_uint32_t)&speed);
++	sw_uk_exec(SW_API_PT_SPEED_GET, 0, sw_port->priv.port_num, (a_uintptr_t)&speed);
+ 
+ 	return speed;
+ }
+@@ -251,7 +251,7 @@
+ 	if(!sw_port)
+ 		return duplex;
+ 
+-	sw_uk_exec(SW_API_PT_DUPLEX_GET, 0, sw_port->priv.port_num, (a_uint32_t)&duplex);
++	sw_uk_exec(SW_API_PT_DUPLEX_GET, 0, sw_port->priv.port_num, (a_uintptr_t)&duplex);
+ 
+ 	return duplex;
+ }
+@@ -378,7 +378,7 @@
+ 	}
+ 
+ 	/*add a reserved fdb entry to capture bpdu on switch, then redirect it to Linux*/
+-	sw_uk_exec(SW_API_FDB_RESV_ADD, 0, (a_uint32_t)&resv_entry);
++	sw_uk_exec(SW_API_FDB_RESV_ADD, 0, (a_uintptr_t)&resv_entry);
+ 
+ 	return 0;
+ }
+@@ -398,7 +398,7 @@
+ 		sw_uk_exec(SW_API_PT_TXHDR_SET, 0, mirrot_port, 0);
+ 	}
+ 
+-	sw_uk_exec(SW_API_FDB_RESV_DEL, 0, (a_uint32_t)&resv_entry);
++	sw_uk_exec(SW_API_FDB_RESV_DEL, 0, (a_uintptr_t)&resv_entry);
+ 
+ 	return 0;
+ }
+diff -Nur a/qca_switch.h b/qca_switch.h
+--- a/qca_switch.h	2017-08-11 12:33:15.037272295 -0700
++++ b/qca_switch.h	2017-08-11 12:29:40.513278646 -0700
+@@ -8,6 +8,12 @@
+ typedef unsigned short a_uint16_t;
+ typedef unsigned char a_uint8_t;
+ 
++#ifdef __LP64__
++typedef uint64_t a_uintptr_t;
++#else
++typedef uint32_t a_uintptr_t;
++#endif
++
+ typedef enum
+ {
+     A_FALSE,
