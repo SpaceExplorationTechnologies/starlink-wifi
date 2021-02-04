@@ -1,0 +1,14 @@
+qca,ipq8074-pcm-lb
+
+VOIP PCM driver loopback test module for IPQ8074
+
+Required properties:
+
+  - compatible : "qca,ipq8074-pcm-lb"
+
+Example:
+
+pcm_lb: pcm_lb@0 {
+        compatible = "qca,ipq8074-pcm-lb";
+};
+

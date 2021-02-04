@@ -1,0 +1,20 @@
+* Qualcomm Technologies, Inc IPQ8074 ASoC audio subsystem driver
+
+This node models the Qualcomm Technologies, Inc IPQ8074 ASoC audio subsystem driver
+
+Required properties:
+
+- compatible	: "qca,ipq8074-audio-adss"
+- reg		: should have the stereo register address, length
+- resets	: references to the reset controllers
+- reset-names	: should be "blk_rst"
+
+
+Example:
+audio: audio@7700000 {
+	compatible = "qca,ipq8074-audio-adss";
+	reg = <0x7700000 0x34>;
+	resets = <&gcc AUDIO_BLK_ARES>;
+	reset-names = "blk_rst";
+	status = "disabled";
+};

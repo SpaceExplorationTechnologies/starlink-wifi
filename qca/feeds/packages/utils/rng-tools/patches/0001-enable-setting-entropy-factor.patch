@@ -1,0 +1,17 @@
+--- a/rngd_linux.c
++++ b/rngd_linux.c
+@@ -125,8 +125,13 @@ void random_add_entropy(void *buf, size_t size)
+ 		int size;
+ 		unsigned char data[size];
+ 	} entropy;
++	int entropy_factor = 8;
+ 
+-	entropy.ent_count = size * 8;
++#ifdef ENTROPY_FACTOR
++	if (ENTROPY_FACTOR > 0 && ENTROPY_FACTOR < 8)
++		entropy_factor = ENTROPY_FACTOR;
++#endif
++	entropy.ent_count = size * entropy_factor;
+ 	entropy.size = size;
+ 	memcpy(entropy.data, buf, size);
+ 

@@ -1,0 +1,15 @@
+QCA SCM_RESTART_REASON
+
+scm restart reason driver controls the collection of crashdump.
+During panic/assert the notifiers registered in this driver will be kicked in
+and the magic cookie is set, the crashdumps are collected in apps bootloader.
+
+Required properties:
+ - compatible: must contain "qca,scm_restart_reason" for IPQ40xx
+
+
+Example for ipq40xx:
+
+	qca,scm_restart_reason {
+		compatible = "qca,scm_restart_reason";
+	};

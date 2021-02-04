@@ -1,0 +1,106 @@
+--- a/drivers/net/wireless/ath/wil6210/Kconfig
++++ b/drivers/net/wireless/ath/wil6210/Kconfig
+@@ -53,3 +53,11 @@ config WIL6210_DEBUGFS
+ 	  option if you are interested in debugging the driver.
+ 
+ 	  If unsure, say Y to make it easier to debug problems.
++
++config WIL6210_NSS_SUPPORT
++	bool "Enable NSS support for wil6210 in platforms that supports it"
++	depends on WIL6210
++	default n
++	---help---
++	  Say Y here to enable wil6210 driver support for NSS
++	  platform specific feature
+--- a/drivers/net/wireless/ath/wil6210/netdev.c
++++ b/drivers/net/wireless/ath/wil6210/netdev.c
+@@ -19,6 +19,9 @@
+ #include <linux/rtnetlink.h>
+ #include "wil6210.h"
+ #include "txrx.h"
++#if defined(CPTCFG_WIL6210_NSS_SUPPORT)
++#include <nss_api_if.h>
++#endif
+ 
+ bool wil_has_other_active_ifaces(struct wil6210_priv *wil,
+ 				 struct net_device *ndev, bool up, bool ok)
+@@ -54,6 +57,17 @@ static int wil_open(struct net_device *n
+ 
+ 	wil_dbg_misc(wil, "open\n");
+ 
++#if defined(CPTCFG_WIL6210_NSS_SUPPORT)
++	if (!wil->nss_ctx) {
++		wil->nss_ctx = nss_create_virt_if(ndev);
++		if (!wil->nss_ctx) {
++			wil_err(wil, "Failed to register with NSS\n");
++			return -EINVAL;
++		}
++		wil_info(wil, "Registered with NSS\n");
++	}
++#endif
++
+ 	if (debug_fw ||
+ 	    test_bit(WMI_FW_CAPABILITY_WMI_ONLY, wil->fw_capabilities)) {
+ 		wil_err(wil, "while in debug_fw or wmi_only mode\n");
+@@ -501,6 +515,10 @@ void wil_if_remove(struct wil6210_priv *
+ 
+ 	wil_dbg_misc(wil, "if_remove\n");
+ 
++#if defined(CPTCFG_WIL6210_NSS_SUPPORT)
++	if (wil->nss_ctx)
++		nss_destroy_virt_if(wil->nss_ctx);
++#endif
+ 	rtnl_lock();
+ 	wil_vif_remove(wil, 0);
+ 	rtnl_unlock();
+--- a/drivers/net/wireless/ath/wil6210/txrx.c
++++ b/drivers/net/wireless/ath/wil6210/txrx.c
+@@ -28,6 +28,9 @@
+ #include "wmi.h"
+ #include "txrx.h"
+ #include "trace.h"
++#if defined(CPTCFG_WIL6210_NSS_SUPPORT)
++#include <nss_api_if.h>
++#endif
+ 
+ static bool rtap_include_phy_info;
+ module_param(rtap_include_phy_info, bool, 0444);
+@@ -805,8 +808,26 @@ void wil_netif_rx_any(struct sk_buff *sk
+ 
+ 	if (skb) { /* deliver to local stack */
+ 		skb->protocol = eth_type_trans(skb, ndev);
++#if defined(CPTCFG_WIL6210_NSS_SUPPORT)
++		if (rx_align_2) {
++			int rc1 = nss_tx_virt_if_rxbuf(wil->nss_ctx,
++						       skb);
++			if (rc1) {
++				wil_err_ratelimited(wil,
++						    "NSS Rx error: %d\n",
++						    rc1);
++				rc = napi_gro_receive(&wil->napi_rx,
++						      skb);
++			} else {
++				rc = GRO_NORMAL;
++			}
++		} else {
++			rc = napi_gro_receive(&wil->napi_rx, skb);
++		}
++#else /* #if defined(CPTCFG_WIL6210_NSS_SUPPORT) */
+ 		skb->dev = ndev;
+ 		rc = napi_gro_receive(&wil->napi_rx, skb);
++#endif
+ 		wil_dbg_txrx(wil, "Rx complete %d bytes => %s\n",
+ 			     len, gro_res_str[rc]);
+ 	}
+--- a/drivers/net/wireless/ath/wil6210/wil6210.h
++++ b/drivers/net/wireless/ath/wil6210/wil6210.h
+@@ -806,6 +806,9 @@ struct wil6210_priv {
+ 
+ 	/* High Access Latency Policy voting */
+ 	struct wil_halp halp;
++#if defined(CPTCFG_WIL6210_NSS_SUPPORT)
++	void *nss_ctx;
++#endif
+ 
+ 	enum wmi_ps_profile_type ps_profile;
+ 

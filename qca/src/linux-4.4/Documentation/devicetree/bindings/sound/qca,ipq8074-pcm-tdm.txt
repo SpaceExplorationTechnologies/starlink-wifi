@@ -1,0 +1,15 @@
+* Qualcomm Technologies, Inc IPQ8074 ASoC TDM platform driver
+
+This node models the Qualcomm Technologies, Inc IPQ8074 ASoC TDM platform driver
+
+Required properties:
+
+- compatible	 : "qca,ipq8074-pcm-tdm"
+- reg		 : should have the stereo register address, length
+
+Example:
+tdmplatform: qca-pcm-tdm@7709000 {
+	compatible = "qca,ipq8074-pcm-tdm";
+	reg = <0x7709000 0x1000>;
+	status = "disabled";
+};

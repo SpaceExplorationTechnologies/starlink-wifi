@@ -1,0 +1,63 @@
+diff -Nur a/linux/include/openswan/ipsec_esp.h b/linux/include/openswan/ipsec_esp.h
+--- a/linux/include/openswan/ipsec_esp.h	2015-04-01 15:33:27.745472022 -0700
++++ b/linux/include/openswan/ipsec_esp.h	2015-04-01 15:34:52.377474153 -0700
+@@ -65,6 +65,11 @@
+ 	__u8	esp_iv[8];		/* iv */
+ };
+ 
++struct ipsec_skb_cb {
++	struct net_device *tunnel_dev;
++	struct net_device *eth_dev;
++};
++
+ extern struct xform_functions esp_xform_funcs[];
+ 
+ extern enum ipsec_rcv_value ipsec_rcv_esp_post_decrypt(struct ipsec_rcv_state *irs);
+diff -Nur a/linux/net/ipsec/ipsec_esp.c b/linux/net/ipsec/ipsec_esp.c
+--- a/linux/net/ipsec/ipsec_esp.c	2015-04-01 15:33:27.745472022 -0700
++++ b/linux/net/ipsec/ipsec_esp.c	2015-04-01 15:36:35.969476762 -0700
+@@ -156,6 +156,10 @@
+ 		SHA1_CTX	sha1;
+ 	} tctx;
+ 
++	struct ipsecpriv *prv = netdev_to_ipsecpriv(skb->dev);
++	((struct ipsec_skb_cb *)skb->cb)->tunnel_dev = skb->dev;
++	((struct ipsec_skb_cb *)skb->cb)->eth_dev = prv->dev;
++
+ #ifdef CONFIG_KLIPS_OCF
+ 	if (irs->ipsp->ocf_in_use)
+ 		return(ipsec_ocf_rcv(irs));
+diff -Nur a/linux/net/ipsec/ipsec_tunnel.c b/linux/net/ipsec/ipsec_tunnel.c
+--- a/linux/net/ipsec/ipsec_tunnel.c	2015-04-01 15:33:27.745472022 -0700
++++ b/linux/net/ipsec/ipsec_tunnel.c	2015-04-01 15:38:18.329479340 -0700
+@@ -2022,7 +2022,7 @@
+ 	dev->hard_header_len 	= 0;
+ 	dev->mtu		= 0;
+ 	dev->addr_len		= 0;
+-	dev->type		= ARPHRD_VOID; /* ARPHRD_TUNNEL; */ /* ARPHRD_ETHER; */
++	dev->type		= 31; /* ARPHRD_TUNNEL; */ /* ARPHRD_ETHER; */
+ 	dev->tx_queue_len	= 10;		/* Small queue */
+ #ifdef IFF_XMIT_DST_RELEASE
+ 	dev->priv_flags	       &= ~IFF_XMIT_DST_RELEASE;
+@@ -2445,7 +2445,7 @@
+ 	prv->mtu = physdev->mtu;
+ 
+ #ifdef PHYSDEV_TYPE
+-	dev->type = physdev->type; /* ARPHRD_TUNNEL; */
++	dev->type = 31; /* ARPHRD_TUNNEL; */
+ #endif /*  PHYSDEV_TYPE */
+ 
+ 	dev->addr_len = physdev->addr_len;
+diff -Nur a/linux/net/ipsec/ipsec_xmit.c b/linux/net/ipsec/ipsec_xmit.c
+--- a/linux/net/ipsec/ipsec_xmit.c	2015-04-01 15:33:27.745472022 -0700
++++ b/linux/net/ipsec/ipsec_xmit.c	2015-04-01 15:39:24.417481004 -0700
+@@ -882,6 +882,9 @@
+ 	else
+ 		osw_ip4_hdr(ixs)->protocol = IPPROTO_ESP;
+ 
++	((struct ipsec_skb_cb *)ixs->skb->cb)->tunnel_dev = ixs->dev;
++	((struct ipsec_skb_cb *)ixs->skb->cb)->eth_dev = ixs->iprv->dev;
++
+ #ifdef CONFIG_KLIPS_OCF
+ 	if (ixs->ipsp->ocf_in_use) {
+ 		/* handle the IV code here for now,  near the similar code below */

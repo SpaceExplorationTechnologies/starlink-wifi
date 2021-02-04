@@ -1,0 +1,90 @@
+diff --git a/epoll_loop.c b/epoll_loop.c
+index 33c3068..9ecf778 100644
+--- a/epoll_loop.c
++++ b/epoll_loop.c
+@@ -36,6 +36,7 @@
+ // globals
+ int epoll_fd = -1;
+ struct timeval nexttimeout;
++static int epoll_should_stop = 0;
+ 
+ int init_epoll(void)
+ {
+@@ -95,6 +96,11 @@ void run_timeouts(void)
+ 	nexttimeout.tv_sec++;
+ }
+ 
++void epoll_end_loop(void)
++{
++	epoll_should_stop = 1;
++}
++
+ int epoll_main_loop(void)
+ {
+ 	gettimeofday(&nexttimeout, NULL);
+@@ -102,7 +108,7 @@ int epoll_main_loop(void)
+ #define EV_SIZE 8
+ 	struct epoll_event ev[EV_SIZE];
+ 
+-	while (1) {
++	while (!epoll_should_stop) {
+ 		int r, i;
+ 		int timeout;
+ 
+diff --git a/epoll_loop.h b/epoll_loop.h
+index 14d0423..c81f3a6 100644
+--- a/epoll_loop.h
++++ b/epoll_loop.h
+@@ -42,6 +42,8 @@ int init_epoll(void);
+ 
+ void clear_epoll(void);
+ 
++void epoll_end_loop(void);
++
+ int epoll_main_loop(void);
+ 
+ int add_epoll(struct epoll_event_handler *h);
+diff --git a/main.c b/main.c
+index a8c21ac..a8329b3 100644
+--- a/main.c
++++ b/main.c
+@@ -35,11 +35,31 @@
+ #include <getopt.h>
+ #include <syslog.h>
+ #include <errno.h>
++#include <string.h>
++#include <signal.h>
+ 
+ static int become_daemon = 1;
+ static int is_daemon = 0;
+ int log_level = LOG_LEVEL_DEFAULT;
+ 
++static void handle_signal(int signo)
++{
++	epoll_end_loop();
++}
++
++static int setup_signals(void)
++{
++	struct sigaction s;
++
++	memset(&s, 0, sizeof(s));
++	s.sa_handler = handle_signal;
++	s.sa_flags = 0;
++	sigaction(SIGINT, &s, NULL);
++	sigaction(SIGTERM, &s, NULL);
++
++	return 0;
++}
++
+ int main(int argc, char *argv[])
+ {
+ 	int c,ret;
+@@ -66,6 +86,7 @@ int main(int argc, char *argv[])
+ 		}
+ 	}
+ 
++	TST(setup_signals() == 0, -1);
+ 	TST(init_epoll() == 0, -1);
+ 	TST(ctl_socket_init() == 0, -1);
+ 	TST(packet_sock_init() == 0, -1);

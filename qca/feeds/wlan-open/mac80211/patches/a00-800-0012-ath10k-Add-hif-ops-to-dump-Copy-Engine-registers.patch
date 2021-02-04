@@ -1,0 +1,94 @@
+--- a/drivers/net/wireless/ath/ath10k/ahb.c
++++ b/drivers/net/wireless/ath/ath10k/ahb.c
+@@ -741,6 +741,7 @@ static const struct ath10k_hif_ops ath10
+ 	.power_down             = ath10k_pci_hif_power_down,
+ 	.read32                 = ath10k_ahb_read32,
+ 	.write32                = ath10k_ahb_write32,
++	.dump_registers		= ath10k_pci_hif_dump_registers,
+ };
+ 
+ static const struct ath10k_bus_ops ath10k_ahb_bus_ops = {
+--- a/drivers/net/wireless/ath/ath10k/hif.h
++++ b/drivers/net/wireless/ath/ath10k/hif.h
+@@ -95,6 +95,9 @@ struct ath10k_hif_ops {
+ 	int (*fetch_cal_eeprom)(struct ath10k *ar, void **data,
+ 				size_t *data_len);
+ 
++	/* PCI and CE register dump */
++	void (*dump_registers)(struct ath10k *ar);
++
+ 	int (*get_target_info)(struct ath10k *ar,
+ 			       struct bmi_target_info *target_info);
+ };
+@@ -231,4 +234,13 @@ static inline int ath10k_hif_get_target_
+ 	return ar->hif.ops->get_target_info(ar, tgt_info);
+ }
+ 
++static inline void ath10k_hif_dump_registers(struct ath10k *ar)
++{
++	if (!ar->hif.ops->dump_registers)
++		return;
++
++	ar->hif.ops->dump_registers(ar);
++}
++
++
+ #endif /* _HIF_H_ */
+--- a/drivers/net/wireless/ath/ath10k/pci.c
++++ b/drivers/net/wireless/ath/ath10k/pci.c
+@@ -1767,6 +1767,15 @@ static void ath10k_pci_fw_crashed_dump(s
+ 	queue_work(ar->workqueue, &ar->restart_work);
+ }
+ 
++void ath10k_pci_hif_dump_registers(struct ath10k *ar)
++{
++	spin_lock_bh(&ar->data_lock);
++	ath10k_print_driver_info(ar);
++	ath10k_err(ar, "Dumping PCI and CE registers\n");
++	ath10k_pci_dump_registers(ar, NULL);
++	spin_unlock_bh(&ar->data_lock);
++}
++
+ void ath10k_pci_hif_send_complete_check(struct ath10k *ar, u8 pipe,
+ 					int force)
+ {
+@@ -3058,6 +3067,7 @@ static const struct ath10k_hif_ops ath10
+ 	.suspend		= ath10k_pci_hif_suspend,
+ 	.resume			= ath10k_pci_hif_resume,
+ 	.fetch_cal_eeprom	= ath10k_pci_hif_fetch_cal_eeprom,
++	.dump_registers		= ath10k_pci_hif_dump_registers,
+ };
+ 
+ /*
+--- a/drivers/net/wireless/ath/ath10k/pci.h
++++ b/drivers/net/wireless/ath/ath10k/pci.h
+@@ -275,6 +275,7 @@ void ath10k_pci_hif_send_complete_check(
+ 					int force);
+ u16 ath10k_pci_hif_get_free_queue_number(struct ath10k *ar, u8 pipe);
+ void ath10k_pci_hif_power_down(struct ath10k *ar);
++void ath10k_pci_hif_dump_registers(struct ath10k *ar);
+ int ath10k_pci_alloc_pipes(struct ath10k *ar);
+ void ath10k_pci_free_pipes(struct ath10k *ar);
+ void ath10k_pci_free_pipes(struct ath10k *ar);
+--- a/drivers/net/wireless/ath/ath10k/wmi.c
++++ b/drivers/net/wireless/ath/ath10k/wmi.c
+@@ -32,6 +32,7 @@
+ #include "hif.h"
+ #include "txrx.h"
+ #include "fwlog.h"
++#include "hif.h"
+ 
+ #define ATH10K_WMI_BARRIER_ECHO_ID 0xBA991E9
+ #define ATH10K_WMI_BARRIER_TIMEOUT_HZ (3 * HZ)
+@@ -1888,8 +1889,10 @@ int ath10k_wmi_cmd_send(struct ath10k *a
+ 		(ret != -EAGAIN);
+ 	}), 3 * HZ);
+ 
+-	if (ret)
++	if (ret) {
+ 		dev_kfree_skb_any(skb);
++		ath10k_hif_dump_registers(ar);
++	}
+ 
+ 	return ret;
+ }

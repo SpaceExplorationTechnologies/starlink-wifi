@@ -1,0 +1,39 @@
+diff --git a/src/current/makefile b/src/current/makefile
+index 5223f89..ec7beae 100644
+--- a/src/current/makefile
++++ b/src/current/makefile
+@@ -211,8 +211,8 @@ linux-powerpc64: iozone_linux-powerpc64.o  libbif.o libasync.o fileop_linux-ppc6
+ #
+ # GNU 'C' compiler Linux build with threads, largefiles, async I/O
+ #
+-linux-arm:	iozone_linux-arm.o  libbif.o libasync.o fileop_linux-arm.o pit_server.o
+-	$(CC) -O3 $(LDFLAGS) iozone_linux-arm.o libbif.o libasync.o \
++linux-arm:	iozone_linux-arm.o  libbif.o fileop_linux-arm.o pit_server.o
++	$(CC) -O3 $(LDFLAGS) iozone_linux-arm.o libbif.o \
+ 		-lrt -lpthread -o iozone
+ 	$(CC) -O3 -Dlinux fileop_linux-arm.o -o fileop
+ 	$(CC) -O3 -Dlinux pit_server.o -o pit_server
+@@ -973,18 +973,18 @@ iozone_linux-ia64.o:	iozone.c libbif.c libasync.c
+ 	$(CC) -c -O3 -Dunix -Dlinux -DHAVE_ANSIC_C -DASYNC_IO \
+ 		-D_LARGEFILE64_SOURCE $(CFLAGS) libasync.c  -o libasync.o 
+ 
+-iozone_linux-arm.o:	iozone.c libbif.c libasync.c
++iozone_linux-arm.o:	iozone.c libbif.c
+ 	@echo ""
+ 	@echo "Building iozone for Linux-arm"
+ 	@echo ""
+-	$(CC) -c -O3 -Dunix -DHAVE_ANSIC_C -DASYNC_IO -DHAVE_PREAD \
++	$(CC) -c -O3 -Dunix -DHAVE_ANSIC_C -DHAVE_PREAD \
+ 		-DNAME='"linux-arm"' -DLINUX_ARM -DSHARED_MEM \
+ 		-Dlinux -D_LARGEFILE64_SOURCE $(CFLAGS) iozone.c \
+ 		-o iozone_linux-arm.o
+-	$(CC) -c -O3 -Dunix -DHAVE_ANSIC_C -DASYNC_IO -D_LARGEFILE64_SOURCE \
++	$(CC) -c -O3 -Dunix -DHAVE_ANSIC_C -D_LARGEFILE64_SOURCE \
+ 		-DSHARED_MEM -Dlinux $(CFLAGS) libbif.c -o libbif.o
+-	$(CC) -c -O3 -Dunix -Dlinux -DHAVE_ANSIC_C -DASYNC_IO \
+-		-D_LARGEFILE64_SOURCE $(CFLAGS) libasync.c  -o libasync.o
++	#$(CC) -c -O3 -Dunix -Dlinux -DHAVE_ANSIC_C \
++        #	-D_LARGEFILE64_SOURCE $(CFLAGS) libasync.c  -o libasync.o
+ 
+ iozone_linux-AMD64.o:	iozone.c libbif.c libasync.c 
+ 	@echo ""

@@ -1,0 +1,13 @@
+* Qualcomm Technologies IPQ4019 ASoC machine driver
+
+This node models the Qualcomm Technologies IPQ4019 ASoC machine driver
+
+Required properties:
+
+- compatible		: "qca,ipq4019-audio"
+
+Example:
+
+sound: sound {
+	compatible = "qca,ipq4019-audio";
+};

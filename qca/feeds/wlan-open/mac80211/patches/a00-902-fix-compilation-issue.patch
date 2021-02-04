@@ -1,0 +1,217 @@
+--- a/drivers/net/wireless/ath/ath10k/ahb.c
++++ b/drivers/net/wireless/ath/ath10k/ahb.c
+@@ -197,40 +197,35 @@ static int ath10k_ahb_rst_ctrl_init(stru
+ 
+ 	dev = &ar_ahb->pdev->dev;
+ 
+-	ar_ahb->core_cold_rst = devm_reset_control_get_exclusive(dev,
+-								 "wifi_core_cold");
++	ar_ahb->core_cold_rst = devm_reset_control_get(dev, "wifi_core_cold");
+ 	if (IS_ERR(ar_ahb->core_cold_rst)) {
+ 		ath10k_err(ar, "failed to get core cold rst ctrl: %ld\n",
+ 			   PTR_ERR(ar_ahb->core_cold_rst));
+ 		return PTR_ERR(ar_ahb->core_cold_rst);
+ 	}
+ 
+-	ar_ahb->radio_cold_rst = devm_reset_control_get_exclusive(dev,
+-								  "wifi_radio_cold");
++	ar_ahb->radio_cold_rst = devm_reset_control_get(dev, "wifi_radio_cold");
+ 	if (IS_ERR(ar_ahb->radio_cold_rst)) {
+ 		ath10k_err(ar, "failed to get radio cold rst ctrl: %ld\n",
+ 			   PTR_ERR(ar_ahb->radio_cold_rst));
+ 		return PTR_ERR(ar_ahb->radio_cold_rst);
+ 	}
+ 
+-	ar_ahb->radio_warm_rst = devm_reset_control_get_exclusive(dev,
+-								  "wifi_radio_warm");
++	ar_ahb->radio_warm_rst = devm_reset_control_get(dev, "wifi_radio_warm");
+ 	if (IS_ERR(ar_ahb->radio_warm_rst)) {
+ 		ath10k_err(ar, "failed to get radio warm rst ctrl: %ld\n",
+ 			   PTR_ERR(ar_ahb->radio_warm_rst));
+ 		return PTR_ERR(ar_ahb->radio_warm_rst);
+ 	}
+ 
+-	ar_ahb->radio_srif_rst = devm_reset_control_get_exclusive(dev,
+-								  "wifi_radio_srif");
++	ar_ahb->radio_srif_rst = devm_reset_control_get(dev, "wifi_radio_srif");
+ 	if (IS_ERR(ar_ahb->radio_srif_rst)) {
+ 		ath10k_err(ar, "failed to get radio srif rst ctrl: %ld\n",
+ 			   PTR_ERR(ar_ahb->radio_srif_rst));
+ 		return PTR_ERR(ar_ahb->radio_srif_rst);
+ 	}
+ 
+-	ar_ahb->cpu_init_rst = devm_reset_control_get_exclusive(dev,
+-								"wifi_cpu_init");
++	ar_ahb->cpu_init_rst = devm_reset_control_get(dev, "wifi_cpu_init");
+ 	if (IS_ERR(ar_ahb->cpu_init_rst)) {
+ 		ath10k_err(ar, "failed to get cpu init rst ctrl: %ld\n",
+ 			   PTR_ERR(ar_ahb->cpu_init_rst));
+--- a/drivers/net/wireless/ath/ath10k/ce.c
++++ b/drivers/net/wireless/ath/ath10k/ce.c
+@@ -17,6 +17,7 @@
+  */
+ 
+ #include "hif.h"
++#include "pci.h"
+ #include "ce.h"
+ #include "debug.h"
+ 
+--- a/drivers/net/wireless/ath/ath10k/mac.c
++++ b/drivers/net/wireless/ath/ath10k/mac.c
+@@ -8203,6 +8203,8 @@ struct ath10k_vif *ath10k_get_arvif(stru
+ 	return arvif_iter.arvif;
+ }
+ 
++#ifdef CONFIG_ACPI
++
+ #define WRD_METHOD "WRDD"
+ #define WRDD_WIFI  (0x07)
+ 
+@@ -8289,6 +8291,13 @@ static int ath10k_mac_get_wrdd_regulator
+ 	*rd |= COUNTRY_ERD_FLAG;
+ 	return 0;
+ }
++#else
++static int ath10k_mac_get_wrdd_regulatory(struct ath10k *ar, u16 *rd)
++{
++	/* Use EEPROM regulatory information when ACPI is not being used */
++	return -1;
++}
++#endif /* CONFIG_ACPI */
+ 
+ static int ath10k_mac_init_rd(struct ath10k *ar)
+ {
+--- a/drivers/net/wireless/ath/ath10k/pci.c
++++ b/drivers/net/wireless/ath/ath10k/pci.c
+@@ -1759,7 +1759,6 @@ static void ath10k_pci_fw_crashed_dump(s
+ 	ath10k_err(ar, "firmware crashed! (guid %s)\n", guid);
+ 	ath10k_print_driver_info(ar);
+ 	ath10k_pci_dump_registers(ar, crash_data);
+-	ath10k_ce_dump_registers(ar, crash_data);
+ 	ath10k_pci_dump_memory(ar, crash_data);
+ 
+ 	spin_unlock_bh(&ar->data_lock);
+--- a/drivers/net/wireless/ath/ath9k/ar9003_phy.c
++++ b/drivers/net/wireless/ath/ath9k/ar9003_phy.c
+@@ -577,7 +577,7 @@ static void ar9003_hw_spur_mitigate_ofdm
+ 		if (AR_SREV_9531(ah)) {
+ 			spur_num = 2;
+ 			scale = 10; /* avoid floating calculate */
+-			spurChansPtr = spur_freq_pri;
++			spurChansPtr = (void *)spur_freq_pri;
+ 		} else
+ 			spurChansPtr = &(eep->modalHeader2G.spurChans[0]);
+ 		mode = 1;
+--- /dev/null
++++ b/include/linux/build_bug.h
+@@ -0,0 +1,10 @@
++#ifndef __BP_BUILD_BUG_H
++#define __BP_BUILD_BUG_H
++
++#if LINUX_VERSION_IS_GEQ(4,13,0)
++#include_next <linux/build_bug.h>
++#else /* LINUX_VERSION_IS_GEQ(4,13,0) */
++#include <linux/bug.h>
++#endif /* LINUX_VERSION_IS_GEQ(4,13,0) */
++
++#endif /* __BP_BUILD_BUG_H */
+--- a/net/mac80211/debugfs_sta.c
++++ b/net/mac80211/debugfs_sta.c
+@@ -735,14 +735,14 @@ void ieee80211_rx_h_sta_stats(struct sta
+ 		return;
+ 
+ 	/* Not support 5Mhz and 10Mhz currently  */
+-	if (status->flag & (RX_FLAG_5MHZ | RX_FLAG_10MHZ))
++	if (status->bw == RATE_INFO_BW_5 || status->bw == RATE_INFO_BW_10)
+ 		goto out;
+ 
+-	if (status->vht_flag & RX_VHT_FLAG_160MHZ)
++	if (status->bw == RATE_INFO_BW_160)
+ 		bw_idx = 3;
+-	else if (status->vht_flag & RX_VHT_FLAG_80MHZ)
++	else if (status->bw == RATE_INFO_BW_80)
+ 		bw_idx = 2;
+-	else if (status->flag & RX_FLAG_40MHZ)
++	else if (status->bw == RATE_INFO_BW_40)
+ 		bw_idx = 1;
+ 	else
+ 		bw_idx = 0;
+@@ -750,7 +750,7 @@ void ieee80211_rx_h_sta_stats(struct sta
+ 	i = abs(status->signal);
+ 	sta->sdata->vif.rx_signal_pkt[i]++;
+ 
+-	if (status->flag & RX_FLAG_HT) {
++	if (status->encoding & RX_ENC_HT) {
+ 		mcs_idx = status->rate_idx;
+ 		nss_idx = mcs_idx >> 3;
+ 
+@@ -764,9 +764,9 @@ void ieee80211_rx_h_sta_stats(struct sta
+ 		sta->rx_nss_byte[nss_idx] += pkt_len;
+ 		/* To fit into rate table for HT packets */
+ 		mcs_idx = mcs_idx % 8;
+-	} else if (status->flag & RX_FLAG_VHT) {
++	} else if (status->encoding == RX_ENC_VHT) {
+ 		mcs_idx = status->rate_idx;
+-		nss_idx = status->vht_nss - 1;
++		nss_idx = status->nss - 1;
+ 
+ 		if (nss_idx > IEEE80211_NSS_NUM - 1 ||
+ 		    mcs_idx > (IEEE80211_VHT_MCS_NUM - 1))
+@@ -778,13 +778,13 @@ void ieee80211_rx_h_sta_stats(struct sta
+ 		sta->rx_nss_byte[nss_idx] += pkt_len;
+ 	}
+ 
+-	gi_idx = (status->flag & RX_FLAG_SHORT_GI) ? 1 : 0;
++	gi_idx = (status->enc_flags & RX_ENC_FLAG_SHORT_GI) ? 1 : 0;
+ 	sta->rx_gi_pkt[gi_idx]++;
+ 	sta->rx_gi_byte[gi_idx] += pkt_len;
+ 	sta->rx_bw_pkt[bw_idx]++;
+ 	sta->rx_bw_byte[bw_idx] += pkt_len;
+ 
+-	if (status->flag & (RX_FLAG_HT | RX_FLAG_VHT)) {
++	if (status->encoding == RX_ENC_HT || status->encoding == RX_ENC_VHT) {
+ 		/* Update Rate table for HT and VHT packets */
+ 		i = mcs_idx * 8 + 8 * 10 * nss_idx;
+ 		i += bw_idx * 2 + gi_idx;
+@@ -793,14 +793,13 @@ void ieee80211_rx_h_sta_stats(struct sta
+ 	} else {
+ 		struct ieee80211_supported_band *sband;
+ 		struct ieee80211_sub_if_data *sdata = sta->sdata;
+-		enum nl80211_band band = ieee80211_get_sdata_band(sdata);
+ 		int shift = ieee80211_vif_get_shift(&sta->sdata->vif);
+ 		u16 brate, legacy_rate;
+ 
+ 		if (status->rate_idx > IEEE80211_LEGACY_RATE_NUM - 1)
+ 			goto out;
+ 
+-		sband = local->hw.wiphy->bands[band];
++		sband = ieee80211_get_sband(sdata);
+ 		brate = sband->bitrates[status->rate_idx].bitrate;
+ 		legacy_rate = DIV_ROUND_UP(brate, 1 << shift);
+ 		i = legacy_rate_to_index(legacy_rate);
+--- a/net/mac80211/iface.c
++++ b/net/mac80211/iface.c
+@@ -1241,7 +1241,11 @@ static const struct net_device_ops ieee8
+ 	.ndo_set_rx_mode        = ieee80211_set_multicast_list,
+ 	.ndo_set_mac_address    = ieee80211_change_mac,
+ 	.ndo_select_queue       = ieee80211_netdev_select_queue,
+-	.ndo_get_stats64        = ieee80211_get_stats64,
++#if LINUX_VERSION_IS_GEQ(4,11,0)
++        .ndo_get_stats64        = ieee80211_get_stats64,
++#else
++        .ndo_get_stats64 = bp_ieee80211_get_stats64,
++#endif
+ };
+ 
+ #if LINUX_VERSION_IS_GEQ(3,14,0) || \
+--- a/backport-include/linux/netdevice.h
++++ b/backport-include/linux/netdevice.h
+@@ -323,7 +323,7 @@ static inline void netif_trans_update(st
+ 
+ #if LINUX_VERSION_IS_LESS(4,11,9)
+ #define netdev_set_priv_destructor(_dev, _destructor) \
+-	(_dev)->destructor = __ ## _destructor
++	(_dev)->destructor = _destructor
+ #define netdev_set_def_destructor(_dev) \
+ 	(_dev)->destructor = free_netdev
+ #else

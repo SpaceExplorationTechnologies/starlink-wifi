@@ -1,0 +1,31 @@
+Qualcomm Technologies, Inc. UNIPHY
+----------------------------------
+
+This file contains documentation for the USB UNIPHY found in Qualcomm
+Technologies, Inc. IPQ40XX SoCs.
+
+Required properties:
+- compatible		: must be "qca,uni-ssphy"
+- reg			: register ranges as listed in the reg-names property
+- reg-names		: "phy_base"
+- #phy-cells		: determine the number of cells that should be given
+			  in the phandle while referencing this phy. It must
+			  be zero.
+- resets		: list of phandle and reset specifier pairs.
+- reset-names           : list of reset signal names. Should be "por_rst".
+
+Optional properties:
+- qca,host		: To determine host or device mode.
+
+Example:
+		usb3_ss_phy: ssphy@0 {
+			compatible = "qca,uni-ssphy";
+			reg = <0x9a000 0x800>;
+			reg-names = "phy_base";
+			resets = <&gcc USB3_UNIPHY_PHY_ARES>;
+			reset-names = "por_rst";
+			qca,host = <1>;
+			#phy-cells = <0>;
+
+			status = "ok";
+		};

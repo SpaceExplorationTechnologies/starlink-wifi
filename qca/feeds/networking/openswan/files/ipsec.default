@@ -1,0 +1,6 @@
+#!/bin/sh
+
+/etc/init.d/ipsec enabled && {
+	/etc/init.d/ipsec stop
+	/etc/init.d/ipsec disable
+}

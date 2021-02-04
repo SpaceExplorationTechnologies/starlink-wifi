@@ -1,0 +1,29 @@
+diff --git a/Makefile b/Makefile
+index 3e04bea..f903f91 100644
+--- a/Makefile
++++ b/Makefile
+@@ -8,8 +8,7 @@ CTLSOURCES = ctl_main.c ctl_cli_wrap.c ctl_socket_client.c
+ 
+ CTLOBJECTS = $(CTLSOURCES:.c=.o)
+ 
+-CC=gcc
+-CFLAGS = -Wall -Werror -fno-strict-aliasing -O2 -g -D_REENTRANT -D__LINUX__ \
++CFLAGS += -Wall -Werror -fno-strict-aliasing -O2 -g -D_REENTRANT -D__LINUX__ \
+ 	-DVERSION=$(version) -DBUILD=$(build) -I. -I./include -I./rstplib
+ 
+ all: rstpd rstpctl
+diff --git a/rstplib/Makefile b/rstplib/Makefile
+index 1ecf211..0bc026d 100644
+--- a/rstplib/Makefile
++++ b/rstplib/Makefile
+@@ -21,9 +21,8 @@
+ #**********************************************************************/
+ 
+ DEFS=
+-CC = gcc
+ #CFLAGS = -g -Wall -D_REENTRANT -D__LINUX__ -DSTP_DBG=1 
+-CFLAGS = -g -O -Wall -D_REENTRANT -D__LINUX__
++CFLAGS += -g -O -Wall -D_REENTRANT -D__LINUX__
+ 
+ INCLUDES = -I.
+ COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CFLAGS)

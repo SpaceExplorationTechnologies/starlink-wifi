@@ -1,0 +1,18 @@
+--- a/net/mac80211/cfg.c
++++ b/net/mac80211/cfg.c
+@@ -2721,9 +2721,12 @@ static int ieee80211_set_cqm_rssi_config(struct wiphy *wiphy,
+ 	bss_conf->cqm_rssi_high = 0;
+ 	sdata->u.mgd.last_cqm_event_signal = 0;
+ 
+-	/* tell the driver upon association, unless already associated */
+-	if (sdata->u.mgd.associated &&
+-	    sdata->vif.driver_flags & IEEE80211_VIF_SUPPORTS_CQM_RSSI)
++	/* tell the driver upon association, unless already associated
++	 * if AP, always tell the driver
++	 */
++	if (((vif->type != NL80211_IFTYPE_AP && sdata->u.mgd.associated) ||
++	     (vif->type == NL80211_IFTYPE_AP)) &&
++	    (sdata->vif.driver_flags & IEEE80211_VIF_SUPPORTS_CQM_RSSI))
+ 		ieee80211_bss_info_change_notify(sdata, BSS_CHANGED_CQM);
+ 
+ 	return 0;

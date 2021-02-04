@@ -1,0 +1,18 @@
+--- a/gio/Makefile.am
++++ b/gio/Makefile.am
+@@ -707,6 +707,7 @@ bin_PROGRAMS = gio-querymodules glib-com
+ 
+ glib_compile_resources_LDADD = libgio-2.0.la 		\
+ 	$(top_builddir)/gobject/libgobject-2.0.la	\
++	$(top_builddir)/gmodule/libgmodule-2.0.la	\
+ 	$(top_builddir)/glib/libglib-2.0.la 		\
+ 	$(NULL)
+ 
+--- a/gobject/glib-mkenums.in
++++ b/gobject/glib-mkenums.in
+@@ -1,4 +1,4 @@
+-#! @PERL_PATH@
++#! /usr/bin/perl
+ 
+ use warnings;
+ use File::Basename;

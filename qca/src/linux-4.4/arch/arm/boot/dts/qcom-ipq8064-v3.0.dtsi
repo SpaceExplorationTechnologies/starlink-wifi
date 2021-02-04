@@ -1,0 +1,107 @@
+/* Copyright (c) 2015-2017, The Linux Foundation. All rights reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
+
+#include "qcom-ipq8064-v2.0.dtsi"
+/ {
+
+	qcom,pvs {
+		qcom,pvs-format-a;
+		qcom,speed0-pvs0-bin-v0 =
+				< 1725000000 1262500 >,
+				< 1400000000 1175000 >,
+				< 1000000000 1100000 >,
+				<  800000000 1050000 >,
+				<  600000000 1000000 >,
+				<  384000000  975000 >;
+
+		qcom,speed0-pvs1-bin-v0 =
+				< 1725000000 1225000 >,
+				< 1400000000 1150000 >,
+				< 1000000000 1075000 >,
+				<  800000000 1025000 >,
+				<  600000000  975000 >,
+				<  384000000  950000 >;
+
+		qcom,speed0-pvs2-bin-v0 =
+				< 1725000000 1200000 >,
+				< 1400000000 1125000 >,
+				< 1000000000 1050000 >,
+				<  800000000 1000000 >,
+				<  600000000  950000 >,
+				<  384000000  925000 >;
+
+		qcom,speed0-pvs3-bin-v0 =
+				< 1725000000 1175000 >,
+				< 1400000000 1100000 >,
+				< 1000000000 1025000 >,
+				<  800000000  975000 >,
+				<  600000000  925000 >,
+				<  384000000  900000 >;
+
+		qcom,speed0-pvs4-bin-v0 =
+				< 1725000000 1150000 >,
+				< 1400000000 1075000 >,
+				< 1000000000 1000000 >,
+				<  800000000  950000 >,
+				<  600000000  900000 >,
+				<  384000000  875000 >;
+
+		qcom,speed0-pvs5-bin-v0 =
+				< 1725000000 1100000 >,
+				< 1400000000 1025000 >,
+				< 1000000000  950000 >,
+				<  800000000  900000 >,
+				<  600000000  850000 >,
+				<  384000000  825000 >;
+
+		qcom,speed0-pvs6-bin-v0 =
+				< 1725000000 1050000 >,
+				< 1400000000  975000 >,
+				< 1000000000  900000 >,
+				<  800000000  850000 >,
+				<  600000000  800000 >,
+				<  384000000  775000 >;
+
+		 };
+
+	soc: soc {
+		rpm@108000 {
+			regulators {
+				s2a {
+					regulator-max-microvolt = <1275000>;
+				};
+
+				s2b {
+					regulator-max-microvolt = <1275000>;
+				};
+			};
+		};
+
+		nss0: nss@40000000 {
+			compatible = "qcom,nss";
+			qcom,low-frequency = <110000000>;
+			qcom,mid-frequency = <600000000>;
+			qcom,max-frequency = <800000000>;
+		};
+
+		nss1: nss@40800000 {
+			compatible = "qcom,nss";
+			qcom,low-frequency = <110000000>;
+			qcom,mid-frequency = <600000000>;
+			qcom,max-frequency = <800000000>;
+		};
+	};
+};

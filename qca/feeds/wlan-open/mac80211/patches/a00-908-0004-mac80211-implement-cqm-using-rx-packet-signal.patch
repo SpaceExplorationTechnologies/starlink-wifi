@@ -1,0 +1,76 @@
+--- a/include/net/mac80211.h
++++ b/include/net/mac80211.h
+@@ -151,6 +151,12 @@ enum ieee80211_ac_numbers {
+ 
+ #define IEEE80211_NUM_SIGNAL   100
+ 
++/*
++ * How many frames need to have been used in average signal strength
++ * before starting to indicate signal change events.
++ */
++#define IEEE80211_SIGNAL_AVE_MIN_COUNT	4
++
+ /**
+  * struct ieee80211_tx_queue_params - transmit queue configuration
+  *
+--- a/net/mac80211/mlme.c
++++ b/net/mac80211/mlme.c
+@@ -82,11 +82,6 @@ MODULE_PARM_DESC(probe_wait_ms,
+ 		 "Maximum time(ms) to wait for probe response"
+ 		 " before disconnecting (reason 4).");
+ 
+-/*
+- * How many Beacon frames need to have been used in average signal strength
+- * before starting to indicate signal change events.
+- */
+-#define IEEE80211_SIGNAL_AVE_MIN_COUNT	4
+ 
+ /*
+  * We can have multiple work items (and connection probing)
+--- a/net/mac80211/rx.c
++++ b/net/mac80211/rx.c
+@@ -1641,6 +1641,32 @@ ieee80211_rx_h_sta_process(struct ieee80211_rx_data *rx)
+ 	if (!(status->flag & RX_FLAG_NO_SIGNAL_VAL)) {
+ 		sta->rx_stats.last_signal = status->signal;
+ 		ewma_signal_add(&sta->rx_stats_avg.signal, -status->signal);
++		sta->count_rx_signal++;
++		if (rx->sdata->vif.type != NL80211_IFTYPE_AP) {
++			/* Ignore checking with signal threshold */;
++		} else if (sta->count_rx_signal >= IEEE80211_SIGNAL_AVE_MIN_COUNT) {
++			struct ieee80211_bss_conf *bss_conf =
++						&rx->sdata->vif.bss_conf;
++			int sig = -ewma_signal_read(&sta->rx_stats_avg.signal);
++			int last_event = sta->last_cqm_event_signal;
++			int thold = bss_conf->cqm_rssi_thold;
++
++			if (thold && sig < thold && last_event == 0) {
++				sta->last_cqm_event_signal = sig;
++				ieee80211_cqm_rssi_notify(
++					&rx->sdata->vif, sta->addr,
++					NL80211_CQM_RSSI_THRESHOLD_EVENT_LOW,
++					sig, GFP_ATOMIC);
++				sta->count_rx_signal = 0;
++			} else if (thold && last_event && sig > thold) {
++				sta->last_cqm_event_signal = 0;
++				ieee80211_cqm_rssi_notify(
++					&rx->sdata->vif, sta->addr,
++					NL80211_CQM_RSSI_THRESHOLD_EVENT_HIGH,
++					sig, GFP_ATOMIC);
++				sta->count_rx_signal = 0;
++			}
++		}
+ 	}
+ 
+ 	if (status->chains) {
+--- a/net/mac80211/sta_info.h
++++ b/net/mac80211/sta_info.h
+@@ -602,6 +602,9 @@ struct sta_info {
+ 
+ 	struct cfg80211_chan_def tdls_chandef;
+ 
++	int last_cqm_event_signal;
++	int count_rx_signal;
++
+ 	/* keep last! */
+ 	struct ieee80211_sta sta;
+ };

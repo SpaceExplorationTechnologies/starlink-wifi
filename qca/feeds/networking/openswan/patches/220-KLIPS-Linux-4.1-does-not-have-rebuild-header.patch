@@ -1,0 +1,99 @@
+diff -Nur a/linux/include/openswan/ipsec_kversion.h openswan-2.6.41/linux/include/openswan/ipsec_kversion.h
+--- a/linux/include/openswan/ipsec_kversion.h	2016-10-14 13:34:10.073808724 -0700
++++ openswan-2.6.41/linux/include/openswan/ipsec_kversion.h	2016-10-14 13:35:54.617805629 -0700
+@@ -90,6 +90,10 @@
+ # define CONFIG_IP_ALIAS
+ #endif
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 1, 0)
++# define HAVE_REBUILD_HEADER
++#endif
++
+ /* API changes are documented at: http://lwn.net/Articles/2.6-kernel-api/ */
+ 
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
+diff -Nur a/linux/net/ipsec/ipsec_tunnel.c openswan-2.6.41/linux/net/ipsec/ipsec_tunnel.c
+--- a/linux/net/ipsec/ipsec_tunnel.c	2016-10-14 13:34:10.077808724 -0700
++++ openswan-2.6.41/linux/net/ipsec/ipsec_tunnel.c	2016-10-14 13:38:03.877801802 -0700
+@@ -316,6 +316,7 @@
+ 	return ret;
+ }
+ 
++#ifdef HAVE_REBUILD_HEADER
+ DEBUG_NO_STATIC int
+ klips_rebuild_header(struct sk_buff *skb)
+ {
+@@ -377,6 +378,7 @@
+ 	skb->dev = tmp;
+ 	return ret;
+ }
++#endif
+ 
+ int klips_header_cache(
+ 	const struct neighbour *neigh,
+@@ -480,7 +482,9 @@
+ const struct header_ops klips_header_ops ____cacheline_aligned = {
+ 	.create		= klips_header,
+ 	.parse		= klips_header_parse,
++#ifdef HAVE_REBUILD_HEADER
+ 	.rebuild	= klips_rebuild_header,
++#endif
+ 	.cache		= klips_header_cache,
+ 	.cache_update	= klips_header_cache_update,
+ };
+@@ -1167,6 +1171,7 @@
+ 	return ret;
+ }
+ 
++#ifdef HAVE_REBUILD_HEADER
+ DEBUG_NO_STATIC int
+ ipsec_tunnel_rebuild_header(struct sk_buff *skb)
+ {
+@@ -1238,6 +1243,7 @@
+ 	skb->dev = tmp;
+ 	return ret;
+ }
++#endif
+ 
+ #ifdef HAVE_SET_MAC_ADDR
+ DEBUG_NO_STATIC int
+@@ -1351,7 +1357,9 @@
+ #ifdef HAVE_NETDEV_HEADER_OPS
+ const struct header_ops ipsec_tunnel_header_ops = {
+ 	.create		= ipsec_tunnel_hard_header,
++#ifdef HAVE_REBUILD_HEADER
+ 	.rebuild	= ipsec_tunnel_rebuild_header,
++#endif
+ 	.cache_update	= ipsec_tunnel_cache_update,
+ };
+ #endif
+@@ -1432,7 +1440,9 @@
+ 	prv->header_ops = NULL;
+ #else
+ 	prv->hard_header = NULL;
++#ifdef HAVE_REBUILD_HEADER
+ 	prv->rebuild_header = NULL;
++#endif
+ 	prv->header_cache_update = NULL;
+ #endif
+ 	prv->set_mac_address = NULL;
+@@ -1443,7 +1453,9 @@
+ 	dev->header_ops = NULL;
+ #else
+ 	dev->hard_header = NULL;
++#ifdef HAVE_REBUILD_HEADER
+ 	dev->rebuild_header = NULL;
++#endif
+ 	dev->header_cache_update = NULL;
+ 	dev->neigh_setup        = NULL;
+ #endif
+@@ -2007,7 +2019,9 @@
+ 	dev->header_ops		= NULL;
+ #else
+ 	dev->hard_header	= NULL;
++#ifdef HAVE_REBUILD_HEADER
+ 	dev->rebuild_header 	= NULL;
++#endif
+ 	dev->header_cache_update= NULL;
+ #endif
+ #ifdef HAVE_NET_DEVICE_OPS

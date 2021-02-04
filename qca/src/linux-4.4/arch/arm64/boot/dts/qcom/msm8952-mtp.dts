@@ -1,0 +1,169 @@
+/dts-v1/;
+/*
+ * Copyright (c) 2016, The Linux Foundation. All rights reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+#include "msm8952.dtsi"
+
+/ {
+	#address-cells = <0x00000002>;
+	#size-cells = <0x00000002>;
+	model = "Qualcomm Technologies, Inc. MSM8952 MTP";
+	compatible = "qcom,msm8952-mtp", "qcom,msm8952", "qcom,mtp";
+	qcom,msm-id = <0x00000108 0x00000000>;
+	interrupt-parent = <0x00000001>;
+	qcom,board-id = <0x00000008 0x00000000>;
+	chosen {
+		linux,initrd-end = <0x820c25f9>;
+		linux,initrd-start = <0x82000000>;
+		bootargs = "console=ttyMSM0,115200,n8 root=/dev/ram0 rw \
+			init=/init";
+	};
+	aliases {
+	};
+	cpus {
+		#address-cells = <0x00000001>;
+		#size-cells = <0x00000000>;
+		cpu-map {
+			cluster0 {
+				core0 {
+					cpu = <0x00000002>;
+				};
+				core1 {
+					cpu = <0x00000003>;
+				};
+				core2 {
+					cpu = <0x00000004>;
+				};
+				core3 {
+					cpu = <0x00000005>;
+				};
+			};
+			cluster1 {
+				core0 {
+					cpu = <0x00000006>;
+				};
+				core1 {
+					cpu = <0x00000007>;
+				};
+				core2 {
+					cpu = <0x00000008>;
+				};
+				core3 {
+					cpu = <0x00000009>;
+				};
+			};
+		};
+		cpu@100 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <0x00000100>;
+			enable-method = "qcom,arm-cortex-acc";
+			qcom,acc = <0x0000000a>;
+			next-level-cache = <0x0000000b>;
+			linux,phandle = <0x00000006>;
+			phandle = <0x00000006>;
+			l2-cache {
+				compatible = "arm,arch-cache";
+				cache-level = <0x00000002>;
+				power-domain = <0x0000000c>;
+				linux,phandle = <0x0000000b>;
+				phandle = <0x0000000b>;
+			};
+		};
+		cpu@101 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <0x00000101>;
+			enable-method = "qcom,arm-cortex-acc";
+			qcom,acc = <0x0000000d>;
+			next-level-cache = <0x0000000b>;
+			linux,phandle = <0x00000007>;
+			phandle = <0x00000007>;
+		};
+		cpu@102 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <0x00000102>;
+			enable-method = "qcom,arm-cortex-acc";
+			qcom,acc = <0x0000000e>;
+			next-level-cache = <0x0000000b>;
+			linux,phandle = <0x00000008>;
+			phandle = <0x00000008>;
+		};
+		cpu@103 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <0x00000103>;
+			enable-method = "qcom,arm-cortex-acc";
+			qcom,acc = <0x0000000f>;
+			next-level-cache = <0x0000000b>;
+			linux,phandle = <0x00000009>;
+			phandle = <0x00000009>;
+		};
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <0x00000000>;
+			enable-method = "qcom,arm-cortex-acc";
+			qcom,acc = <0x00000010>;
+			next-level-cache = <0x00000011>;
+			linux,phandle = <0x00000002>;
+			phandle = <0x00000002>;
+			l2-cache {
+				compatible = "arm,arch-cache";
+				cache-level = <0x00000002>;
+				power-domain = <0x00000012>;
+				linux,phandle = <0x00000011>;
+				phandle = <0x00000011>;
+			};
+		};
+		cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <0x00000001>;
+			enable-method = "qcom,arm-cortex-acc";
+			qcom,acc = <0x00000013>;
+			next-level-cache = <0x00000011>;
+			linux,phandle = <0x00000003>;
+			phandle = <0x00000003>;
+		};
+		cpu@2 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <0x00000002>;
+			enable-method = "qcom,arm-cortex-acc";
+			qcom,acc = <0x00000014>;
+			next-level-cache = <0x00000011>;
+			linux,phandle = <0x00000004>;
+			phandle = <0x00000004>;
+		};
+		cpu@3 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <0x00000003>;
+			enable-method = "qcom,arm-cortex-acc";
+			qcom,acc = <0x00000015>;
+			next-level-cache = <0x00000011>;
+			linux,phandle = <0x00000005>;
+			phandle = <0x00000005>;
+		};
+	};
+	memory {
+		device_type = "memory";
+		reg = <0x00000000 0x80000000 0x00000000 0x40000000 0x00000000 \
+			0xc0000000 0x00000000 0x40000000>;
+	};
+};

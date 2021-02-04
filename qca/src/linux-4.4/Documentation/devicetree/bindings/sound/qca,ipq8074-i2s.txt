@@ -1,0 +1,33 @@
+* Qualcomm Technologies, Inc IPQ8074 ASoC PCM driver
+
+This node models the Qualcomm Technologies, Inc IPQ8074 ASoC I2S PCM driver
+
+Required properties:
+
+- compatible	 : "qca,ipq8074-i2s"
+- dma-tx-channel : should have the mbox tx channel id
+- dma-rx-channel : should have the mbox rx channel id
+- stereo-tx-port : should have the stereo tx id
+- stereo-rx-port : should have the stereo rx id
+- clocks	 : should have the audio tx bit clock, tx master clock,
+		   rx bit clock, rx master clock id
+- clock-names	 : should be "audio_tx_bclk", "audio_tx_mclk", "audio_rx_bclk",
+		   "audio_rx_mclk"
+
+Example:
+i2s: ipq8074-pcm-i2s@0 {
+	compatible = "qca,ipq8074-i2s";
+	dma-tx-channel = <MBOX0_TX_ID>;
+	dma-rx-channel = <MBOX3_RX_ID>;
+	stereo-tx-port = <STEREO0_ID>;
+	stereo-rx-port = <STEREO3_ID>;
+	clocks = <&adcc ADCC_TXB_CLK_SRC>,
+		<&adcc ADCC_TXM_CLK_SRC>,
+		<&adcc ADCC_RXB_CLK_SRC>,
+		<&adcc ADCC_RXM_CLK_SRC>;
+	clock-names = "audio_tx_bclk",
+		"audio_tx_mclk",
+		"audio_rx_bclk",
+		"audio_rx_mclk";
+	status = "disabled";
+};

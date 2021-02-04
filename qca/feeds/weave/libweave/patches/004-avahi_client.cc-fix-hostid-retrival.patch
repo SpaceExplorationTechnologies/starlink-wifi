@@ -1,0 +1,66 @@
+Index: libweave-1.0/examples/provider/avahi_client.cc
+===================================================================
+--- libweave-1.0.orig/examples/provider/avahi_client.cc	2016-02-15 13:08:00.362657357 +0100
++++ libweave-1.0/examples/provider/avahi_client.cc	2016-02-15 13:08:00.358657343 +0100
+@@ -21,12 +21,19 @@
+   CHECK_NE(state, AVAHI_ENTRY_GROUP_FAILURE);
+ }
+ 
+-std::string GetId() {
+-  return "WEAVE" + std::to_string(gethostid());
+-}
+-
+ }  // namespace
+ 
++std::string AvahiClient::GetId() {
++  if (!unique_id_) {
++    srand(time(NULL));
++    unique_id_ = rand() & 0xff;
++    unique_id_ |= (rand() & 0xff) << 8;
++    unique_id_ |= (rand() & 0xff) << 16;
++    unique_id_ |= (rand() & 0xff) << 24;
++  }
++  return "WEAVE" + std::to_string(unique_id_);
++}
++
+ AvahiClient::AvahiClient() {
+   thread_pool_.reset(avahi_threaded_poll_new());
+   CHECK(thread_pool_);
+@@ -68,9 +75,12 @@
+   }
+ 
+   int ret = 0;
++  std::string store_id = GetId();
++  LOG(INFO) << "WEAVE_ID: " << store_id;
++
+   if (prev_port_ == port && prev_type_ == service_type) {
+     ret = avahi_entry_group_update_service_txt_strlst(
+-        group_.get(), AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, {}, GetId().c_str(),
++        group_.get(), AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, {}, store_id.c_str(),
+         service_type.c_str(), nullptr, txt_list.get());
+     CHECK_GE(ret, 0) << avahi_strerror(ret);
+   } else {
+@@ -81,7 +91,7 @@
+     CHECK(avahi_entry_group_is_empty(group_.get()));
+ 
+     ret = avahi_entry_group_add_service_strlst(
+-        group_.get(), AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, {}, GetId().c_str(),
++        group_.get(), AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, {}, store_id.c_str(),
+         service_type.c_str(), nullptr, nullptr, port, txt_list.get());
+     CHECK_GE(ret, 0) << avahi_strerror(ret);
+     ret = avahi_entry_group_commit(group_.get());
+Index: libweave-1.0/examples/provider/avahi_client.h
+===================================================================
+--- libweave-1.0.orig/examples/provider/avahi_client.h	2016-02-15 13:08:00.362657357 +0100
++++ libweave-1.0/examples/provider/avahi_client.h	2016-02-15 13:08:00.358657343 +0100
+@@ -39,6 +39,10 @@
+ 
+   std::unique_ptr<AvahiEntryGroup, decltype(&avahi_entry_group_free)> group_{
+       nullptr, &avahi_entry_group_free};
++ private:
++  uint32_t unique_id_{0};
++  std::string GetId();
++
+ };
+ 
+ }  // namespace examples

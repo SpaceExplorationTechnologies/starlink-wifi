@@ -1,0 +1,3 @@
+config rstp global
+	option enable '0'
+	option autoMode '1'

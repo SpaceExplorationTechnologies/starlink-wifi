@@ -1,0 +1,32 @@
+--- a/pp.c
++++ b/pp.c
+@@ -43,7 +43,7 @@
+  * Some BSDs and Cygwin default to POSIX math instead of IEEE.
+  * This switches them over to IEEE.
+  */
+-#if defined(LIBM_LIB_VERSION)
++#if defined(LIBM_LIB_VERSION) && (defined(__GLIBC__) || defined(__UCLIBC__))
+     _LIB_VERSION_TYPE _LIB_VERSION = _IEEE_;
+ #endif
+ 
+--- a/ext/SDBM_File/sdbm/sdbm.c
++++ b/ext/SDBM_File/sdbm/sdbm.c
+@@ -16,7 +16,7 @@
+ #include "tune.h"
+ #include "pair.h"
+ 
+-#ifdef I_FCNTL
++#if defined(I_FCNTL) || !(defined(__GLIBC__) || defined(__UCLIBC__) )
+ # include <fcntl.h>
+ #endif
+ #ifdef I_SYS_FILE
+--- a/perlio.c
++++ b/perlio.c
+@@ -48,6 +48,7 @@
+ #endif
+ 
+ #include "XSUB.h"
++#include <fcntl.h>
+ 
+ #ifdef __Lynx__
+ /* Missing proto on LynxOS */

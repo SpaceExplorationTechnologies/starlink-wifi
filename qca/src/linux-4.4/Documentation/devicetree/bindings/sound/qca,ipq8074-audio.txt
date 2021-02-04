@@ -1,0 +1,13 @@
+* Qualcomm Technologies, Inc IPQ8074 ASoC machine driver
+
+This node models the Qualcomm Technologies, Inc IPQ8074 ASoC machine driver
+
+Required properties:
+
+- compatible		: "qca,ipq8074-audio"
+
+Example:
+
+sound: sound {
+	compatible = "qca,ipq8074-audio";
+};

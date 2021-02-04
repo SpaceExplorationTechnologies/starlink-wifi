@@ -1,0 +1,884 @@
+--- a/include/net/cfg80211.h
++++ b/include/net/cfg80211.h
+@@ -4127,6 +4127,8 @@ struct cfg80211_cqm_config;
+  *	set by driver (if supported) on add_interface BEFORE registering the
+  *	netdev and may otherwise be used by driver read-only, will be update
+  *	by cfg80211 on change_interface
++ * @use_3addr_sta_bridge: Three address bridging mode is enabled in STA
++ *	interface type.
+  * @mgmt_registrations: list of registrations for management frames
+  * @mgmt_registrations_lock: lock for the list
+  * @mtx: mutex used to lock data in this struct, may be used by drivers
+@@ -4174,6 +4176,8 @@ struct wireless_dev {
+ 
+ 	bool use_4addr, is_running;
+ 
++	bool use_3addr_sta_bridge;
++
+ 	u8 address[ETH_ALEN] __aligned(sizeof(u16));
+ 
+ 	/* currently used for IBSS and SME - might be rearranged later */
+--- a/net/mac80211/Makefile
++++ b/net/mac80211/Makefile
+@@ -31,7 +31,8 @@ mac80211-y := \
+ 	chan.o \
+ 	trace.o mlme.o \
+ 	tdls.o \
+-	ocb.o
++	ocb.o \
++	extsta.o
+ 
+ mac80211-$(CPTCFG_MAC80211_LEDS) += led.o
+ mac80211-$(CPTCFG_MAC80211_DEBUGFS) += \
+--- a/net/mac80211/debugfs_netdev.c
++++ b/net/mac80211/debugfs_netdev.c
+@@ -16,6 +16,7 @@
+ #include <linux/rtnetlink.h>
+ #include <linux/slab.h>
+ #include <linux/notifier.h>
++#include <linux/vmalloc.h>
+ #include <net/mac80211.h>
+ #include <net/cfg80211.h>
+ #include "ieee80211_i.h"
+@@ -488,6 +489,84 @@ static ssize_t ieee80211_if_fmt_signal_s
+ }
+ IEEE80211_IF_FILE_R(signal_stats);
+ 
++static int ieee80211_extsta_dump_table_open(struct inode *inode,
++					    struct file *file)
++{
++	struct ieee80211_sub_if_data *sdata = inode->i_private;
++	struct extsta *extap = &sdata->extsta;
++	struct extsta_entry *entry;
++	struct rhashtable_iter iter;
++	char *buf;
++	ssize_t buf_len, len = 0;
++	int num_entries = 0;
++	char ip_buf[64];
++	int ret = 0;
++
++	rhashtable_walk_init(&extap->rhead, &iter, GFP_ATOMIC);
++
++	rhashtable_walk_start(&iter);
++
++	num_entries = atomic_read(&extap->rhead.nelems);
++
++	buf_len = 64 + (num_entries * 128);
++	buf = vmalloc(buf_len);
++	if (!buf) {
++		ret = -ENOMEM;
++		goto err;
++	}
++
++	len += scnprintf(buf + len, buf_len - len,
++			 "MAC\t\t\t\tip addr\t\t\t\t\t\tinactive time(in secs)\n");
++
++
++	while ((entry = rhashtable_walk_next(&iter))) {
++		if (IS_ERR(entry) && PTR_ERR(entry) == -EAGAIN)
++			continue;
++		if (IS_ERR(entry))
++			break;
++
++		if (entry->addr_len == 4)
++			scnprintf(ip_buf, sizeof(ip_buf), "%pI4", entry->addr);
++		else
++			scnprintf(ip_buf, sizeof(ip_buf), "%pI6c", entry->addr);
++
++		len += scnprintf(buf + len, buf_len - len,"%pM\t%-40s\t\t\t%-10u\n",
++				 entry->mac, ip_buf,
++				 jiffies_to_msecs(jiffies -
++						  entry->last_active_ts) / 1000);
++        }
++	file->private_data = buf;
++
++err:
++	rhashtable_walk_stop(&iter);
++	rhashtable_walk_exit(&iter);
++
++	return ret;
++}
++
++static ssize_t ieee80211_extsta_dump_table_read(struct file *file,
++					        char __user *userbuf,
++						size_t count, loff_t *ppos)
++{
++	u8 *buf = file->private_data;
++	return simple_read_from_buffer(userbuf, count, ppos, buf, strlen(buf));
++}
++
++static int ieee80211_extsta_dump_table_release(struct inode *inode,
++					       struct file *file)
++{
++	vfree(file->private_data);
++	return 0;
++}
++
++static const struct file_operations ieee80211_extsta_dump_table_ops = {
++	.open = ieee80211_extsta_dump_table_open,
++	.read = ieee80211_extsta_dump_table_read,
++	.release = ieee80211_extsta_dump_table_release,
++	.owner = THIS_MODULE,
++	.llseek = generic_file_llseek,
++};
++
+ /* AP attributes */
+ IEEE80211_IF_FILE(num_mcast_sta, u.ap.num_mcast_sta, ATOMIC);
+ IEEE80211_IF_FILE(num_sta_ps, u.ap.ps.num_sta_ps, ATOMIC);
+@@ -691,6 +770,10 @@ static void add_sta_files(struct ieee802
+ 	DEBUGFS_ADD_MODE(uapsd_queues, 0600);
+ 	DEBUGFS_ADD_MODE(uapsd_max_sp_len, 0600);
+ 	DEBUGFS_ADD_MODE(tdls_wider_bw, 0600);
++	if (sdata->extsta_enabled)
++		debugfs_create_file("extsta_dump_table", 0400,
++				    sdata->vif.debugfs_dir,
++				    sdata, &ieee80211_extsta_dump_table_ops);
+ }
+ 
+ static void add_ap_files(struct ieee80211_sub_if_data *sdata)
+--- /dev/null
++++ b/net/mac80211/extsta.c
+@@ -0,0 +1,455 @@
++/*
++ * Copyright (c) 2018, The Linux Foundation. All rights reserved.
++ *
++ * Copyright (c) 2016, Qualcomm Atheros Inc.
++ *
++ * Permission to use, copy, modify, and/or distribute this software for any
++ * purpose with or without fee is hereby granted, provided that the above
++ * copyright notice and this permission notice appear in all copies.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
++ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ */
++
++ /* Three address STA bridging functionality */
++
++#include <linux/icmpv6.h>
++#include <net/ndisc.h>
++#include <linux/if_arp.h>
++#include <linux/ipv6.h>
++#include <net/ipv6.h>
++#include <net/ip.h>
++#include <linux/ip.h>
++#include <linux/jiffies.h>
++#include "ieee80211_i.h"
++#include "extsta.h"
++
++#define ENTRY_EXPRY_TIMEOUT (300  * 1000) /* msecs */
++
++#define IPV4_ADDR_LEN	4
++#define IPV6_ADDR_LEN	16
++
++#define EXTAP_ENTRY_CLEANUP_THRESHOLD 100
++
++struct dhcphdr {
++	u8  msg_type;
++	u8  hw_type;
++	u8  hw_addr_len;
++	u8  num_hops;
++	__be32 transc_id;
++	__be16 secs_elapsed;
++	__be16 flags;
++	__be32 ciaddr;
++	__be32 yiaddr;
++	__be32 siaddr_nip;
++	__be32 gateway_nip;
++	u8  chaddr[16];
++	u8  sname[64];
++	u8  file[128];
++	u8  cookie[4];
++} __packed;
++
++struct extsta_entry_key {
++	size_t len;
++	const u8* addr;
++};
++
++static u32 extsta_entry_ip_key_hash(const void *data, u32 len, u32 seed)
++{
++	const struct extsta_entry_key *key = data;
++
++	return jhash(key->addr, key->len, seed);
++}
++
++static u32 extsta_entry_ip_obj_hash(const void *data, u32 len, u32 seed)
++{
++	const struct extsta_entry *entry = data;
++
++	return jhash(entry->addr, entry->addr_len, seed);
++}
++
++static int extsta_entry_ip_cmp(struct rhashtable_compare_arg *arg, const void *data)
++{
++	const struct extsta_entry_key *key = arg->key;
++	const struct extsta_entry *entry = data;
++
++	if(entry->addr_len != key->len)
++		return -EINVAL;
++
++	return memcmp(key->addr, entry->addr, key->len);
++}
++
++static struct rhashtable_params extsta_rht_params = {
++	.nelem_hint = 32,
++	.min_size = 64,
++	.automatic_shrinking = true,
++	.head_offset = offsetof(struct extsta_entry, rhash),
++	.hashfn = extsta_entry_ip_key_hash,
++	.obj_hashfn = extsta_entry_ip_obj_hash,
++	.obj_cmpfn = extsta_entry_ip_cmp,
++};
++
++static int
++ieee80211_extsta_entry_create(struct extsta *extsta, const u8 *mac,
++			      const u8 *addr, size_t addr_len)
++{
++	struct extsta_entry *entry;
++	struct extsta_entry_key key;
++	int ret;
++
++	entry = kzalloc(sizeof(*entry), GFP_ATOMIC);
++	if (!entry)
++		return -ENOMEM;
++
++	entry->addr_len = addr_len;
++	ether_addr_copy(entry->mac, mac);
++	memcpy(entry->addr, addr, addr_len);
++	entry->last_active_ts = jiffies;
++
++	key.addr = entry->addr;
++	key.len = entry->addr_len;
++
++	ret = rhashtable_lookup_insert_key(&extsta->rhead,&key,
++					   &entry->rhash,
++					   extsta_rht_params);
++	if(ret)
++		kfree(entry);
++
++	return ret;
++}
++
++static void ieee80211_extsta_entry_remove_expired(struct extsta *extsta)
++{
++	struct extsta_entry *entry;
++        struct rhashtable_iter iter;
++
++	rhashtable_walk_init(&extsta->rhead, &iter, GFP_ATOMIC);
++
++	rhashtable_walk_start(&iter);
++
++	while ((entry = rhashtable_walk_next(&iter))) {
++		if (IS_ERR(entry) && PTR_ERR(entry) == -EAGAIN)
++			continue;
++
++		if (IS_ERR(entry))
++			break;
++
++		if (time_after(jiffies, entry->last_active_ts +
++			       msecs_to_jiffies(ENTRY_EXPRY_TIMEOUT))) {
++			rhashtable_remove_fast(&extsta->rhead, &entry->rhash,
++					       extsta_rht_params);
++			kfree_rcu(entry, rcu);
++		}
++        }
++
++	rhashtable_walk_stop(&iter);
++	rhashtable_walk_exit(&iter);
++}
++
++static struct extsta_entry *
++ieee80211_extsta_entry_lookup(struct extsta *extsta, const u8 *addr,
++			     size_t addr_len)
++{
++	struct extsta_entry *entry = NULL;
++	const struct extsta_entry_key key = {
++		.addr = addr,
++		.len = addr_len,
++	};
++
++	entry = rhashtable_lookup_fast(&extsta->rhead, &key, extsta_rht_params);
++	if (entry)
++		entry->last_active_ts = jiffies;
++
++	return entry;
++}
++
++static void ieee80211_extsta_entry_check_add(struct ieee80211_sub_if_data *sdata,
++					    const u8 *mac, const u8 *addr,
++					    size_t addr_len)
++{
++	struct extsta *extsta = &sdata->extsta;
++	struct extsta_entry *entry;
++	int i;
++	unsigned long non_zero_ip = 0;
++
++	for (i = 0; i < addr_len; i++)
++		non_zero_ip |= addr[i];
++
++	if (!non_zero_ip)
++		return;
++
++	rcu_read_lock();
++	spin_lock_bh(&extsta->lock);
++	entry = ieee80211_extsta_entry_lookup(extsta, addr, addr_len);
++	if (entry) {
++		ether_addr_copy(entry->mac, mac);
++		spin_unlock_bh(&extsta->lock);
++		rcu_read_unlock();
++		return;
++	}
++	spin_unlock_bh(&extsta->lock);
++	rcu_read_unlock();
++
++	if (atomic_read(&extsta->rhead.nelems) >= EXTAP_ENTRY_CLEANUP_THRESHOLD)
++		ieee80211_extsta_entry_remove_expired(extsta);
++
++	ieee80211_extsta_entry_create(extsta, mac, addr, addr_len);
++}
++
++static void ieee80211_extsta_change_arp_sa(struct ieee80211_sub_if_data *sdata,
++					  struct sk_buff *skb)
++{
++	struct ethhdr *ehdr = eth_hdr(skb);
++	struct arphdr *ahdr = arp_hdr(skb);
++	unsigned char *arpptr = (unsigned char *)(ahdr + 1);
++
++	if (ahdr->ar_hrd != htons(ARPHRD_ETHER) || ahdr->ar_hln != ETH_ALEN ||
++	    ahdr->ar_pro != htons(ETH_P_IP) || ahdr->ar_pln != IPV4_ADDR_LEN)
++		return;
++
++	if (ahdr->ar_op != cpu_to_be16(ARPOP_REQUEST) &&
++	    ahdr->ar_op != cpu_to_be16(ARPOP_REPLY))
++		goto translate_sa;
++
++	ieee80211_extsta_entry_check_add(sdata, arpptr, arpptr + ETH_ALEN,
++					ahdr->ar_pln);
++
++	ether_addr_copy((u8 *)arpptr, (const u8 *)sdata->dev->dev_addr);
++
++translate_sa:
++	ether_addr_copy(ehdr->h_source, (const u8 *)sdata->dev->dev_addr);
++}
++
++static const u8 dhcp_magic_cookie[4] = { 99, 130, 83, 99 };
++
++static void ieee80211_extsta_change_ipv4_sa(struct ieee80211_sub_if_data *sdata,
++					   struct sk_buff *skb)
++{
++	struct ethhdr *ehdr = eth_hdr(skb);
++	struct iphdr *ihdr = ip_hdr(skb);
++	struct udphdr *uhdr;
++	struct dhcphdr *dhdr;
++
++	if (ihdr->protocol != IPPROTO_UDP)
++		goto translate_sa;
++
++	uhdr = (struct udphdr *)((char *)ihdr + (ihdr->ihl * 4));
++	if (uhdr->dest != htons(67))
++		goto translate_sa;
++
++	dhdr = (struct dhcphdr *)(uhdr + 1);
++	if (memcmp(dhdr->cookie, dhcp_magic_cookie, 4) != 0)
++		goto translate_sa;
++
++	if (dhdr->msg_type != 1)
++		goto translate_sa;
++
++	if (dhdr->flags & cpu_to_be16(0x8000))
++		goto translate_sa;
++
++	dhdr->flags |= cpu_to_be16(0x8000);
++
++	uhdr->check = 0;
++	uhdr->check = csum_tcpudp_magic(ihdr->saddr, ihdr->daddr,
++					be16_to_cpu(uhdr->len), IPPROTO_UDP,
++					csum_partial((void *)uhdr,
++						     be16_to_cpu(uhdr->len),
++						     0));
++
++translate_sa:
++	ieee80211_extsta_entry_check_add(sdata, ehdr->h_source,
++					(const u8 *)&ihdr->saddr,
++					IPV4_ADDR_LEN);
++	ether_addr_copy(ehdr->h_source, (const u8 *)sdata->dev->dev_addr);
++}
++
++static void ieee80211_extsta_change_ipv6_sa(struct ieee80211_sub_if_data *sdata,
++					    struct sk_buff *skb)
++{
++	struct ethhdr *ehdr = eth_hdr(skb);
++	struct ipv6hdr *ihdr = ipv6_hdr(skb);
++	struct icmp6hdr *icmp;
++	struct nd_msg *nd;
++	u8 *shaddr;
++	size_t icmp_len;
++
++	if (ihdr->nexthdr != NEXTHDR_ICMP)
++		goto translate_sa;
++
++	icmp = (struct icmp6hdr *)(ihdr + 1);
++
++	if (icmp->icmp6_type != NDISC_NEIGHBOUR_SOLICITATION &&
++	    icmp->icmp6_type != NDISC_NEIGHBOUR_ADVERTISEMENT)
++		goto translate_sa;
++
++	icmp_len = skb->len - ((unsigned char *)icmp - skb->data);
++	if (unlikely(icmp_len < (sizeof(*nd) + 8)))
++		goto translate_sa;
++
++	nd = (struct nd_msg *)icmp;
++	shaddr = (u8 *)nd->opt + sizeof(struct nd_opt_hdr);
++
++	ieee80211_extsta_entry_check_add(sdata, ehdr->h_source,
++					ihdr->saddr.s6_addr, IPV6_ADDR_LEN);
++
++	ether_addr_copy(shaddr, (const u8 *)sdata->dev->dev_addr);
++
++	nd->icmph.icmp6_cksum = 0;
++	nd->icmph.icmp6_cksum =
++			csum_ipv6_magic(&ihdr->saddr,
++					&ihdr->daddr,
++					be16_to_cpu(ihdr->payload_len),
++					IPPROTO_ICMPV6,
++					csum_partial((void *)nd,
++						be16_to_cpu(ihdr->payload_len), 0));
++
++translate_sa:
++	ieee80211_extsta_entry_check_add(sdata, ehdr->h_source,
++					 ihdr->saddr.s6_addr, IPV6_ADDR_LEN);
++	ether_addr_copy(ehdr->h_source, (const u8 *)sdata->dev->dev_addr);
++}
++
++static unsigned char *ieee80211_extsta_arp_get_ip_daddr(struct extsta *extsta,
++							struct sk_buff *skb)
++{
++	struct ethhdr *ehdr = eth_hdr(skb);
++	struct arphdr *ahdr = arp_hdr(skb);
++	char *arpptr = (char *)(ahdr + 1);
++	u32 offst_tip = 2 * ETH_ALEN + IPV4_ADDR_LEN;
++
++	if ((be16_to_cpu(ahdr->ar_op) == ARPOP_REQUEST ||
++	    be16_to_cpu(ahdr->ar_op) == ARPOP_REPLY) &&
++	    is_multicast_ether_addr(ehdr->h_dest))
++		return NULL;
++
++	if (ahdr->ar_hrd != htons(ARPHRD_ETHER) || ahdr->ar_hln != ETH_ALEN ||
++	    ahdr->ar_pro != htons(ETH_P_IP) || ahdr->ar_pln != IPV4_ADDR_LEN)
++		return NULL;
++
++	return arpptr + offst_tip;
++}
++
++static void ieee80211_extsta_change_to_mcast_da(struct sk_buff *skb)
++{
++	struct ethhdr *ehdr = eth_hdr(skb);
++
++	if (is_multicast_ether_addr(ehdr->h_dest))
++		return;
++
++	switch (be16_to_cpu(ehdr->h_proto)) {
++	case ETH_P_IP:
++		ip_eth_mc_map(ip_hdr(skb)->daddr, ehdr->h_dest);
++		break;
++	case ETH_P_IPV6:
++		ipv6_eth_mc_map(&ipv6_hdr(skb)->daddr, ehdr->h_dest);
++		break;
++	default:
++		return;
++	}
++}
++
++void ieee80211_extsta_change_da(struct net_device *dev, struct sk_buff *skb)
++{
++	struct ieee80211_sub_if_data *sdata = IEEE80211_DEV_TO_SUB_IF(dev);
++	struct extsta *extsta = &sdata->extsta;
++	struct extsta_entry *entry;
++	struct ethhdr *ehdr = eth_hdr(skb);
++	struct arphdr *ahdr = NULL;
++	unsigned char *arpptr = NULL;
++	u32 offst_thaddr = ETH_ALEN + IPV4_ADDR_LEN;
++	size_t addr_len = 0;
++	unsigned char *ip_daddr;
++
++	switch (be16_to_cpu(ehdr->h_proto)) {
++	case ETH_P_ARP:
++		ip_daddr = ieee80211_extsta_arp_get_ip_daddr(extsta, skb);
++		if (ip_daddr) {
++			ahdr = arp_hdr(skb);
++			arpptr = (unsigned char *)(ahdr + 1);
++			addr_len = IPV4_ADDR_LEN;
++		}
++		break;
++	case ETH_P_IP:
++		ip_daddr = (unsigned char *)&(ip_hdr(skb)->daddr);
++		addr_len = IPV4_ADDR_LEN;
++		break;
++	case ETH_P_IPV6:
++		ip_daddr = (unsigned char *)&(ipv6_hdr(skb)->daddr.s6_addr);
++		addr_len = IPV6_ADDR_LEN;
++		break;
++	default:
++		break;
++	}
++
++	if (!addr_len)
++		return;
++
++	rcu_read_lock();
++	spin_lock_bh(&extsta->lock);
++	entry = ieee80211_extsta_entry_lookup(extsta, ip_daddr, addr_len);
++	if (!entry) {
++		spin_unlock_bh(&extsta->lock);
++		rcu_read_unlock();
++		ieee80211_extsta_change_to_mcast_da(skb);
++		return;
++	}
++	spin_unlock_bh(&extsta->lock);
++
++	ether_addr_copy(ehdr->h_dest, entry->mac);
++	if (arpptr)
++		ether_addr_copy(arpptr + offst_thaddr, entry->mac);
++	rcu_read_unlock();
++
++	return;
++}
++
++void ieee80211_extsta_change_sa(struct net_device *dev, struct sk_buff *skb)
++{
++	struct ieee80211_sub_if_data *sdata = IEEE80211_DEV_TO_SUB_IF(dev);
++	struct ethhdr *ehdr = eth_hdr(skb);
++
++	switch (be16_to_cpu(ehdr->h_proto)) {
++	case ETH_P_ARP:
++		ieee80211_extsta_change_arp_sa(sdata, skb);
++		return;
++	case ETH_P_IP:
++		ieee80211_extsta_change_ipv4_sa(sdata, skb);
++		return;
++	case ETH_P_IPV6:
++		ieee80211_extsta_change_ipv6_sa(sdata, skb);
++		return;
++	default:
++		return;
++	}
++}
++
++static void ieee80211_extsta_entry_free(void *ptr, void *tblptr)
++{
++	struct extsta_entry *entry = ptr;
++
++	if(!entry)
++		return;
++
++	kfree_rcu(entry, rcu);
++}
++
++void ieee80211_extsta_uninit(struct ieee80211_sub_if_data *sdata)
++{
++	struct extsta *extsta = &sdata->extsta;
++
++	rhashtable_free_and_destroy(&extsta->rhead,
++				    ieee80211_extsta_entry_free, NULL);
++}
++
++void ieee80211_extsta_init(struct ieee80211_sub_if_data *sdata)
++{
++	struct extsta *extsta = &sdata->extsta;
++
++	spin_lock_init(&extsta->lock);
++	rhashtable_init(&extsta->rhead, &extsta_rht_params);
++}
+--- /dev/null
++++ b/net/mac80211/extsta.h
+@@ -0,0 +1,41 @@
++/*
++ * Copyright (c) 2018, The Linux Foundation. All rights reserved.
++ *
++ * Permission to use, copy, modify, and/or distribute this software for any
++ * purpose with or without fee is hereby granted, provided that the above
++ * copyright notice and this permission notice appear in all copies.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
++ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ */
++
++#ifndef _MAC80211_EXTAP_H
++#define _MAC80211_EXTAP_H
++
++#include <linux/rhashtable.h>
++
++struct extsta_entry {
++	u8 addr[16];
++	struct rhash_head rhash;
++	size_t addr_len;
++	u8 mac[ETH_ALEN];
++	unsigned long last_active_ts;
++	struct rcu_head rcu;
++};
++
++struct extsta {
++	struct rhashtable rhead;
++	spinlock_t lock;
++};
++
++void ieee80211_extsta_change_da(struct net_device *dev, struct sk_buff *skb);
++void ieee80211_extsta_change_sa(struct net_device *dev, struct sk_buff *skb);
++void ieee80211_extsta_uninit(struct ieee80211_sub_if_data *sdata);
++void ieee80211_extsta_init(struct ieee80211_sub_if_data *sdata);
++
++#endif
+--- a/net/mac80211/ieee80211_i.h
++++ b/net/mac80211/ieee80211_i.h
+@@ -35,6 +35,7 @@
+ #include "key.h"
+ #include "sta_info.h"
+ #include "debug.h"
++#include "extsta.h"
+ 
+ extern const struct cfg80211_ops mac80211_config_ops;
+ 
+@@ -982,6 +983,9 @@ struct ieee80211_sub_if_data {
+ 
+ 	bool data_80211_encap_offloaded;
+ 
++	bool extsta_enabled;
++	struct extsta extsta;
++
+ 	/* must be last, dynamically sized area in this! */
+ 	struct ieee80211_vif vif;
+ };
+@@ -1907,6 +1911,10 @@ void ieee80211_xmit(struct ieee80211_sub
+ void __ieee80211_tx_skb_tid_band(struct ieee80211_sub_if_data *sdata,
+ 				 struct sk_buff *skb, int tid,
+ 				 enum nl80211_band band);
++bool ieee80211_multicast_to_unicast(struct sk_buff *skb,
++				    struct net_device *dev);
++void ieee80211_convert_to_unicast(struct sk_buff *skb, struct net_device *dev,
++				  struct sk_buff_head *queue);
+ 
+ int ieee80211_lookup_ra_sta(struct ieee80211_sub_if_data *sdata,
+ 			    struct sk_buff *skb,
+--- a/net/mac80211/iface.c
++++ b/net/mac80211/iface.c
+@@ -28,6 +28,10 @@
+ #include "driver-ops.h"
+ #include "wme.h"
+ #include "rate.h"
++#include "extsta.h"
++
++static bool extsta;
++module_param(extsta, bool, 0644);
+ 
+ bool is_nss_enable = true;
+ module_param(is_nss_enable, bool, 0644);
+@@ -1143,6 +1147,9 @@ static void ieee80211_teardown_sdata(str
+ 
+ 	if (ieee80211_vif_is_mesh(&sdata->vif))
+ 		ieee80211_mesh_teardown_sdata(sdata);
++
++	if (sdata->extsta_enabled)
++		ieee80211_extsta_uninit(sdata);
+ }
+ 
+ static void ieee80211_uninit(struct net_device *dev)
+@@ -1248,6 +1255,51 @@ static const struct net_device_ops ieee8
+ #endif
+ };
+ 
++static netdev_tx_t ieee80211_subif_start_xmit_extsta(struct sk_buff *skb,
++						    struct net_device *dev)
++{
++	if (unlikely(ieee80211_multicast_to_unicast(skb, dev))) {
++		struct sk_buff_head queue;
++
++		__skb_queue_head_init(&queue);
++		ieee80211_convert_to_unicast(skb, dev, &queue);
++		while ((skb = __skb_dequeue(&queue))) {
++			skb = skb_unshare(skb, GFP_ATOMIC);
++			if (!skb)
++				continue;
++			ieee80211_extsta_change_sa(dev, skb);
++			__ieee80211_subif_start_xmit(skb, dev, 0);
++		}
++	} else {
++		skb = skb_share_check(skb, GFP_ATOMIC);
++		if (!skb)
++			goto out;
++		skb = skb_unshare(skb, GFP_ATOMIC);
++		if (!skb)
++			goto out;
++		ieee80211_extsta_change_sa(dev, skb);
++		__ieee80211_subif_start_xmit(skb, dev, 0);
++	}
++
++out:
++	return NETDEV_TX_OK;
++}
++
++static const struct net_device_ops ieee80211_dataif_extsta_ops = {
++	.ndo_open		= ieee80211_open,
++	.ndo_stop		= ieee80211_stop,
++	.ndo_uninit		= ieee80211_uninit,
++	.ndo_start_xmit		= ieee80211_subif_start_xmit_extsta,
++	.ndo_set_rx_mode	= ieee80211_set_multicast_list,
++	.ndo_set_mac_address 	= ieee80211_change_mac,
++	.ndo_select_queue	= ieee80211_netdev_select_queue,
++#if LINUX_VERSION_IS_GEQ(4,11,0)
++        .ndo_get_stats64        = ieee80211_get_stats64,
++#else
++        .ndo_get_stats64 = bp_ieee80211_get_stats64,
++#endif
++};
++
+ #if LINUX_VERSION_IS_GEQ(3,14,0) || \
+     (LINUX_VERSION_CODE == KERNEL_VERSION(3,13,11) && UTS_UBUNTU_RELEASE_ABI > 30)
+ static u16 ieee80211_monitor_select_queue(struct net_device *dev,
+@@ -1555,6 +1607,7 @@ static void ieee80211_setup_sdata(struct
+ 	sdata->vif.type = type;
+ 	sdata->vif.p2p = false;
+ 	sdata->wdev.iftype = type;
++	sdata->extsta_enabled = false;
+ 
+ 	sdata->control_port_protocol = cpu_to_be16(ETH_P_PAE);
+ 	sdata->control_port_no_encrypt = false;
+@@ -1599,6 +1652,10 @@ static void ieee80211_setup_sdata(struct
+ 		/* fall through */
+ 	case NL80211_IFTYPE_STATION:
+ 		sdata->vif.bss_conf.bssid = sdata->u.mgd.bssid;
++		if (extsta) {
++			sdata->extsta_enabled = true;
++			sdata->dev->netdev_ops = &ieee80211_dataif_extsta_ops;
++		}
+ 		ieee80211_sta_setup_sdata(sdata);
+ 		break;
+ 	case NL80211_IFTYPE_OCB:
+@@ -2028,10 +2085,19 @@ int ieee80211_if_add(struct ieee80211_lo
+ 	if (ndev) {
+ 		if (params) {
+ 			ndev->ieee80211_ptr->use_4addr = params->use_4addr;
++
++			if (sdata->extsta_enabled && params->use_4addr) {
++				free_netdev(ndev);
++				return -EINVAL;
++			}
++
+ 			if (type == NL80211_IFTYPE_STATION)
+ 				sdata->u.mgd.use_4addr = params->use_4addr;
+ 		}
+ 
++		ndev->ieee80211_ptr->use_3addr_sta_bridge =
++						sdata->extsta_enabled;
++
+ 		ndev->features |= local->hw.netdev_features;
+ 
+ 		netdev_set_default_ethtool_ops(ndev, &ieee80211_ethtool_ops);
+--- a/net/mac80211/mlme.c
++++ b/net/mac80211/mlme.c
+@@ -4185,6 +4185,9 @@ void ieee80211_sta_setup_sdata(struct ie
+ 	spin_lock_init(&ifmgd->teardown_lock);
+ 	ifmgd->teardown_skb = NULL;
+ 	ifmgd->orig_teardown_skb = NULL;
++
++	if (sdata->extsta_enabled)
++		ieee80211_extsta_init(sdata);
+ }
+ 
+ /* scan finished notification */
+--- a/net/mac80211/rx.c
++++ b/net/mac80211/rx.c
+@@ -34,6 +34,7 @@
+ #include "wme.h"
+ #include "rate.h"
+ #include "debugfs_sta.h"
++#include "extsta.h"
+ 
+ extern unsigned int mac80211_reorder_timeout;
+ 
+@@ -2339,6 +2340,10 @@ static void ieee80211_deliver_skb_to_loc
+ 					 be16_to_cpu(skb->protocol), noencrypt);
+ 		dev_kfree_skb(skb);
+ 	} else {
++		skb_reset_network_header(skb);
++		if (sdata->extsta_enabled)
++			ieee80211_extsta_change_da(dev, skb);
++
+ 		/* deliver to local stack */
+ 		if (rx->napi)
+ 			napi_gro_receive(rx->napi, skb);
+--- a/net/mac80211/tx.c
++++ b/net/mac80211/tx.c
+@@ -3679,8 +3679,8 @@ static int ieee80211_change_da(struct sk
+ 	return 0;
+ }
+ 
+-static bool ieee80211_multicast_to_unicast(struct sk_buff *skb,
+-					   struct net_device *dev)
++bool ieee80211_multicast_to_unicast(struct sk_buff *skb,
++				    struct net_device *dev)
+ {
+ 	struct ieee80211_sub_if_data *sdata = IEEE80211_DEV_TO_SUB_IF(dev);
+ 	const struct ethhdr *eth = (void *)skb->data;
+@@ -3722,7 +3722,7 @@ static bool ieee80211_multicast_to_unica
+ 	return true;
+ }
+ 
+-static void
++void
+ ieee80211_convert_to_unicast(struct sk_buff *skb, struct net_device *dev,
+ 			     struct sk_buff_head *queue)
+ {
+@@ -3978,6 +3978,18 @@ netdev_tx_t ieee80211_subif_8023_start_x
+ 		return NETDEV_TX_OK;
+ 	}
+ 
++	if (sdata->extsta_enabled) {
++		skb = skb_share_check(skb, GFP_ATOMIC);
++		if (!skb)
++			return NETDEV_TX_OK;
++
++		skb = skb_unshare(skb, GFP_ATOMIC);
++		if (!skb)
++			return NETDEV_TX_OK;
++
++		ieee80211_extsta_change_sa(dev, skb);
++	}
++
+ 	rcu_read_lock();
+ 
+ 	if (ieee80211_lookup_ra_sta(sdata, skb, &sta))
+--- a/net/wireless/core.c
++++ b/net/wireless/core.c
+@@ -1205,7 +1205,8 @@ static int cfg80211_netdev_notifier_call
+ 		/* allow mac80211 to determine the timeout */
+ 		wdev->ps_timeout = -1;
+ 
+-		if ((wdev->iftype == NL80211_IFTYPE_STATION ||
++		if (((wdev->iftype == NL80211_IFTYPE_STATION &&
++		      !wdev->use_3addr_sta_bridge) ||
+ 		     wdev->iftype == NL80211_IFTYPE_P2P_CLIENT ||
+ 		     wdev->iftype == NL80211_IFTYPE_ADHOC) && !wdev->use_4addr)
+ 			dev->priv_flags |= IFF_DONT_BRIDGE;
+--- a/net/wireless/util.c
++++ b/net/wireless/util.c
+@@ -904,6 +904,10 @@ int cfg80211_change_iface(struct cfg8021
+ 	     ntype == NL80211_IFTYPE_P2P_CLIENT))
+ 		return -EBUSY;
+ 
++	if (ntype == NL80211_IFTYPE_STATION && params->use_4addr &&
++	    dev->ieee80211_ptr->use_3addr_sta_bridge)
++		return -EINVAL;
++
+ 	if (ntype != otype) {
+ 		dev->ieee80211_ptr->use_4addr = false;
+ 		dev->ieee80211_ptr->mesh_id_up_len = 0;

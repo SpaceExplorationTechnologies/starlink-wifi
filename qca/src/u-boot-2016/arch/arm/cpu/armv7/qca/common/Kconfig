@@ -1,0 +1,3 @@
+config QCA_COMMON
+	bool "QCA Common IPs"
+

@@ -1,0 +1,55 @@
+--- a/programs/pluto/adns.c
++++ b/programs/pluto/adns.c
+@@ -168,7 +168,11 @@
+  * __RES was 19960801 in RHL6.2, an old resolver.
+  */
+ 
++#if defined(__UCLIBC__) || defined(__GLIBC__)
+ #undef OLD_RESOLVER
++#else
++#define OLD_RESOLVER
++#endif
+ 
+ #if (__RES) <= 19960801
+ # define OLD_RESOLVER	1
+--- a/programs/pluto/sysdep_linux.c
++++ b/programs/pluto/sysdep_linux.c
+@@ -17,12 +17,13 @@
+  * for more details.
+  */
+ 
++#define _GNU_SOURCE
+ #include <stddef.h>
+ #include <string.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <errno.h>
+-#include <wait.h>
++#include <sys/wait.h>
+ #include <unistd.h>
+ #include <fcntl.h>
+ #include <sys/ioctl.h>
+@@ -130,7 +131,11 @@
+          * Any used by library routines (perhaps the resolver or syslog)
+          * will remain.
+          */
++#if defined(__UCLIBC__) || defined(__GLIBC__)
+ 	__sighandler_t savesig;
++#else
++	sighandler_t savesig;
++#endif
+         FILE *f;
+ 
+ 	savesig = signal(SIGCHLD, SIG_DFL);
+--- a/lib/libipsecconf/parser.l
++++ b/lib/libipsecconf/parser.l
+@@ -36,6 +36,9 @@
+ 
+ #define MAX_INCLUDE_DEPTH  10
+ 
++#define GLOB_BRACE	(1 << 10) /* Expand "{a,b}" to "a" "b". */
++#define GLOB_NOMAGIC	(1 << 11) /* If no magic chars, return the pattern. */
++
+ char rootdir[PATH_MAX];      /* when evaluating paths, prefix this to them */
+ char rootdir2[PATH_MAX];     /* or... try this one too */
+ 

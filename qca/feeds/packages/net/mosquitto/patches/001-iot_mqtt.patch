@@ -1,0 +1,199 @@
+Index: mosquitto-1.4.8/client/sub_client.c
+===================================================================
+--- mosquitto-1.4.8.orig/client/sub_client.c
++++ mosquitto-1.4.8/client/sub_client.c
+@@ -19,6 +19,7 @@ Contributors:
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <syslog.h>
+ #ifndef WIN32
+ #include <unistd.h>
+ #else
+@@ -35,9 +36,20 @@ int msg_count = 0;
+ 
+ void my_message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_message *message)
+ {
++	syslog(LOG_INFO," [MQTT]: Message callback ");
+ 	struct mosq_config *cfg;
+ 	int i;
+ 	bool res;
++	int count = 0;
++	char* param = NULL;
++	char* state = NULL;
++	char* *token;
++	char* tmp;
++	char iot_cmd[256];
++	char pub_cmd[1024];
++	char rep_message[1024];
++	char pub_topic[1024];
++	const char delim[] = ":\",{}";
+ 
+ 	if(process_messages == false) return;
+ 
+@@ -52,10 +64,35 @@ void my_message_callback(struct mosquitt
+ 		}
+ 	}
+ 
++	strncpy(pub_topic,message->topic,sizeof(pub_topic));
++	pub_topic[strlen(message->topic) - 6]  = '\0';
++
+ 	if(cfg->verbose){
+ 		if(message->payloadlen){
+-			printf("%s ", message->topic);
++			syslog(LOG_INFO,"[MQTT]:Subscribed to : %s\n ", message->topic);
+ 			fwrite(message->payload, 1, message->payloadlen, stdout);
++			if(cfg->iot) {
++				tmp = message->payload;
++				while(( token = strtok_r(tmp,delim,&tmp))) {
++					if(count == 5)
++						param = token;
++					else if(count == 6)
++						state = token;
++					count++;
++				}
++				snprintf(iot_cmd,sizeof(iot_cmd),"/usr/meeami/iotutils LIGHT_GROUP_COMMAND %s %s",param,state);
++				puts(iot_cmd);
++				system(iot_cmd);
++				snprintf(rep_message,sizeof(rep_message),"\"{\\\"state\\\": {\\\"reported\\\": {\\\"%s\\\":\\\"%s\\\"}}}\"", param, state);
++				#ifdef WITH_TLS
++				snprintf(pub_cmd,sizeof(pub_cmd),"mosquitto_pub --cert %s --key %s --cafile %s -h %s -p %d -t \\%s -m %s -d",
++					cfg->certfile, cfg->keyfile,cfg->cafile, cfg->host, cfg->port, pub_topic , rep_message);
++				syslog(LOG_INFO,"[MQTT]:Publishing device state to %s\n",pub_topic);
++				puts(pub_cmd);
++				syslog(LOG_INFO,"[MQTT]:%s",pub_cmd);
++				system(pub_cmd);
++				#endif
++			}
+ 			if(cfg->eol){
+ 				printf("\n");
+ 			}
+@@ -71,6 +108,28 @@ void my_message_callback(struct mosquitt
+ 			if(cfg->eol){
+ 				printf("\n");
+ 			}
++			if(cfg->iot) {
++				tmp = message->payload;
++				while(( token = strtok_r(tmp,delim,&tmp))) {
++					if(count == 5)
++						param = token;
++					else if(count == 6)
++						state = token;
++					count++;
++				}
++				snprintf(iot_cmd,sizeof(iot_cmd),"/usr/meeami/iotutils LIGHT_GROUP_COMMAND %s %s",param,state);
++				puts(iot_cmd);
++				system(iot_cmd);
++				snprintf(rep_message,sizeof(rep_message),"\"{\\\"state\\\": {\\\"reported\\\": {\\\"%s\\\":\\\"%s\\\"}}}\"", param, state);
++				#ifdef WITH_TLS
++				snprintf(pub_cmd,sizeof(pub_cmd),"mosquitto_pub --cert %s --key %s --cafile %s -h %s -p %d -t \\%s -m %s -d",
++					cfg->certfile, cfg->keyfile,cfg->cafile, cfg->host, cfg->port, pub_topic, rep_message);
++				syslog(LOG_INFO,"[MQTT]:Publishing device state to %s\n",pub_topic);
++				puts(pub_cmd);
++				syslog(LOG_INFO,"[MQTT]:%s",pub_cmd);
++				system(pub_cmd);
++				#endif
++			}
+ 			fflush(stdout);
+ 		}
+ 	}
+@@ -98,6 +157,7 @@ void my_connect_callback(struct mosquitt
+ 	}else{
+ 		if(result && !cfg->quiet){
+ 			fprintf(stderr, "%s\n", mosquitto_connack_string(result));
++			syslog(LOG_INFO," [MQTT]:Connect callback - subscription failed");
+ 		}
+ 	}
+ }
+@@ -173,6 +233,7 @@ void print_usage(void)
+ 	printf(" -T : topic string to filter out of results. May be repeated.\n");
+ 	printf(" -u : provide a username (requires MQTT 3.1 broker)\n");
+ 	printf(" -v : print published messages verbosely.\n");
++	printf(" -iot: enable triggering the IotControl App through MQTT subscription.\n");
+ 	printf(" -V : specify the version of the MQTT protocol to use when connecting.\n");
+ 	printf("      Can be mqttv31 or mqttv311. Defaults to mqttv31.\n");
+ 	printf(" --help : display this message.\n");
+@@ -254,6 +315,17 @@ int main(int argc, char *argv[])
+ 		mosquitto_log_callback_set(mosq, my_log_callback);
+ 		mosquitto_subscribe_callback_set(mosq, my_subscribe_callback);
+ 	}
++
++	syslog(LOG_INFO,"[MQTT]:Client id : %s",cfg.id);
++	syslog(LOG_INFO,"[MQTT]:Host : %s",cfg.host);
++	syslog(LOG_INFO,"[MQTT]:Port : %d",cfg.port);
++	#ifdef WITH_TLS
++	syslog(LOG_INFO,"[MQTT]:Cafile : %s",cfg.cafile);
++	syslog(LOG_INFO,"[MQTT]:Cert : %s",cfg.certfile);
++	syslog(LOG_INFO,"[MQTT]:Key : %s",cfg.keyfile);
++	#endif
++	syslog(LOG_INFO,"[MQTT]:Topic : %s",cfg.topics[0]);
++
+ 	mosquitto_connect_callback_set(mosq, my_connect_callback);
+ 	mosquitto_message_callback_set(mosq, my_message_callback);
+ 
+Index: mosquitto-1.4.8/src/conf.c
+===================================================================
+--- mosquitto-1.4.8.orig/src/conf.c
++++ mosquitto-1.4.8/src/conf.c
+@@ -206,6 +206,7 @@ void mqtt3_config_init(struct mqtt3_conf
+ 	config->auth_plugin = NULL;
+ 	config->verbose = false;
+ 	config->message_size_limit = 0;
++	config->iot = false;
+ }
+ 
+ void mqtt3_config_cleanup(struct mqtt3_config *config)
+@@ -316,6 +317,7 @@ static void print_usage(void)
+ 	printf(" -p : start the broker listening on the specified port.\n");
+ 	printf("      Not recommended in conjunction with the -c option.\n");
+ 	printf(" -v : verbose mode - enable all logging types. This overrides\n");
++	printf(" -iot : Enable iotcontrol with the MQTT subscription.\n");
+ 	printf("      any logging options given in the config file.\n");
+ 	printf("\nSee http://mosquitto.org/ for more information.\n\n");
+ }
+@@ -367,6 +369,8 @@ int mqtt3_config_parse_args(struct mqtt3
+ 			i++;
+ 		}else if(!strcmp(argv[i], "-v") || !strcmp(argv[i], "--verbose")){
+ 			config->verbose = true;
++		}else if(!strcmp(argv[i], "-iot") || !strcmp(argv[i],"--iotcontrol")){
++			config->iot = true;
+ 		}else{
+ 			fprintf(stderr, "Error: Unknown option '%s'.\n",argv[i]);
+ 			print_usage();
+Index: mosquitto-1.4.8/src/mosquitto_broker.h
+===================================================================
+--- mosquitto-1.4.8.orig/src/mosquitto_broker.h
++++ mosquitto-1.4.8/src/mosquitto_broker.h
+@@ -136,6 +136,7 @@ struct mqtt3_config {
+ 	bool upgrade_outgoing_qos;
+ 	char *user;
+ 	bool verbose;
++	bool iot;
+ #ifdef WITH_WEBSOCKETS
+ 	int websockets_log_level;
+ 	bool have_websockets_listener;
+Index: mosquitto-1.4.8/client/client_shared.h
+===================================================================
+--- mosquitto-1.4.8.orig/client/client_shared.h
++++ mosquitto-1.4.8/client/client_shared.h
+@@ -78,6 +78,7 @@ struct mosq_config {
+ 	char **filter_outs; /* sub */
+ 	int filter_out_count; /* sub */
+ 	bool verbose; /* sub */
++	bool iot;
+ 	bool eol; /* sub */
+ 	int msg_count; /* sub */
+ #ifdef WITH_SOCKS
+Index: mosquitto-1.4.8/client/client_shared.c
+===================================================================
+--- mosquitto-1.4.8.orig/client/client_shared.c
++++ mosquitto-1.4.8/client/client_shared.c
+@@ -629,6 +629,8 @@ int client_config_line_proc(struct mosq_
+ 				goto unknown_option;
+ 			}
+ 			cfg->verbose = 1;
++		}else if(!strcmp(argv[i], "-iot") || !strcmp(argv[i], "--iotcontrol")){
++			cfg->iot = 1;
+ 		}else{
+ 			goto unknown_option;
+ 		}

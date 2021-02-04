@@ -1,0 +1,170 @@
+--- a/include/net/mac80211.h
++++ b/include/net/mac80211.h
+@@ -518,6 +518,11 @@ struct ieee80211_mu_group_data {
+  *	threshold event and can't be enabled simultaneously with it.
+  * @cqm_rssi_high: Connection quality monitor RSSI upper threshold.
+  * @cqm_rssi_hyst: Connection quality monitor RSSI hysteresis
++ * @cqm_txrate_low: Connection quality monitor TX RATE lower threshold, a zero value
++ *	implies disabled. As with the cfg80211 callback, a change here should
++ *	cause an event to be sent indicating where the current value is in
++ *	relation to the newly configured threshold.
++ * @cqm_txrate_high: Connection quality monitor TX RATE upper threshold.
+  * @arp_addr_list: List of IPv4 addresses for hardware ARP filtering. The
+  *	may filter ARP queries targeted for other addresses than listed here.
+  *	The driver must allow ARP queries targeted for all address listed here
+@@ -578,6 +583,8 @@ struct ieee80211_bss_conf {
+ 	u32 cqm_rssi_hyst;
+ 	s32 cqm_rssi_low;
+ 	s32 cqm_rssi_high;
++	u32 cqm_txrate_low;
++	u32 cqm_txrate_high;
+ 	struct cfg80211_chan_def chandef;
+ 	struct ieee80211_mu_group_data mu_group;
+ 	__be32 arp_addr_list[IEEE80211_BSS_ARP_ADDR_LIST_LEN];
+@@ -1436,6 +1443,7 @@ enum ieee80211_vif_flags {
+ 	IEEE80211_VIF_SUPPORTS_CQM_RSSI		= BIT(1),
+ 	IEEE80211_VIF_SUPPORTS_UAPSD		= BIT(2),
+ 	IEEE80211_VIF_GET_NOA_UPDATE		= BIT(3),
++	IEEE80211_VIF_SUPPORTS_CQM_TX_RATE      = BIT(4),
+ };
+ 
+ /**
+@@ -5420,6 +5428,24 @@ void ieee80211_cqm_rssi_notify(struct ieee80211_vif *vif, const u8 *peer,
+ 			       gfp_t gfp);
+ 
+ /**
++ * ieee80211_cqm_tx_rate_notify - inform a configured connection quality
++ *	monitoringtx_rate threshold triggered
++ *
++ * @vif: &struct ieee80211_vif pointer from the add_interface callback.
++ * @peer: peer's MAC address
++ * @txrate_event: the tx_rate trigger event type
++ * @txrate_level: new tx_rate level value or 0 if not available
++ * @gfp: context flags
++ *
++ * When the %IEEE80211_VIF_SUPPORTS_CQM_TX_RATE is set, and a connection quality
++ * monitoring is configured with an tx_rate threshold, the driver will inform
++ * whenever the tx_rate level reaches the threshold.
++ */
++void ieee80211_cqm_tx_rate_notify(struct ieee80211_vif *vif, const u8 *peer,
++			enum nl80211_cqm_txrate_threshold_event txrate_event,
++			u32 txrate_level, gfp_t gfp);
++
++/**
+  * ieee80211_cqm_beacon_loss_notify - inform CQM of beacon loss
+  *
+  * @vif: &struct ieee80211_vif pointer from the add_interface callback.
+--- a/net/mac80211/cfg.c
++++ b/net/mac80211/cfg.c
+@@ -2757,6 +2757,37 @@ static int ieee80211_set_cqm_rssi_range_config(struct wiphy *wiphy,
+ 	return 0;
+ }
+ 
++static int ieee80211_set_cqm_tx_rate_config(struct wiphy *wiphy,
++					    struct net_device *dev,
++					    u32 low_txrate_thold,
++					    u32 high_txrate_thold)
++{
++	struct ieee80211_sub_if_data *sdata = IEEE80211_DEV_TO_SUB_IF(dev);
++	struct ieee80211_vif *vif = &sdata->vif;
++	struct ieee80211_bss_conf *bss_conf = &vif->bss_conf;
++
++	if (low_txrate_thold == bss_conf->cqm_txrate_low &&
++	    high_txrate_thold == bss_conf->cqm_txrate_high)
++		return 0;
++
++	if (!(sdata->vif.driver_flags & IEEE80211_VIF_SUPPORTS_CQM_TX_RATE))
++		return -EOPNOTSUPP;
++
++	bss_conf->cqm_txrate_low = low_txrate_thold;
++	bss_conf->cqm_txrate_high = high_txrate_thold;
++	sdata->u.mgd.last_cqm_event_signal = 0;
++
++	/* tell the driver upon association, unless already associated
++	 * if AP, always tell the driver.
++	 */
++	if (((vif->type != NL80211_IFTYPE_AP && sdata->u.mgd.associated) ||
++	    (vif->type == NL80211_IFTYPE_AP)) &&
++	    sdata->vif.driver_flags & IEEE80211_VIF_SUPPORTS_CQM_TX_RATE)
++		ieee80211_bss_info_change_notify(sdata, BSS_CHANGED_CQM);
++
++	return 0;
++}
++
+ static int ieee80211_set_bitrate_mask(struct wiphy *wiphy,
+ 				      struct net_device *dev,
+ 				      const u8 *addr,
+@@ -3772,6 +3803,7 @@ const struct cfg80211_ops mac80211_config_ops = {
+ 	.mgmt_tx_cancel_wait = ieee80211_mgmt_tx_cancel_wait,
+ 	.set_cqm_rssi_config = ieee80211_set_cqm_rssi_config,
+ 	.set_cqm_rssi_range_config = ieee80211_set_cqm_rssi_range_config,
++	.set_cqm_tx_rate_config = ieee80211_set_cqm_tx_rate_config,
+ 	.mgmt_frame_register = ieee80211_mgmt_frame_register,
+ 	.set_antenna = ieee80211_set_antenna,
+ 	.get_antenna = ieee80211_get_antenna,
+--- a/net/mac80211/mlme.c
++++ b/net/mac80211/mlme.c
+@@ -5077,6 +5077,18 @@ void ieee80211_cqm_rssi_notify(struct ieee80211_vif *vif, const u8 *peer,
+ }
+ EXPORT_SYMBOL(ieee80211_cqm_rssi_notify);
+ 
++void ieee80211_cqm_tx_rate_notify(struct ieee80211_vif *vif, const u8 *peer,
++			enum nl80211_cqm_txrate_threshold_event txrate_event,
++			u32 txrate_level, gfp_t gfp)
++{
++	struct ieee80211_sub_if_data *sdata = vif_to_sdata(vif);
++
++	trace_api_cqm_tx_rate_notify(sdata, peer, txrate_event, txrate_level);
++
++	cfg80211_cqm_tx_rate_notify(sdata->dev, peer, txrate_event,
++				    txrate_level, gfp);
++}
++
+ void ieee80211_cqm_beacon_loss_notify(struct ieee80211_vif *vif, gfp_t gfp)
+ {
+ 	struct ieee80211_sub_if_data *sdata = vif_to_sdata(vif);
+--- a/net/mac80211/trace.h
++++ b/net/mac80211/trace.h
+@@ -409,6 +409,8 @@ TRACE_EVENT(drv_bss_info_changed,
+ 		__field(u16, ht_operation_mode)
+ 		__field(s32, cqm_rssi_thold);
+ 		__field(s32, cqm_rssi_hyst);
++		__field(u32, cqm_txrate_low);
++		__field(u32, cqm_txrate_high);
+ 		__field(u32, channel_width);
+ 		__field(u32, channel_cfreq1);
+ 		__dynamic_array(u32, arp_addr_list,
+@@ -2025,6 +2027,33 @@ TRACE_EVENT(api_cqm_rssi_notify,
+ 	)
+ );
+ 
++TRACE_EVENT(api_cqm_tx_rate_notify,
++	    TP_PROTO(struct ieee80211_sub_if_data *sdata, const u8 *peer,
++		     enum nl80211_cqm_txrate_threshold_event txrate_event,
++		     u32 txrate_level),
++
++	TP_ARGS(sdata, peer, txrate_event, txrate_level),
++
++	TP_STRUCT__entry(
++		VIF_ENTRY
++		__array(char, peer, ETH_ALEN)
++		__field(u32, txrate_event)
++		__field(u32, txrate_level)
++	),
++
++	TP_fast_assign(
++		VIF_ASSIGN;
++		memcpy(__entry->peer, peer, ETH_ALEN);
++		__entry->txrate_event = txrate_event;
++		__entry->txrate_level = txrate_level;
++	),
++
++	TP_printk(
++		VIF_PR_FMT ", peer: %pM event:%d txrate:%d",
++		VIF_PR_ARG, __entry->peer, __entry->txrate_event, __entry->txrate_level
++	)
++);
++
+ DEFINE_EVENT(local_sdata_evt, api_cqm_beacon_loss_notify,
+ 	TP_PROTO(struct ieee80211_local *local,
+ 		 struct ieee80211_sub_if_data *sdata),

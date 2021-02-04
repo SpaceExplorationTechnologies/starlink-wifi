@@ -1,0 +1,129 @@
+--- a/drivers/net/wireless/ath/ath10k/core.h
++++ b/drivers/net/wireless/ath/ath10k/core.h
+@@ -499,6 +499,7 @@ struct ath10k_sta {
+ 	struct ath10k_smart_ant_sta *smart_ant_sta;
+ 	u8 tpc;
+ 	u32 peer_ps_state;
++	enum nl80211_cqm_txrate_threshold_event last_event;
+ };
+ 
+ #define ATH10K_VDEV_SETUP_TIMEOUT_HZ (5 * HZ)
+@@ -561,6 +562,8 @@ struct ath10k_vif {
+ 	bool nohwcrypt;
+ 	int num_legacy_stations;
+ 	int txpower;
++	u32 txrate_low;
++	u32 txrate_high;
+ 	struct wmi_wmm_params_all_arg wmm_params;
+ 	struct work_struct ap_csa_work;
+ 	struct delayed_work connection_loss_work;
+--- a/drivers/net/wireless/ath/ath10k/htt_rx.c
++++ b/drivers/net/wireless/ath/ath10k/htt_rx.c
+@@ -2620,6 +2620,7 @@ ath10k_update_per_peer_tx_stats(struct a
+ 	struct ieee80211_chanctx_conf *conf = NULL;
+ 	u8 rate = 0, sgi;
+ 	struct rate_info *txrate = &arsta->txrate;
++	u32 tx_bitrate;
+ 	bool skip_auto_rate;
+ 
+ 	lockdep_assert_held(&ar->data_lock);
+@@ -2716,8 +2717,15 @@ ath10k_update_per_peer_tx_stats(struct a
+ 	if (peer_stats->succ_pkts)
+ 		arsta->tx_info.flags = IEEE80211_TX_STAT_ACK;
+ 
++	tx_bitrate = cfg80211_calculate_bitrate(&arsta->txrate);
++
++	if (arsta->arvif->txrate_high && (tx_bitrate < arsta->arvif->txrate_low ||
++	    tx_bitrate > arsta->arvif->txrate_high))
++		ath10k_mac_cqm_tx_rate_notify(arsta, sta->addr, tx_bitrate);
++
+ 	if (ar->debug.enable_extd_tx_stats)
+ 		ath10k_accumulate_per_peer_tx_stats(ar, arsta, peer_stats);
++
+ }
+ 
+ static void ath10k_htt_fetch_peer_stats(struct ath10k *ar,
+--- a/drivers/net/wireless/ath/ath10k/mac.c
++++ b/drivers/net/wireless/ath/ath10k/mac.c
+@@ -5002,7 +5002,8 @@ static int ath10k_add_interface(struct i
+ 	int i;
+ 	u32 vdev_param;
+ 
+-	vif->driver_flags |= IEEE80211_VIF_SUPPORTS_UAPSD;
++	vif->driver_flags |= IEEE80211_VIF_SUPPORTS_UAPSD |
++                             IEEE80211_VIF_SUPPORTS_CQM_TX_RATE;
+ 
+ 	mutex_lock(&ar->conf_mutex);
+ 
+@@ -5458,6 +5459,26 @@ static void ath10k_configure_filter(stru
+ 	mutex_unlock(&ar->conf_mutex);
+ }
+ 
++void ath10k_mac_cqm_tx_rate_notify(struct ath10k_sta *arsta, u8 *peer_macaddr,
++				   u32 txrate)
++{
++	struct ath10k_vif *arvif = arsta->arvif;
++	enum nl80211_cqm_txrate_threshold_event txrate_event;
++
++	if(!arvif->vif)
++		return;
++
++	txrate_event = (txrate < arvif->txrate_low) ?
++			NL80211_CQM_TX_RATE_THRESHOLD_EVENT_LOW :
++			NL80211_CQM_TX_RATE_THRESHOLD_EVENT_HIGH;
++
++	if (txrate_event != arsta->last_event) {
++		ieee80211_cqm_tx_rate_notify(arvif->vif, peer_macaddr,
++					     txrate_event, txrate, GFP_ATOMIC);
++		arsta->last_event = txrate_event;
++	}
++}
++
+ static void ath10k_bss_info_changed(struct ieee80211_hw *hw,
+ 				    struct ieee80211_vif *vif,
+ 				    struct ieee80211_bss_conf *info,
+@@ -5634,6 +5655,11 @@ static void ath10k_bss_info_changed(stru
+ 				    arvif->vdev_id, ret);
+ 	}
+ 
++	if (changed & BSS_CHANGED_CQM) {
++		arvif->txrate_low = info->cqm_txrate_low;
++		arvif->txrate_high = info->cqm_txrate_high;
++	}
++
+ 	mutex_unlock(&ar->conf_mutex);
+ }
+ 
+--- a/drivers/net/wireless/ath/ath10k/mac.h
++++ b/drivers/net/wireless/ath/ath10k/mac.h
+@@ -82,6 +82,8 @@ struct ieee80211_txq *ath10k_mac_txq_loo
+ 					    u16 peer_id,
+ 					    u8 tid);
+ int ath10k_mac_ext_resource_config(struct ath10k *ar, u32 val);
++void ath10k_mac_cqm_tx_rate_notify(struct ath10k_sta *arsta, u8 *peer_macaddr,
++				   u32 txrate);
+ 
+ static inline void ath10k_tx_h_seq_no(struct ieee80211_vif *vif,
+ 				      struct sk_buff *skb)
+--- a/net/mac80211/mlme.c
++++ b/net/mac80211/mlme.c
+@@ -5102,6 +5102,7 @@ void ieee80211_cqm_tx_rate_notify(struct
+ 	cfg80211_cqm_tx_rate_notify(sdata->dev, peer, txrate_event,
+ 				    txrate_level, gfp);
+ }
++EXPORT_SYMBOL(ieee80211_cqm_tx_rate_notify);
+ 
+ void ieee80211_cqm_beacon_loss_notify(struct ieee80211_vif *vif, gfp_t gfp)
+ {
+--- a/net/wireless/nl80211.c
++++ b/net/wireless/nl80211.c
+@@ -10070,6 +10070,9 @@ static int nl80211_set_cqm(struct sk_buf
+ 		u32 high_thold =
+ 			nla_get_u32(attrs[NL80211_ATTR_CQM_HIGH_TX_RATE_THOLD]);
+ 
++		if (low_thold > high_thold)
++			return -EINVAL;
++
+ 		return nl80211_set_cqm_tx_rate(info, low_thold,
+ 					       high_thold);
+ 	}

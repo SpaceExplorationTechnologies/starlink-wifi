@@ -1,0 +1,13 @@
+diff --git a/mcproxy/src/proxy/mld_sender.cpp b/mcproxy/src/proxy/mld_sender.cpp
+index 7dbc3ee..887522d 100644
+--- a/mcproxy/src/proxy/mld_sender.cpp
++++ b/mcproxy/src/proxy/mld_sender.cpp
+@@ -55,7 +55,7 @@ bool mld_sender::send_record(unsigned int if_index, mc_filter filter_mode, const
+     if (filter_mode == INCLUDE_MODE && slist.empty() ) {
+         m_sock.leave_group(gaddr, if_index);
+         return true;
+-    } else if (filter_mode == EXCLUDE_MODE || filter_mode == EXCLUDE_MODE) {
++    } else if (filter_mode == EXCLUDE_MODE || filter_mode == INCLUDE_MODE) {
+         m_sock.join_group(gaddr, if_index);
+         std::list<addr_storage> src_list;
+         for (auto & e : slist) {

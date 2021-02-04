@@ -1,0 +1,23 @@
+--- a/drivers/net/wireless/ath/ath9k/main.c
++++ b/drivers/net/wireless/ath/ath9k/main.c
+@@ -1286,7 +1286,9 @@ static int ath9k_add_interface(struct ie
+ 	an->sta = NULL;
+ 	an->vif = vif;
+ 	an->no_ps_filter = true;
+-	ath_tx_node_init(sc, an);
++
++	if (vif->txq)
++		ath_tx_node_init(sc, an);
+ 
+ 	mutex_unlock(&sc->mutex);
+ 	return 0;
+@@ -1349,7 +1351,8 @@ static void ath9k_remove_interface(struc
+ 	if (ath9k_uses_beacons(vif->type))
+ 		ath9k_beacon_remove_slot(sc, vif);
+ 
+-	ath_tx_node_cleanup(sc, &avp->mcast_node);
++	if (vif->txq)
++		ath_tx_node_cleanup(sc, &avp->mcast_node);
+ 
+ 	ath9k_calculate_summary_state(sc, avp->chanctx);
+ 

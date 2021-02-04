@@ -1,0 +1,12 @@
+--- a/drivers/net/wireless/ath/ath10k/mac.c
++++ b/drivers/net/wireless/ath/ath10k/mac.c
+@@ -8428,6 +8428,9 @@ int ath10k_mac_register(struct ath10k *ar)
+ 
+ 	ret = ath_regd_init(&ar->ath_common.regulatory, ar->hw->wiphy,
+ 			    ath10k_reg_notifier);
++#ifdef CPTCFG_ATH_USER_REGD
++	ar->hw->wiphy->reg_notifier = ath10k_reg_notifier;
++#endif
+ 	if (ret) {
+ 		ath10k_err(ar, "failed to initialise regulatory: %i\n", ret);
+ 		goto err_dfs_detector_exit;

@@ -1,0 +1,1626 @@
+From 3dbd53eee19e92ced6d22286766a674f0cbbefb1 Mon Sep 17 00:00:00 2001
+From: Ram Chandra Jangir <rjangir@codeaurora.org>
+Date: Fri, 14 Jul 2017 14:53:37 +0530
+Subject: [PATCH] add basic gcs plugin support
+
+Signed-off-by: Ram Chandra Jangir <rjangir@codeaurora.org>
+---
+ Makefile.am      |   2 +-
+ Makefile.in      |   4 +-
+ configure        |   3 +-
+ configure.ac     |   1 +
+ gcs/Makefile.am  |  14 ++
+ gcs/Makefile.in  | 593 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ gcs/gcs_plugin.c | 508 +++++++++++++++++++++++++++++++++++++++++++++++
+ 7 files changed, 1121 insertions(+), 4 deletions(-)
+ create mode 100644 gcs/Makefile.am
+ create mode 100644 gcs/Makefile.in
+ create mode 100644 gcs/gcs_plugin.c
+
+Index: alsa-plugins-1.0.28/Makefile.am
+===================================================================
+--- alsa-plugins-1.0.28.orig/Makefile.am	2017-08-30 16:45:39.673914799 -0700
++++ alsa-plugins-1.0.28/Makefile.am	2017-08-30 16:45:39.673914799 -0700
+@@ -1,4 +1,4 @@
+-SUBDIRS = oss mix usb_stream arcam-av doc
++SUBDIRS = gcs oss mix usb_stream arcam-av doc
+ if HAVE_JACK
+ SUBDIRS += jack
+ endif
+Index: alsa-plugins-1.0.28/Makefile.in
+===================================================================
+--- alsa-plugins-1.0.28.orig/Makefile.in	2017-08-30 16:45:39.673914799 -0700
++++ alsa-plugins-1.0.28/Makefile.in	2017-08-30 16:45:39.673914799 -0700
+@@ -94,7 +94,7 @@
+ ETAGS = etags
+ CTAGS = ctags
+ CSCOPE = cscope
+-DIST_SUBDIRS = oss mix usb_stream arcam-av doc jack pulse rate a52 \
++DIST_SUBDIRS = gcs oss mix usb_stream arcam-av doc jack pulse rate a52 \
+ 	rate-lavc maemo pph speex
+ DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+ distdir = $(PACKAGE)-$(VERSION)
+@@ -272,7 +272,7 @@
+ top_build_prefix = @top_build_prefix@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+-SUBDIRS = oss mix usb_stream arcam-av doc $(am__append_1) \
++SUBDIRS = gcs oss mix usb_stream arcam-av doc $(am__append_1) \
+ 	$(am__append_2) $(am__append_3) $(am__append_4) \
+ 	$(am__append_5) $(am__append_6) $(am__append_7)
+ EXTRA_DIST = gitcompile version COPYING.GPL m4/attributes.m4
+Index: alsa-plugins-1.0.28/configure
+===================================================================
+--- alsa-plugins-1.0.28.orig/configure	2017-08-30 16:45:39.673914799 -0700
++++ alsa-plugins-1.0.28/configure	2017-08-30 16:45:39.673914799 -0700
+@@ -12553,7 +12553,7 @@
+ $as_echo "$SND_PLUGINS_VERSION" >&6; }
+ 
+ 
+-ac_config_files="$ac_config_files Makefile oss/Makefile pph/Makefile jack/Makefile pulse/Makefile mix/Makefile rate/Makefile a52/Makefile rate-lavc/Makefile maemo/Makefile doc/Makefile usb_stream/Makefile speex/Makefile arcam-av/Makefile"
++ac_config_files="$ac_config_files Makefile gcs/Makefile oss/Makefile pph/Makefile jack/Makefile pulse/Makefile mix/Makefile rate/Makefile a52/Makefile rate-lavc/Makefile maemo/Makefile doc/Makefile usb_stream/Makefile speex/Makefile arcam-av/Makefile"
+ 
+ cat >confcache <<\_ACEOF
+ # This file is a shell script that caches the results of configure
+@@ -13598,6 +13598,7 @@
+     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
+     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+     "oss/Makefile") CONFIG_FILES="$CONFIG_FILES oss/Makefile" ;;
++    "gcs/Makefile") CONFIG_FILES="$CONFIG_FILES gcs/Makefile" ;;
+     "pph/Makefile") CONFIG_FILES="$CONFIG_FILES pph/Makefile" ;;
+     "jack/Makefile") CONFIG_FILES="$CONFIG_FILES jack/Makefile" ;;
+     "pulse/Makefile") CONFIG_FILES="$CONFIG_FILES pulse/Makefile" ;;
+Index: alsa-plugins-1.0.28/configure.ac
+===================================================================
+--- alsa-plugins-1.0.28.orig/configure.ac	2017-08-30 16:45:39.673914799 -0700
++++ alsa-plugins-1.0.28/configure.ac	2017-08-30 16:45:39.673914799 -0700
+@@ -175,6 +175,7 @@
+ AC_OUTPUT([
+ 	Makefile
+ 	oss/Makefile
++	gcs/Makefile
+ 	pph/Makefile
+ 	jack/Makefile
+ 	pulse/Makefile
+Index: alsa-plugins-1.0.28/gcs/Makefile.am
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ alsa-plugins-1.0.28/gcs/Makefile.am	2017-08-30 16:45:39.673914799 -0700
+@@ -0,0 +1,14 @@
++asound_module_pcm_oss_LTLIBRARIES = libasound_module_pcm_oss.la
++asound_module_ctl_oss_LTLIBRARIES = libasound_module_ctl_oss.la
++
++asound_module_pcm_ossdir = @ALSA_PLUGIN_DIR@
++asound_module_ctl_ossdir = @ALSA_PLUGIN_DIR@
++
++AM_CFLAGS = -Wall -g @ALSA_CFLAGS@
++AM_LDFLAGS = -module -avoid-version -export-dynamic -no-undefined $(LDFLAGS_NOUNDEFINED)
++
++libasound_module_pcm_oss_la_SOURCES = pcm_oss.c
++libasound_module_pcm_oss_la_LIBADD = @ALSA_LIBS@
++
++libasound_module_ctl_oss_la_SOURCES = ctl_oss.c
++libasound_module_ctl_oss_la_LIBADD = @ALSA_LIBS@
+Index: alsa-plugins-1.0.28/gcs/Makefile.in
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ alsa-plugins-1.0.28/gcs/Makefile.in	2017-08-30 16:45:39.673914799 -0700
+@@ -0,0 +1,593 @@
++# Makefile.in generated by automake 1.12.2 from Makefile.am.
++# @configure_input@
++
++# Copyright (C) 1994-2012 Free Software Foundation, Inc.
++
++# This Makefile.in is free software; the Free Software Foundation
++# gives unlimited permission to copy and/or distribute it,
++# with or without modifications, as long as this notice is preserved.
++
++# This program is distributed in the hope that it will be useful,
++# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
++# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
++# PARTICULAR PURPOSE.
++
++@SET_MAKE@
++
++VPATH = @srcdir@
++am__make_dryrun = \
++  { \
++    am__dry=no; \
++    case $$MAKEFLAGS in \
++      *\\[\ \	]*) \
++        echo 'am--echo: ; @echo "AM"  OK' | $(MAKE) -f - 2>/dev/null \
++          | grep '^AM OK$$' >/dev/null || am__dry=yes;; \
++      *) \
++        for am__flg in $$MAKEFLAGS; do \
++          case $$am__flg in \
++            *=*|--*) ;; \
++            *n*) am__dry=yes; break;; \
++          esac; \
++        done;; \
++    esac; \
++    test $$am__dry = yes; \
++  }
++pkgdatadir = $(datadir)/@PACKAGE@
++pkgincludedir = $(includedir)/@PACKAGE@
++pkglibdir = $(libdir)/@PACKAGE@
++pkglibexecdir = $(libexecdir)/@PACKAGE@
++am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
++install_sh_DATA = $(install_sh) -c -m 644
++install_sh_PROGRAM = $(install_sh) -c
++install_sh_SCRIPT = $(install_sh) -c
++INSTALL_HEADER = $(INSTALL_DATA)
++transform = $(program_transform_name)
++NORMAL_INSTALL = :
++PRE_INSTALL = :
++POST_INSTALL = :
++NORMAL_UNINSTALL = :
++PRE_UNINSTALL = :
++POST_UNINSTALL = :
++build_triplet = @build@
++host_triplet = @host@
++subdir = gcs
++DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
++	$(top_srcdir)/depcomp
++ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
++am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
++	$(top_srcdir)/configure.ac
++am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
++	$(ACLOCAL_M4)
++mkinstalldirs = $(install_sh) -d
++CONFIG_HEADER = $(top_builddir)/config.h
++CONFIG_CLEAN_FILES =
++CONFIG_CLEAN_VPATH_FILES =
++am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
++am__vpath_adj = case $$p in \
++    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
++    *) f=$$p;; \
++  esac;
++am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
++am__install_max = 40
++am__nobase_strip_setup = \
++  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
++am__nobase_strip = \
++  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
++am__nobase_list = $(am__nobase_strip_setup); \
++  for p in $$list; do echo "$$p $$p"; done | \
++  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
++  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
++    if (++n[$$2] == $(am__install_max)) \
++      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
++    END { for (dir in files) print dir, files[dir] }'
++am__base_list = \
++  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
++  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
++am__uninstall_files_from_dir = { \
++  test -z "$$files" \
++    || { test ! -d "$$dir" && test ! -f "$$dir" && test ! -r "$$dir"; } \
++    || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
++         $(am__cd) "$$dir" && rm -f $$files; }; \
++  }
++am__installdirs = "$(DESTDIR)$(asound_module_pcm_gcs_iodir)"
++LTLIBRARIES = $(asound_module_pcm_gcs_io_LTLIBRARIES)
++libasound_module_pcm_gcs_io_la_DEPENDENCIES =
++am_libasound_module_pcm_gcs_io_la_OBJECTS = gcs_plugin.lo
++libasound_module_pcm_gcs_io_la_OBJECTS =  \
++	$(am_libasound_module_pcm_gcs_io_la_OBJECTS)
++DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
++depcomp = $(SHELL) $(top_srcdir)/depcomp
++am__depfiles_maybe = depfiles
++am__mv = mv -f
++COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
++	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
++LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
++	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
++	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
++CCLD = $(CC)
++LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
++	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
++	$(LDFLAGS) -o $@
++SOURCES = $(libasound_module_pcm_gcs_io_la_SOURCES)
++DIST_SOURCES = $(libasound_module_pcm_gcs_io_la_SOURCES)
++am__can_run_installinfo = \
++  case $$AM_UPDATE_INFO_DIR in \
++    n|no|NO) false;; \
++    *) (install-info --version) >/dev/null 2>&1;; \
++  esac
++ETAGS = etags
++CTAGS = ctags
++DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
++ACLOCAL = @ACLOCAL@
++ALSA_CFLAGS = @ALSA_CFLAGS@
++ALSA_DATA_DIR = @ALSA_DATA_DIR@
++ALSA_LIBS = @ALSA_LIBS@
++ALSA_PLUGIN_DIR = @ALSA_PLUGIN_DIR@
++AMTAR = @AMTAR@
++AR = @AR@
++AUTOCONF = @AUTOCONF@
++AUTOHEADER = @AUTOHEADER@
++AUTOMAKE = @AUTOMAKE@
++AVCODEC_CFLAGS = @AVCODEC_CFLAGS@
++AVCODEC_HEADER = @AVCODEC_HEADER@
++AVCODEC_LIBS = @AVCODEC_LIBS@
++AWK = @AWK@
++CC = @CC@
++CCDEPMODE = @CCDEPMODE@
++CFLAGS = @CFLAGS@
++CPP = @CPP@
++CPPFLAGS = @CPPFLAGS@
++CYGPATH_W = @CYGPATH_W@
++DBUS_CFLAGS = @DBUS_CFLAGS@
++DBUS_LIBS = @DBUS_LIBS@
++DEFS = @DEFS@
++DEPDIR = @DEPDIR@
++DLLTOOL = @DLLTOOL@
++DSYMUTIL = @DSYMUTIL@
++DUMPBIN = @DUMPBIN@
++ECHO_C = @ECHO_C@
++ECHO_N = @ECHO_N@
++ECHO_T = @ECHO_T@
++EGREP = @EGREP@
++EXEEXT = @EXEEXT@
++FGREP = @FGREP@
++GREP = @GREP@
++INSTALL = @INSTALL@
++INSTALL_DATA = @INSTALL_DATA@
++INSTALL_PROGRAM = @INSTALL_PROGRAM@
++INSTALL_SCRIPT = @INSTALL_SCRIPT@
++INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
++JACK_CFLAGS = @JACK_CFLAGS@
++JACK_LIBS = @JACK_LIBS@
++LD = @LD@
++LDFLAGS = @LDFLAGS@
++LIBOBJS = @LIBOBJS@
++LIBS = @LIBS@
++LIBTOOL = @LIBTOOL@
++LIPO = @LIPO@
++LN_S = @LN_S@
++LTLIBOBJS = @LTLIBOBJS@
++MAINT = @MAINT@
++MAKEINFO = @MAKEINFO@
++MANIFEST_TOOL = @MANIFEST_TOOL@
++MKDIR_P = @MKDIR_P@
++NM = @NM@
++NMEDIT = @NMEDIT@
++OBJDUMP = @OBJDUMP@
++OBJEXT = @OBJEXT@
++OTOOL = @OTOOL@
++OTOOL64 = @OTOOL64@
++PACKAGE = @PACKAGE@
++PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
++PACKAGE_NAME = @PACKAGE_NAME@
++PACKAGE_STRING = @PACKAGE_STRING@
++PACKAGE_TARNAME = @PACKAGE_TARNAME@
++PACKAGE_URL = @PACKAGE_URL@
++PACKAGE_VERSION = @PACKAGE_VERSION@
++PATH_SEPARATOR = @PATH_SEPARATOR@
++PKG_CONFIG = @PKG_CONFIG@
++PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
++PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
++RANLIB = @RANLIB@
++SED = @SED@
++SET_MAKE = @SET_MAKE@
++SHELL = @SHELL@
++STRIP = @STRIP@
++VERSION = @VERSION@
++abs_builddir = @abs_builddir@
++abs_srcdir = @abs_srcdir@
++abs_top_builddir = @abs_top_builddir@
++abs_top_srcdir = @abs_top_srcdir@
++ac_ct_AR = @ac_ct_AR@
++ac_ct_CC = @ac_ct_CC@
++ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
++am__include = @am__include@
++am__leading_dot = @am__leading_dot@
++am__quote = @am__quote@
++am__tar = @am__tar@
++am__untar = @am__untar@
++bindir = @bindir@
++build = @build@
++build_alias = @build_alias@
++build_cpu = @build_cpu@
++build_os = @build_os@
++build_vendor = @build_vendor@
++builddir = @builddir@
++datadir = @datadir@
++datarootdir = @datarootdir@
++docdir = @docdir@
++dvidir = @dvidir@
++exec_prefix = @exec_prefix@
++host = @host@
++host_alias = @host_alias@
++host_cpu = @host_cpu@
++host_os = @host_os@
++host_vendor = @host_vendor@
++htmldir = @htmldir@
++includedir = @includedir@
++infodir = @infodir@
++install_sh = @install_sh@
++libdir = @libdir@
++libexecdir = @libexecdir@
++localedir = @localedir@
++localstatedir = @localstatedir@
++mandir = @mandir@
++mkdir_p = @mkdir_p@
++oldincludedir = @oldincludedir@
++pdfdir = @pdfdir@
++prefix = @prefix@
++program_transform_name = @program_transform_name@
++psdir = @psdir@
++pulseaudio_CFLAGS = @pulseaudio_CFLAGS@
++pulseaudio_LIBS = @pulseaudio_LIBS@
++samplerate_CFLAGS = @samplerate_CFLAGS@
++samplerate_LIBS = @samplerate_LIBS@
++sbindir = @sbindir@
++sharedstatedir = @sharedstatedir@
++speexdsp_CFLAGS = @speexdsp_CFLAGS@
++speexdsp_LIBS = @speexdsp_LIBS@
++srcdir = @srcdir@
++sysconfdir = @sysconfdir@
++target_alias = @target_alias@
++top_build_prefix = @top_build_prefix@
++top_builddir = @top_builddir@
++top_srcdir = @top_srcdir@
++asound_module_pcm_gcs_io_LTLIBRARIES = libasound_module_pcm_gcs_io.la
++asound_module_pcm_gcs_iodir = @ALSA_PLUGIN_DIR@
++AM_CFLAGS = -Wall -g @ALSA_CFLAGS@
++AM_LDFLAGS = -module -avoid-version -export-dynamic -no-undefined $(LDFLAGS_NOUNDEFINED)
++libasound_module_pcm_gcs_io_la_SOURCES = gcs_plugin.c
++libasound_module_pcm_gcs_io_la_LIBADD = @ALSA_LIBS@
++all: all-am
++
++.SUFFIXES:
++.SUFFIXES: .c .lo .o .obj
++$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
++	@for dep in $?; do \
++	  case '$(am__configure_deps)' in \
++	    *$$dep*) \
++	      ( cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh ) \
++	        && { if test -f $@; then exit 0; else break; fi; }; \
++	      exit 1;; \
++	  esac; \
++	done; \
++	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign oss/Makefile'; \
++	$(am__cd) $(top_srcdir) && \
++	  $(AUTOMAKE) --foreign gcs/Makefile
++.PRECIOUS: Makefile
++Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
++	@case '$?' in \
++	  *config.status*) \
++	    cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh;; \
++	  *) \
++	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)'; \
++	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe);; \
++	esac;
++
++$(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
++	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
++
++$(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
++	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
++$(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
++	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
++$(am__aclocal_m4_deps):
++install-asound_module_pcm_gcs_ioLTLIBRARIES: $(asound_module_pcm_gcs_io_LTLIBRARIES)
++	@$(NORMAL_INSTALL)
++	@list='$(asound_module_pcm_gcs_io_LTLIBRARIES)'; test -n "$(asound_module_pcm_gcs_iodir)" || list=; \
++	list2=; for p in $$list; do \
++	  if test -f $$p; then \
++	    list2="$$list2 $$p"; \
++	  else :; fi; \
++	done; \
++	test -z "$$list2" || { \
++	  echo " $(MKDIR_P) '$(DESTDIR)$(asound_module_pcm_gcs_iodir)'"; \
++	  $(MKDIR_P) "$(DESTDIR)$(asound_module_pcm_gcs_iodir)" || exit 1; \
++	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(asound_module_pcm_gcs_iodir)'"; \
++	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(asound_module_pcm_gcs_iodir)"; \
++	}
++
++uninstall-asound_module_pcm_gcs_ioLTLIBRARIES:
++	@$(NORMAL_UNINSTALL)
++	@list='$(asound_module_pcm_gcs_io_LTLIBRARIES)'; test -n "$(asound_module_pcm_gcs_iodir)" || list=; \
++	for p in $$list; do \
++	  $(am__strip_dir) \
++	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(asound_module_pcm_gcs_iodir)/$$f'"; \
++	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(asound_module_pcm_gcs_iodir)/$$f"; \
++	done
++
++clean-asound_module_pcm_gcs_ioLTLIBRARIES:
++	-test -z "$(asound_module_pcm_gcs_io_LTLIBRARIES)" || rm -f $(asound_module_pcm_gcs_io_LTLIBRARIES)
++	@list='$(asound_module_pcm_gcs_io_LTLIBRARIES)'; \
++	locs=`for p in $$list; do echo $$p; done | \
++	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
++	      sort -u`; \
++	test -z "$$locs" || { \
++	  echo rm -f $${locs}; \
++	  rm -f $${locs}; \
++	}
++libasound_module_pcm_gcs_io.la: $(libasound_module_pcm_gcs_io_la_OBJECTS) $(libasound_module_pcm_gcs_io_la_DEPENDENCIES) $(EXTRA_libasound_module_pcm_gcs_io_la_DEPENDENCIES) 
++	$(LINK) -rpath $(asound_module_pcm_gcs_iodir) $(libasound_module_pcm_gcs_io_la_OBJECTS) $(libasound_module_pcm_gcs_io_la_LIBADD) $(LIBS)
++
++mostlyclean-compile:
++	-rm -f *.$(OBJEXT)
++
++distclean-compile:
++	-rm -f *.tab.c
++
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pcm_gcs_io.Plo@am__quote@
++
++.c.o:
++@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
++@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
++@am__fastdepCC_FALSE@	$(COMPILE) -c $<
++
++.c.obj:
++@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
++@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
++@am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
++
++.c.lo:
++@am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
++@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
++@am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
++
++mostlyclean-libtool:
++	-rm -f *.lo
++
++clean-libtool:
++	-rm -rf .libs _libs
++
++ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
++	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
++	unique=`for i in $$list; do \
++	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
++	  done | \
++	  $(AWK) '{ files[$$0] = 1; nonempty = 1; } \
++	      END { if (nonempty) { for (i in files) print i; }; }'`; \
++	mkid -fID $$unique
++tags: TAGS
++
++TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
++		$(TAGS_FILES) $(LISP)
++	set x; \
++	here=`pwd`; \
++	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
++	unique=`for i in $$list; do \
++	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
++	  done | \
++	  $(AWK) '{ files[$$0] = 1; nonempty = 1; } \
++	      END { if (nonempty) { for (i in files) print i; }; }'`; \
++	shift; \
++	if test -z "$(ETAGS_ARGS)$$*$$unique"; then :; else \
++	  test -n "$$unique" || unique=$$empty_fix; \
++	  if test $$# -gt 0; then \
++	    $(ETAGS) $(ETAGSFLAGS) $(AM_ETAGSFLAGS) $(ETAGS_ARGS) \
++	      "$$@" $$unique; \
++	  else \
++	    $(ETAGS) $(ETAGSFLAGS) $(AM_ETAGSFLAGS) $(ETAGS_ARGS) \
++	      $$unique; \
++	  fi; \
++	fi
++ctags: CTAGS
++CTAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
++		$(TAGS_FILES) $(LISP)
++	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
++	unique=`for i in $$list; do \
++	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
++	  done | \
++	  $(AWK) '{ files[$$0] = 1; nonempty = 1; } \
++	      END { if (nonempty) { for (i in files) print i; }; }'`; \
++	test -z "$(CTAGS_ARGS)$$unique" \
++	  || $(CTAGS) $(CTAGSFLAGS) $(AM_CTAGSFLAGS) $(CTAGS_ARGS) \
++	     $$unique
++
++GTAGS:
++	here=`$(am__cd) $(top_builddir) && pwd` \
++	  && $(am__cd) $(top_srcdir) \
++	  && gtags -i $(GTAGS_ARGS) "$$here"
++
++cscopelist:  $(HEADERS) $(SOURCES) $(LISP)
++	list='$(SOURCES) $(HEADERS) $(LISP)'; \
++	case "$(srcdir)" in \
++	  [\\/]* | ?:[\\/]*) sdir="$(srcdir)" ;; \
++	  *) sdir=$(subdir)/$(srcdir) ;; \
++	esac; \
++	for i in $$list; do \
++	  if test -f "$$i"; then \
++	    echo "$(subdir)/$$i"; \
++	  else \
++	    echo "$$sdir/$$i"; \
++	  fi; \
++	done >> $(top_builddir)/cscope.files
++
++distclean-tags:
++	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
++
++distdir: $(DISTFILES)
++	@srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
++	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
++	list='$(DISTFILES)'; \
++	  dist_files=`for file in $$list; do echo $$file; done | \
++	  sed -e "s|^$$srcdirstrip/||;t" \
++	      -e "s|^$$topsrcdirstrip/|$(top_builddir)/|;t"`; \
++	case $$dist_files in \
++	  */*) $(MKDIR_P) `echo "$$dist_files" | \
++			   sed '/\//!d;s|^|$(distdir)/|;s,/[^/]*$$,,' | \
++			   sort -u` ;; \
++	esac; \
++	for file in $$dist_files; do \
++	  if test -f $$file || test -d $$file; then d=.; else d=$(srcdir); fi; \
++	  if test -d $$d/$$file; then \
++	    dir=`echo "/$$file" | sed -e 's,/[^/]*$$,,'`; \
++	    if test -d "$(distdir)/$$file"; then \
++	      find "$(distdir)/$$file" -type d ! -perm -700 -exec chmod u+rwx {} \;; \
++	    fi; \
++	    if test -d $(srcdir)/$$file && test $$d != $(srcdir); then \
++	      cp -fpR $(srcdir)/$$file "$(distdir)$$dir" || exit 1; \
++	      find "$(distdir)/$$file" -type d ! -perm -700 -exec chmod u+rwx {} \;; \
++	    fi; \
++	    cp -fpR $$d/$$file "$(distdir)$$dir" || exit 1; \
++	  else \
++	    test -f "$(distdir)/$$file" \
++	    || cp -p $$d/$$file "$(distdir)/$$file" \
++	    || exit 1; \
++	  fi; \
++	done
++check-am: all-am
++check: check-am
++all-am: Makefile $(LTLIBRARIES)
++installdirs:
++	for dir in "$(DESTDIR)$(asound_module_pcm_gcs_iodir)"; do \
++	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
++	done
++install: install-am
++install-exec: install-exec-am
++install-data: install-data-am
++uninstall: uninstall-am
++
++install-am: all-am
++	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
++
++installcheck: installcheck-am
++install-strip:
++	if test -z '$(STRIP)'; then \
++	  $(MAKE) $(AM_MAKEFLAGS) INSTALL_PROGRAM="$(INSTALL_STRIP_PROGRAM)" \
++	    install_sh_PROGRAM="$(INSTALL_STRIP_PROGRAM)" INSTALL_STRIP_FLAG=-s \
++	      install; \
++	else \
++	  $(MAKE) $(AM_MAKEFLAGS) INSTALL_PROGRAM="$(INSTALL_STRIP_PROGRAM)" \
++	    install_sh_PROGRAM="$(INSTALL_STRIP_PROGRAM)" INSTALL_STRIP_FLAG=-s \
++	    "INSTALL_PROGRAM_ENV=STRIPPROG='$(STRIP)'" install; \
++	fi
++mostlyclean-generic:
++
++clean-generic:
++
++distclean-generic:
++	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
++	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
++
++maintainer-clean-generic:
++	@echo "This command is intended for maintainers to use"
++	@echo "it deletes files that may require special tools to rebuild."
++clean: clean-am
++
++clean-am: \
++	clean-asound_module_pcm_gcs_ioLTLIBRARIES clean-generic \
++	clean-libtool mostlyclean-am
++
++distclean: distclean-am
++	-rm -rf ./$(DEPDIR)
++	-rm -f Makefile
++distclean-am: clean-am distclean-compile distclean-generic \
++	distclean-tags
++
++dvi: dvi-am
++
++dvi-am:
++
++html: html-am
++
++html-am:
++
++info: info-am
++
++info-am:
++
++install-data-am: install-asound_module_pcm_gcs_ioLTLIBRARIES
++
++install-dvi: install-dvi-am
++
++install-dvi-am:
++
++install-exec-am:
++
++install-html: install-html-am
++
++install-html-am:
++
++install-info: install-info-am
++
++install-info-am:
++
++install-man:
++
++install-pdf: install-pdf-am
++
++install-pdf-am:
++
++install-ps: install-ps-am
++
++install-ps-am:
++
++installcheck-am:
++
++maintainer-clean: maintainer-clean-am
++	-rm -rf ./$(DEPDIR)
++	-rm -f Makefile
++maintainer-clean-am: distclean-am maintainer-clean-generic
++
++mostlyclean: mostlyclean-am
++
++mostlyclean-am: mostlyclean-compile mostlyclean-generic \
++	mostlyclean-libtool
++
++pdf: pdf-am
++
++pdf-am:
++
++ps: ps-am
++
++ps-am:
++
++uninstall-am: uninstall-asound_module_pcm_gcs_ioLTLIBRARIES
++
++.MAKE: install-am install-strip
++
++.PHONY: CTAGS GTAGS all all-am check check-am clean \
++	clean-asound_module_pcm_gcs_ioLTLIBRARIES clean-generic \
++	clean-libtool cscopelist ctags distclean distclean-compile \
++	distclean-generic distclean-libtool distclean-tags distdir dvi \
++	dvi-am html html-am info info-am install install-am \
++	install-asound_module_pcm_gcs_ioLTLIBRARIES install-data \
++	install-data-am install-dvi install-dvi-am install-exec \
++	install-exec-am install-html install-html-am install-info \
++	install-info-am install-man install-pdf install-pdf-am \
++	install-ps install-ps-am install-strip installcheck \
++	installcheck-am installdirs maintainer-clean \
++	maintainer-clean-generic mostlyclean mostlyclean-compile \
++	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
++	tags uninstall uninstall-am \
++	uninstall-asound_module_pcm_gcs_ioLTLIBRARIES
++
++
++# Tell versions [3.59,3.63) of GNU make to not export all variables.
++# Otherwise a system limit (for SysV at least) may be exceeded.
++.NOEXPORT:
+Index: alsa-plugins-1.0.28/gcs/gcs_plugin.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ alsa-plugins-1.0.28/gcs/gcs_plugin.c	2017-08-30 16:46:53.587688613 -0700
+@@ -0,0 +1,920 @@
++/*
++ * Copyright (c) 2017, The Linux Foundation. All rights reserved.
++ *
++ * Permission to use, copy, modify, and/or distribute this software for any
++ * purpose with or without fee is hereby granted, provided that the above
++ * copyright notice and this permission notice appear in all copies.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
++ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ */
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <unistd.h>
++#include <stdbool.h>
++#include <sys/eventfd.h>
++#include <alsa/asoundlib.h>
++#include <alsa/pcm_external.h>
++#include <alsa/pcm_ioplug.h>
++#include <alsa/pcm.h>
++#include <dlfcn.h>
++#include <gcs_api.h>
++#include <graphite_common.h>
++#include <pthread.h>
++
++#define GPLUGIN_ERR(fmt, ...)	\
++	fprintf(stderr, "%s: " fmt "\n", __func__, ##__VA_ARGS__)
++
++#define GPLUGIN_DBG(fmt, ...)	\
++	fprintf(stderr, "%s: " fmt "\n", __func__, ##__VA_ARGS__)
++
++#define GCS_DLSYM(gcs_d, name)	\
++	do {	\
++			gcs_d->ops.name##_fn = dlsym(gcs_d->dl_h, #name);	\
++			if (gcs_d->ops.name##_fn == NULL) {	\
++					GPLUGIN_ERR("not able to resolve symbol %s", #name);	\
++					return -ENODEV;	\
++			}	\
++	} while (0)
++
++#define WDSP_LOAD_DEV_PATH "/dev/wcd_dsp0_control"
++#define WDSP_GRAPH_UID 1
++#define WDSP_GRAPH_DID 1
++
++#ifndef __packed
++#define __packed __attribute__((packed))
++#endif
++
++#define MIN(x,y) \
++	(x <= y) ? x : y
++
++struct gcs_cmd_readrsp_payload_t {
++	uint32_t status;
++	uint32_t flags;
++	uint32_t timestamp_lsw;
++	uint32_t timestapm_msw;
++} __packed;
++
++struct gcs_cmd_read_payload_t {
++	uint32_t size_in_bytes;
++};
++
++struct gcs_data_cmd_t {
++	struct graphite_data_cmd_hdr hdr;
++	struct gcs_cmd_read_payload_t read;
++} __packed;
++
++struct gcs_lib_ops {
++	int32_t(*gcs_init_fn)(void);
++	int32_t(*gcs_open_fn)(uint32_t UID, uint32_t DID,
++						  uint32_t *graph_handle);
++	int32_t(*gcs_enable_fn)(uint32_t graph_handle,
++							void *non_persist_ucal,
++							uint32_t size_ucal);
++	int32_t(*gcs_disable_fn)(uint32_t graph_handle);
++	int32_t(*gcs_close_fn)(uint32_t graph_handle);
++	int32_t(*gcs_deinit_fn)(void);
++
++	int32_t(*gcs_register_data_cmd_handler_fn)(uint32_t graph_handle,
++											   void *data_cmd_cb_handler,
++											   void *cookie);
++	int32_t(*gcs_start_buff_xfer_fn)(uint32_t graph_handle,
++									 enum gcs_data_xfer dir);
++	int32_t(*gcs_stop_buff_xfer_fn)(uint32_t graph_handle,
++									enum gcs_data_xfer dir);
++	int32_t(*gcs_send_data_cmd_fn)(uint32_t graph_handle,
++								   int8_t *payload,
++								   uint32_t payload_size);
++};
++
++struct gcs_io_pdata {
++	snd_pcm_ioplug_t io;
++	uint8_t *data_buf;
++	unsigned int rate;
++	unsigned int channels;
++	unsigned int frame_bytes;
++	unsigned int period_size;
++	unsigned int period_bytes;
++	unsigned int period_cnt;
++	unsigned int buf_size;
++	bool setup_controls;
++
++	uint8_t rd_cnt;
++	uint8_t wr_cnt;
++
++	/* Handle to the GCS library */
++	void *dl_h;
++
++	/* Function pointers for GCS library APIs */
++	struct gcs_lib_ops ops;
++
++	int wdsp_fd;
++
++	uint32_t graph_hdl;
++
++	/* For bufferring thread */
++	pthread_t buff_thread;
++	pthread_mutex_t buf_mutex;
++	bool stop_buff;
++	bool buff_active;
++	int num_buf_to_q;
++	pthread_cond_t buf_cond;
++
++	/* for poll */
++	int event_fd;
++
++	bool is_started;
++
++};
++
++static void gcs_deinitialize(struct gcs_io_pdata *gcs_d);
++static void gcs_do_mixer_controls(struct gcs_io_pdata *gcs_d, bool enable);
++
++static uint32_t gcs_get_filled_period_cnt(struct gcs_io_pdata *gcs_d,
++					  uint32_t rd_cnt)
++{
++	if (gcs_d->wr_cnt >= rd_cnt)
++		return (gcs_d->wr_cnt - rd_cnt);
++	else
++		return (gcs_d->period_cnt - (rd_cnt - gcs_d->wr_cnt));
++
++}
++
++#define GCS_BUF_FILLED_BYTES(g) \
++	(gcs_get_filled_period_cnt(g, g->rd_cnt) * g->period_bytes)
++
++static int gcs_start_buffering(struct gcs_io_pdata *gcs_d)
++{
++	int ret = 0;
++
++
++	ret = gcs_d->ops.gcs_start_buff_xfer_fn(gcs_d->graph_hdl,
++						GCS_XFER_READ);
++	return ret;
++}
++
++static int gcs_stop_bufferring(struct gcs_io_pdata *gcs_d)
++{
++	int ret = 0;
++
++	ret = gcs_d->ops.gcs_stop_buff_xfer_fn(gcs_d->graph_hdl,
++											GCS_XFER_READ);
++	return ret;
++}
++
++static int gcs_plugin_start(snd_pcm_ioplug_t *io)
++{
++	struct gcs_io_pdata *gcs_d = io->private_data;
++	struct timespec tspec;
++	int ret = 0;
++
++	pthread_mutex_lock(&gcs_d->buf_mutex);
++
++	clock_gettime(CLOCK_REALTIME, &tspec);
++	tspec.tv_sec += 5;
++	ret = pthread_cond_timedwait(&gcs_d->buf_cond,
++			&gcs_d->buf_mutex, &tspec);
++	pthread_mutex_unlock(&gcs_d->buf_mutex);
++	if (ret) {
++		GPLUGIN_ERR("wait timed out");
++		return -EIO;
++	}
++
++	return ret;
++}
++
++static int gcs_stop(struct gcs_io_pdata *gcs_d)
++{
++	int ret;
++
++
++	pthread_mutex_lock(&gcs_d->buf_mutex);
++	gcs_d->stop_buff = true;
++	pthread_cond_broadcast(&gcs_d->buf_cond);
++	pthread_mutex_unlock(&gcs_d->buf_mutex);
++
++	pthread_join(gcs_d->buff_thread, NULL);
++
++	ret = gcs_d->ops.gcs_disable_fn(gcs_d->graph_hdl);
++	if (ret < 0 )
++		GPLUGIN_ERR("gcs_disable failed, err %d", ret);
++
++	/* continue with teardown even if gcs_disable failed */
++	if (gcs_d->data_buf) {
++		free(gcs_d->data_buf);
++		gcs_d->data_buf = NULL;
++	}
++	gcs_d->rd_cnt = gcs_d->wr_cnt = 0;
++	gcs_d->is_started = false;
++
++	return 0;
++}
++
++static int gcs_plugin_stop(snd_pcm_ioplug_t *io)
++{
++	struct gcs_io_pdata *gcs_d = io->private_data;
++	return gcs_stop(gcs_d);
++}
++
++static snd_pcm_sframes_t gcs_plugin_pointer(snd_pcm_ioplug_t *io)
++{
++	struct gcs_io_pdata *gcs_d = io->private_data;
++	uint32_t new_hw_ptr;
++
++	pthread_mutex_lock(&gcs_d->buf_mutex);
++
++	new_hw_ptr = gcs_get_filled_period_cnt(gcs_d, ((io->hw_ptr % io->buffer_size) / gcs_d->period_size));
++	new_hw_ptr *= gcs_d->period_size;
++	new_hw_ptr += io->hw_ptr;
++
++	pthread_mutex_unlock(&gcs_d->buf_mutex);
++
++	return new_hw_ptr;
++}
++
++static snd_pcm_sframes_t gcs_plugin_transfer(snd_pcm_ioplug_t *io,
++				      const snd_pcm_channel_area_t *areas,
++				      snd_pcm_uframes_t offset,
++				      snd_pcm_uframes_t size)
++{
++	struct gcs_io_pdata *gcs_d = io->private_data;
++	unsigned int size_bytes = size * gcs_d->frame_bytes;
++	uint8_t *buf = (uint8_t *) areas->addr + (areas->first + areas->step * offset) / 8;
++	uint32_t filled_bytes;
++	uint8_t *rd_ptr;
++	int ret = 0;
++
++	pthread_mutex_lock(&gcs_d->buf_mutex);
++
++	filled_bytes = GCS_BUF_FILLED_BYTES(gcs_d);
++	/*
++	* GPLUGIN_DBG("size %u offset %u size_bytes %u filled_bytes %u buf %p appl_ptr %u hw_ptr %u",
++	*	    size, offset, size_bytes, filled_bytes, buf, io->appl_ptr, io->hw_ptr);
++	*/
++
++	if (((size_bytes % gcs_d->period_bytes) != 0) ||
++		((filled_bytes % gcs_d->period_bytes) != 0) ||
++		(filled_bytes < size_bytes)) {
++		GPLUGIN_ERR("size requested %u is not a multiple of period_bytes %u",
++					size_bytes, gcs_d->period_bytes);
++		pthread_mutex_unlock(&gcs_d->buf_mutex);
++		return 0;
++	}
++
++	rd_ptr = gcs_d->data_buf + (gcs_d->rd_cnt * gcs_d->period_bytes);
++	memcpy(buf, rd_ptr, size_bytes);
++
++
++	gcs_d->rd_cnt += (size_bytes / gcs_d->period_bytes);
++	gcs_d->rd_cnt %= gcs_d->period_cnt;
++
++	/*
++	 * If there is no more filled data,
++	 * update eventfd to 0 to indicate the
++	 * poll that this fd can't be read
++	 */
++	if (GCS_BUF_FILLED_BYTES(gcs_d))
++		eventfd_write(gcs_d->event_fd, 0);
++
++	pthread_mutex_unlock(&gcs_d->buf_mutex);
++	return snd_pcm_bytes_to_frames(io->pcm, size_bytes);
++}
++
++static int gcs_plugin_close(snd_pcm_ioplug_t *io)
++{
++	struct gcs_io_pdata *gcs_d = io->private_data;
++	int ret = 0;
++
++	/*
++	 * This could happen when close is called without
++	 * calling pcm_stop first. In this case, if
++	 * bufferring and thread were started, then cleanly
++	 * close them.
++	 *
++	 * No need of mutex protection here as ALSA calls
++	 * this in locked context so there is no race
++	 * between this and gcs_plugin_stop.
++	 */
++	if (gcs_d->is_started)
++		gcs_stop(gcs_d);
++
++	gcs_do_mixer_controls(gcs_d, false);
++
++	ret = gcs_d->ops.gcs_close_fn(gcs_d->graph_hdl);
++	if (ret < 0 )
++		GPLUGIN_ERR("gcs_close failed, err = %d", ret);
++
++	gcs_deinitialize(gcs_d);
++
++	write(gcs_d->wdsp_fd, "0", 1);
++	close(gcs_d->wdsp_fd);
++
++	return 0;
++}
++
++static int gcs_plugin_hw_params(snd_pcm_ioplug_t *io,
++			 snd_pcm_hw_params_t *params ATTRIBUTE_UNUSED)
++{
++	struct gcs_io_pdata *gcs_d = io->private_data;
++
++	gcs_d->period_size = io->period_size;
++	gcs_d->frame_bytes = (snd_pcm_format_physical_width(io->format) * io->channels) / 8;
++	gcs_d->period_bytes = io->period_size * gcs_d->frame_bytes;
++	gcs_d->period_cnt = io->buffer_size / io->period_size;
++	gcs_d->buf_size = gcs_d->period_cnt * gcs_d->period_bytes;
++
++	GPLUGIN_DBG("frame_bytes = %u, period_bytes = %u, period_sz = %u period_cnt = %u, buf_sz = %u",
++		     gcs_d->frame_bytes, gcs_d->period_bytes, gcs_d->period_size, gcs_d->period_cnt,
++			 gcs_d->buf_size);
++
++	/* Allocate the buffer */
++	gcs_d->data_buf = malloc(gcs_d->buf_size);
++	gcs_d->rd_cnt = gcs_d->wr_cnt = 0;
++
++	GPLUGIN_DBG("Initial data_buf = %p, rd_cnt = %u, wr_cnt = %u, buf_size = %u",
++				gcs_d->data_buf, gcs_d->rd_cnt, gcs_d->wr_cnt, gcs_d->buf_size);
++	memset(gcs_d->data_buf, 0, gcs_d->buf_size);
++
++	return 0;
++}
++
++static int gcs_plugin_hw_free(snd_pcm_ioplug_t *io)
++{
++	struct gcs_io_pdata *gcs_d = io->private_data;
++
++	if (gcs_d->data_buf) {
++		GPLUGIN_DBG("De-allocate data buffer of size %u", gcs_d->buf_size);
++		free(gcs_d->data_buf);
++		gcs_d->data_buf = NULL;
++	}
++
++	return 0;
++}
++
++static int gcs_plugin_sw_params(snd_pcm_ioplug_t *io, snd_pcm_sw_params_t *params)
++{
++	/* Nothing to do here */
++	return 0;
++}
++
++static void gcs_copy_period(struct gcs_io_pdata *gcs_d, uint8_t *buff)
++{
++	uint8_t *wr_p;
++
++	wr_p = gcs_d->data_buf + (gcs_d->wr_cnt * gcs_d->period_bytes);
++	memcpy(wr_p, buff, gcs_d->period_bytes);
++
++	gcs_d->wr_cnt++;
++	gcs_d->wr_cnt %= gcs_d->period_cnt;
++}
++
++static int gcs_data_rsp_cb(uint32_t graph_hdl, void *rsp,
++						   size_t rsp_size, void *cookie,
++						   int32_t cmd_status)
++{
++	struct gcs_io_pdata *gcs_d = (struct gcs_io_pdata *) cookie;
++	struct graphite_data_cmdrsp_hdr *hdr = NULL;
++	struct gcs_cmd_readrsp_payload_t *payload = NULL;
++	uint32_t buff_sz;
++	uint8_t *buff;
++
++	if (!gcs_d) {
++		GPLUGIN_ERR("Invalid cookie");
++		return -EINVAL;
++	}
++
++	if (gcs_d->graph_hdl != graph_hdl) {
++		GPLUGIN_ERR("Invalid graph_handle %u, expecting %u",
++					graph_hdl, gcs_d->graph_hdl);
++		return -EINVAL;
++	}
++
++	if (cmd_status < 0 || rsp_size == 0) {
++		GPLUGIN_ERR("Invalid respone, cmd_status = %d, rsp_size = %zu",
++					cmd_status, rsp_size);
++		return -EINVAL;
++	}
++
++	hdr = (struct graphite_data_cmdrsp_hdr *) rsp;
++	if (hdr->module_id != 0x20013 &&
++		hdr->instance_id != 0x02 &&
++		hdr->cmd_id != 0x20015) {
++			GPLUGIN_ERR("unexpected parameters");
++			return -EINVAL;
++	}
++
++	payload = (struct gcs_cmd_readrsp_payload_t *) (((uint8_t *) rsp) + sizeof(*hdr));
++
++	if (payload->status == 0) {
++		buff_sz = hdr->size_in_bytes - sizeof(struct gcs_cmd_readrsp_payload_t);
++		buff = (uint8_t *) payload + sizeof(struct gcs_cmd_readrsp_payload_t);
++
++		pthread_mutex_lock(&gcs_d->buf_mutex);
++		/*
++		 * If bufferring is already stopped,
++		 * then ignore this response callback
++		 */
++		if (!gcs_d->buff_active) {
++			pthread_mutex_unlock(&gcs_d->buf_mutex);
++			return 0;
++		}
++
++		if (buff_sz != gcs_d->period_bytes) {
++			GPLUGIN_ERR("Invalid size received %u expected %u",
++						buff_sz, gcs_d->period_bytes);
++			pthread_mutex_unlock(&gcs_d->buf_mutex);
++			return -EINVAL;
++		}
++
++		if (!gcs_d->stop_buff) {
++			gcs_copy_period(gcs_d, buff);
++			++gcs_d->num_buf_to_q;
++			eventfd_write(gcs_d->event_fd, 1);
++			pthread_cond_broadcast(&gcs_d->buf_cond);
++		}
++		pthread_mutex_unlock(&gcs_d->buf_mutex);
++	}
++
++	return 0;
++}
++
++static void *gcs_buff_thread_fn(void *ctx)
++{
++	struct gcs_io_pdata *gcs_d = (struct gcs_io_pdata *) ctx;
++	struct gcs_data_cmd_t read_cmd;
++	int ret = 0;
++
++	GPLUGIN_DBG("start");
++
++	read_cmd.hdr.module_id = 0x20013;
++	read_cmd.hdr.instance_id = 0x02;
++	read_cmd.hdr.reserved = 0;
++	read_cmd.hdr.cmd_id = 0x20015;
++	read_cmd.hdr.token = 0;
++	read_cmd.hdr.size_in_bytes = sizeof(struct gcs_cmd_read_payload_t);
++	read_cmd.read.size_in_bytes = gcs_d->period_bytes;
++
++	pthread_mutex_lock(&gcs_d->buf_mutex);
++	if (gcs_d->stop_buff)
++		goto done;
++
++	if (gcs_start_buffering(gcs_d) < 0)
++		goto done;
++
++	gcs_d->buff_active = true;
++	gcs_d->num_buf_to_q = 2;
++
++	while(gcs_d->num_buf_to_q && !gcs_d->stop_buff) {
++		pthread_mutex_unlock(&gcs_d->buf_mutex);
++		ret = gcs_d->ops.gcs_send_data_cmd_fn(gcs_d->graph_hdl, (int8_t *) &read_cmd,
++							 				  sizeof(read_cmd));
++		pthread_mutex_lock(&gcs_d->buf_mutex);
++
++		if (ret) {
++			GPLUGIN_ERR("send_data_cmd failed err %d", ret);
++			break;
++		}
++
++		if (gcs_d->stop_buff) {
++			GPLUGIN_ERR("stop_buff is true");
++			break;
++		}
++
++		if (--gcs_d->num_buf_to_q == 0) {
++			struct timespec tspec;
++			clock_gettime(CLOCK_REALTIME, &tspec);
++			tspec.tv_sec += 5;
++			ret = pthread_cond_timedwait(&gcs_d->buf_cond, &gcs_d->buf_mutex, &tspec);
++			if (ret)
++				break;
++		}
++	}
++
++	GPLUGIN_DBG("buff loop done");
++	gcs_d->buff_active = false;
++	pthread_mutex_unlock(&gcs_d->buf_mutex);
++
++	gcs_stop_bufferring(gcs_d);
++
++	pthread_mutex_lock(&gcs_d->buf_mutex);
++	pthread_cond_signal(&gcs_d->buf_cond);
++
++done:
++	pthread_mutex_unlock(&gcs_d->buf_mutex);
++	return NULL;
++}
++
++static void gcs_do_mixer_controls(struct gcs_io_pdata *gcs_d, bool enable)
++{
++	if (!gcs_d->setup_controls)
++		return;
++
++	GPLUGIN_DBG("executing the mixer controls for %s",
++		    enable ? "enable" : "disable");
++
++	if(enable) {
++		system("amixer sset 'ADC MUX0' 'DMIC'");
++		system("amixer sset 'DMIC MUX0' 'DMIC0'");
++		system("amixer sset 'ADC MUX1' 'DMIC'");
++		system("amixer sset 'DMIC MUX1' 'DMIC1'");
++		system("amixer sset 'ADC MUX2' 'DMIC'");
++		system("amixer sset 'DMIC MUX2' 'DMIC2'");
++		system("amixer sset 'ADC MUX3' 'DMIC'");
++		system("amixer sset 'DMIC MUX3' 'DMIC3'");
++		system("amixer sset 'ADC MUX4' 'DMIC'");
++		system("amixer sset 'DMIC MUX4' 'DMIC4'");
++		system("amixer sset 'ADC MUX5' 'DMIC'");
++		system("amixer sset 'DMIC MUX5' 'DMIC5'");
++		system("amixer sset 'WDMA1 CH0 MUX' 'PORT_0'");
++		system("amixer sset 'WDMA1 CH1 MUX' 'PORT_1'");
++		system("amixer sset 'WDMA1 CH2 MUX' 'PORT_2'");
++		system("amixer sset 'WDMA1 CH3 MUX' 'PORT_3'");
++		system("amixer sset 'WDMA1 CH4 MUX' 'PORT_4'");
++		system("amixer sset 'WDMA1 CH5 MUX' 'PORT_5'");
++		system("amixer sset 'WDMA1_ON_OFF' 'on'");
++	} else {
++		system("amixer sset 'ADC MUX0' 'AMIC'");
++		system("amixer sset 'DMIC MUX0' 'ZERO'");
++		system("amixer sset 'ADC MUX1' 'AMIC'");
++		system("amixer sset 'DMIC MUX1' 'ZERO'");
++		system("amixer sset 'ADC MUX2' 'AMIC'");
++		system("amixer sset 'DMIC MUX2' 'ZERO'");
++		system("amixer sset 'ADC MUX3' 'AMIC'");
++		system("amixer sset 'DMIC MUX3' 'ZERO'");
++		system("amixer sset 'ADC MUX4' 'AMIC'");
++		system("amixer sset 'DMIC MUX4' 'ZERO'");
++		system("amixer sset 'ADC MUX5' 'AMIC'");
++		system("amixer sset 'DMIC MUX5' 'ZERO'");
++		system("amixer sset 'WDMA1 CH0 MUX' 'PORT_0'");
++		system("amixer sset 'WDMA1 CH1 MUX' 'PORT_0'");
++		system("amixer sset 'WDMA1 CH2 MUX' 'PORT_0'");
++		system("amixer sset 'WDMA1 CH3 MUX' 'PORT_0'");
++		system("amixer sset 'WDMA1 CH4 MUX' 'PORT_0'");
++		system("amixer sset 'WDMA1 CH5 MUX' 'PORT_0'");
++		system("amixer sset 'WDMA1_ON_OFF' 'off'");
++	}
++}
++
++static int gcs_plugin_prepare(snd_pcm_ioplug_t *io)
++{
++	struct gcs_io_pdata *gcs_d = io->private_data;
++	pthread_attr_t attr;
++	int ret = 0;
++
++	ret = gcs_d->ops.gcs_register_data_cmd_handler_fn(gcs_d->graph_hdl,
++					(data_cmd_cb_ptr) gcs_data_rsp_cb, gcs_d);
++	if (ret < 0) {
++		GPLUGIN_ERR("gcs_register_data_cmd_handler failed err %d", ret);
++		goto done;
++	}
++
++	ret = gcs_d->ops.gcs_enable_fn(gcs_d->graph_hdl, NULL, 0);
++	if (ret < 0 )
++		GPLUGIN_ERR("gcs_enable failed, err = %d\n", ret);
++
++	pthread_attr_init(&attr);
++	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
++	ret = pthread_create(&gcs_d->buff_thread, &attr,
++						 gcs_buff_thread_fn, gcs_d);
++	if (ret) {
++		GPLUGIN_ERR("Failed to create buff thread, error %d", ret);
++		goto err_create_thread;
++	}
++
++	gcs_d->is_started = true;
++
++	return 0;
++
++err_create_thread:
++	pthread_attr_destroy(&attr);
++	ret = gcs_d->ops.gcs_disable_fn(gcs_d->graph_hdl);
++done:
++	return ret;
++}
++
++static int gcs_plugin_drain(snd_pcm_ioplug_t *io) {
++	return 0;
++}
++
++static int gcs_plugin_poll_desc_count(snd_pcm_ioplug_t *io) {
++	(void)io;
++	return 1;
++}
++
++static int gcs_plugin_poll_desc(snd_pcm_ioplug_t *io, struct pollfd *pfd,
++			unsigned int space)
++{
++	struct gcs_io_pdata *gcs_d = io->private_data;
++
++	if (space != 1) {
++		GPLUGIN_ERR("space %u is not correct", space);
++		return -EINVAL;
++	}
++
++	pfd[0].fd = gcs_d->event_fd;
++	pfd[0].events = POLLIN;
++
++	return space;
++}
++
++static int gcs_plugin_poll_revents(snd_pcm_ioplug_t *io, struct pollfd *pfd,
++				unsigned int nfds, unsigned short *revents)
++{
++	struct gcs_io_pdata *gcs_d = io->private_data;
++
++	if (nfds != 1) {
++		GPLUGIN_ERR("nfds %u is not correct", nfds);
++		return -EINVAL;
++	}
++
++	if (pfd[0].revents & POLLIN) {
++			eventfd_t ev;
++			eventfd_read(gcs_d->event_fd, &ev);
++			*revents = POLLIN;
++
++	} else {
++		GPLUGIN_ERR("incorrect pfd[0].revents");
++	}
++
++	return 0;
++}
++
++
++static snd_pcm_ioplug_callback_t gcs_plugin_ops = {
++	.start = gcs_plugin_start,
++	.stop = gcs_plugin_stop,
++	.pointer = gcs_plugin_pointer,
++	.transfer = gcs_plugin_transfer,
++	.close = gcs_plugin_close,
++	.hw_params = gcs_plugin_hw_params,
++	.hw_free = gcs_plugin_hw_free,
++	.sw_params = gcs_plugin_sw_params,
++	.prepare = gcs_plugin_prepare,
++	.drain = gcs_plugin_drain,
++	.poll_descriptors_count = gcs_plugin_poll_desc_count,
++	.poll_descriptors = gcs_plugin_poll_desc,
++	.poll_revents = gcs_plugin_poll_revents,
++};
++
++static int gcs_plugin_set_hw_constraints(struct gcs_io_pdata *gcs_d)
++{
++	static unsigned int accesses[] = {
++		SND_PCM_ACCESS_RW_INTERLEAVED
++	};
++
++	unsigned int formats[] = { SND_PCM_FORMAT_S16 };
++	int ret;
++
++	ret = snd_pcm_ioplug_set_param_list(&gcs_d->io,
++					    SND_PCM_IOPLUG_HW_ACCESS,
++					    1,
++					    accesses);
++	if (ret < 0) {
++		GPLUGIN_ERR("SND_PCM_IOPLUG_HW_ACCESS failed, err %d", ret);
++		return ret;
++	}
++
++	ret = snd_pcm_ioplug_set_param_list(&gcs_d->io,
++					    SND_PCM_IOPLUG_HW_FORMAT,
++					    1, formats);
++	if (ret < 0) {
++		GPLUGIN_ERR("SND_PCM_IOPLUG_HW_FORMAT failed, err %d", ret);
++		return ret;
++	}
++
++	ret = snd_pcm_ioplug_set_param_minmax(&gcs_d->io,
++					    SND_PCM_IOPLUG_HW_CHANNELS,
++					    gcs_d->channels, gcs_d->channels);
++	if (ret < 0) {
++		GPLUGIN_ERR("SND_PCM_IOPLUG_HW_CHANNELS failed, err %d", ret);
++		return ret;
++	}
++
++	ret = snd_pcm_ioplug_set_param_minmax(&gcs_d->io,
++					    SND_PCM_IOPLUG_HW_RATE,
++					    gcs_d->rate, gcs_d->rate);
++	if (ret < 0) {
++		GPLUGIN_ERR("SND_PCM_IOPLUG_HW_FORMAT failed, err %d", ret);
++		return ret;
++	}
++
++	ret = snd_pcm_ioplug_set_param_minmax(&gcs_d->io,
++					      SND_PCM_IOPLUG_HW_PERIOD_BYTES,
++					      3840, 7680);
++	if (ret < 0) {
++		GPLUGIN_ERR("SND_PCM_IOPLUG_HW_PERIOD_BYTES failed, err %d", ret);
++		return ret;
++	}
++
++	ret = snd_pcm_ioplug_set_param_minmax(&gcs_d->io,
++					      SND_PCM_IOPLUG_HW_PERIODS,
++					      2, 8);
++	if (ret < 0) {
++		GPLUGIN_ERR("SND_PCM_IOPLUG_HW_PERIODS failed, err %d", ret);
++		return ret;
++	}
++
++	return 0;
++}
++
++static int gcs_resolve_symbols(struct gcs_io_pdata *gcs_d)
++{
++	GCS_DLSYM(gcs_d, gcs_init);
++	GCS_DLSYM(gcs_d, gcs_open);
++	GCS_DLSYM(gcs_d, gcs_enable);
++	GCS_DLSYM(gcs_d, gcs_disable);
++	GCS_DLSYM(gcs_d, gcs_close);
++	GCS_DLSYM(gcs_d, gcs_deinit);
++	GCS_DLSYM(gcs_d, gcs_register_data_cmd_handler);
++	GCS_DLSYM(gcs_d, gcs_start_buff_xfer);
++	GCS_DLSYM(gcs_d, gcs_stop_buff_xfer);
++	GCS_DLSYM(gcs_d, gcs_send_data_cmd);
++
++	return 0;
++}
++
++static int gcs_initialize(struct gcs_io_pdata *gcs_d)
++{
++	int ret;
++
++	GPLUGIN_ERR("enter");
++	/* Resolve the symbols first */
++	ret = gcs_resolve_symbols(gcs_d);
++	if (ret < 0)
++		goto done;
++
++	ret = gcs_d->ops.gcs_init_fn();
++	if (ret < 0)
++		GPLUGIN_ERR("gcs_init failed, err = %d", ret);
++
++done:
++	GPLUGIN_ERR("leave");
++	return ret;
++}
++
++static void gcs_deinitialize(struct gcs_io_pdata *gcs_d)
++{
++	gcs_d->ops.gcs_deinit_fn();
++}
++
++/*
++ * Entry function for GCS-to-ALSA Plugin
++ */
++SND_PCM_PLUGIN_DEFINE_FUNC(gcs_io)
++{
++	snd_config_iterator_t i, next;
++	struct gcs_io_pdata *gcs_d;
++	unsigned int rate = 0, channels = 0;
++	int ret = 0;
++	bool setup_controls = false;
++
++	if (stream != SND_PCM_STREAM_CAPTURE) {
++		GPLUGIN_ERR("GCS-to-ALSA plugin is only for capture");
++		return -EINVAL;
++	}
++
++	snd_config_for_each(i, next, conf) {
++		snd_config_t *n = snd_config_iterator_entry(i);
++		const char *id;
++		if (snd_config_get_id(n, &id) < 0)
++			continue;
++		if (strcmp(id, "type") == 0)
++			continue;
++		if (strcmp(id, "rate") == 0) {
++			long val;
++			if (snd_config_get_integer(n, &val) < 0) {
++				GPLUGIN_ERR("invalid type for %s", id);
++				return -EINVAL;
++			}
++			rate = val;
++			GPLUGIN_ERR("rate = %u", rate);
++			continue;
++		}
++		if (strcmp(id, "channels") == 0) {
++			long val;
++			if (snd_config_get_integer(n, &val) < 0) {
++				GPLUGIN_ERR("invalid type for %s", id);
++				return -EINVAL;
++			}
++			channels = val;
++			GPLUGIN_ERR("channels = %u", channels);
++			continue;
++		}
++		if (strcmp(id, "setup_controls") == 0) {
++			long val = 0;
++			if (snd_config_get_integer(n, &val) < 0) {
++				GPLUGIN_ERR("invalid type for %s", id);
++				return -EINVAL;
++			}
++			if (val != 0)
++				setup_controls = true;
++			else
++				setup_controls = false;
++		}
++
++		GPLUGIN_ERR("unknown field %s", id);
++	}
++
++	gcs_d = calloc(1, sizeof(*gcs_d));
++	if (!gcs_d) {
++		SNDERR("cannot allocate gcs_d");
++		return -ENOMEM;
++	}
++
++	gcs_d->event_fd = -1;
++	gcs_d->rate = rate;
++	gcs_d->channels = channels;
++	gcs_d->io.version = SND_PCM_IOPLUG_VERSION;
++	gcs_d->io.name = "ALSA to GCS conversion plugin";
++	gcs_d->io.mmap_rw = 0;
++	gcs_d->io.private_data = gcs_d;
++	gcs_d->io.callback = &gcs_plugin_ops;
++	pthread_mutex_init(&gcs_d->buf_mutex, NULL);
++	pthread_cond_init(&gcs_d->buf_cond, NULL);
++	gcs_d->stop_buff = false;
++	gcs_d->buff_active = false;
++	gcs_d->num_buf_to_q = 2;
++	gcs_d->setup_controls = setup_controls;
++
++	ret = snd_pcm_ioplug_create(&gcs_d->io, name, stream, mode);
++	if (ret < 0) {
++		GPLUGIN_ERR("snd_pcm_ioplug_create returned %d", ret);
++		goto error_ioplug_create;
++	}
++
++	ret = gcs_plugin_set_hw_constraints(gcs_d);
++	if (ret < 0) {
++		GPLUGIN_ERR("set_hw_constraints failed %d", ret);
++		goto err_set_constraints;
++	}
++
++	*pcmp = gcs_d->io.pcm;
++
++	gcs_d->dl_h = dlopen("/usr/lib/libgcs.so", RTLD_NOW);
++	if (gcs_d->dl_h == NULL) {
++		GPLUGIN_ERR("Failed to open libgcs");
++		goto err_set_constraints;
++	}
++
++
++	ret = gcs_initialize(gcs_d);
++	if (ret < 0 ) {
++			GPLUGIN_ERR("gcs_initialize failed %d", ret);
++			goto err_gcs_initialize;
++	}
++
++	if ((gcs_d->event_fd = eventfd(0, EFD_CLOEXEC)) == -1) {
++		GPLUGIN_ERR("failed to create event_fd");
++		ret = -EINVAL;
++		goto err_eventfd_create;
++	}
++
++
++	gcs_d->wdsp_fd = open(WDSP_LOAD_DEV_PATH, O_WRONLY);
++	if (gcs_d->wdsp_fd < 0) {
++		GPLUGIN_ERR("open for %s failed", WDSP_LOAD_DEV_PATH);
++		goto err_open_wdsp;
++	}
++
++	write(gcs_d->wdsp_fd, "1", 1);
++
++	ret = gcs_d->ops.gcs_open_fn(WDSP_GRAPH_UID, WDSP_GRAPH_DID,
++								 &gcs_d->graph_hdl);
++	if (ret < 0 ) {
++		GPLUGIN_ERR("gcs_open failed for UID %u DID %u",
++					WDSP_GRAPH_UID, WDSP_GRAPH_DID);
++		goto err_gcs_open;
++	}
++
++	gcs_do_mixer_controls(gcs_d, true);
++	return 0;
++
++
++err_gcs_open:
++	write(gcs_d->wdsp_fd, "0", 1);
++	close(gcs_d->wdsp_fd);
++
++err_open_wdsp:
++	if (gcs_d->event_fd != -1)
++		close(gcs_d->event_fd);
++
++err_eventfd_create:
++	gcs_deinitialize(gcs_d);
++
++err_gcs_initialize:
++	dlclose(gcs_d->dl_h);
++
++err_set_constraints:
++	snd_pcm_ioplug_delete(&gcs_d->io);
++
++error_ioplug_create:
++	free(gcs_d);
++	return ret;
++}
++SND_PCM_PLUGIN_SYMBOL(gcs_io);

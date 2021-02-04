@@ -1,0 +1,28 @@
+--- a/drivers/net/wireless/ath/ath10k/ahb.c
++++ b/drivers/net/wireless/ath/ath10k/ahb.c
+@@ -658,10 +658,10 @@ static void ath10k_ahb_hif_stop(struct a
+ 	ath10k_ahb_irq_disable(ar);
+ 	synchronize_irq(ar_ahb->irq);
+ 
+-	ath10k_pci_flush(ar);
+-
+ 	napi_synchronize(&ar->napi);
+ 	napi_disable(&ar->napi);
++
++	ath10k_pci_flush(ar);
+ }
+ 
+ static int ath10k_ahb_hif_power_up(struct ath10k *ar)
+--- a/drivers/net/wireless/ath/ath10k/pci.c
++++ b/drivers/net/wireless/ath/ath10k/pci.c
+@@ -2078,9 +2078,9 @@ static void ath10k_pci_hif_stop(struct a
+ 
+ 	ath10k_pci_irq_disable(ar);
+ 	ath10k_pci_irq_sync(ar);
+-	ath10k_pci_flush(ar);
+ 	napi_synchronize(&ar->napi);
+ 	napi_disable(&ar->napi);
++	ath10k_pci_flush(ar);
+ 
+ 	spin_lock_irqsave(&ar_pci->ps_lock, flags);
+ 	WARN_ON(ar_pci->ps_wake_refcount > 0);

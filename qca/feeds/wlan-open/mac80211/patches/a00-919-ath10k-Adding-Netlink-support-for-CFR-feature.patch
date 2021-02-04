@@ -1,0 +1,375 @@
+--- a/drivers/net/wireless/ath/ath10k/core.h
++++ b/drivers/net/wireless/ath/ath10k/core.h
+@@ -115,6 +115,30 @@ struct ath10k;
+  */
+ enum qca_nl80211_vendor_subcmds {
+ 	QCA_NL80211_VENDOR_SUBCMD_BSS_FILTER = 170,
++	QCA_NL80211_VENDOR_SUBCMD_PEER_CFR_CAPTURE_CFG = 171,
++	QCA_NL80211_VENDOR_SUBCMD_PERIODIC_CFR_CAPTURE = 172,
++};
++
++enum qca_wlan_vendor_peer_cfr_capture_attr {
++	QCA_WLAN_VENDOR_ATTR_PEER_CFR_CAPTURE_INVALID = 0,
++	QCA_WLAN_VENDOR_ATTR_CFR_PEER_MAC_ADDR = 1,
++	QCA_WLAN_VENDOR_ATTR_PEER_CFR_ENABLE = 2,
++	QCA_WLAN_VENDOR_ATTR_PEER_CFR_BANDWIDTH = 3,
++	QCA_WLAN_VENDOR_ATTR_PEER_CFR_PERIODICITY = 4,
++	QCA_WLAN_VENDOR_ATTR_PEER_CFR_METHOD = 5,
++	/*Keep last*/
++	QCA_WLAN_VENDOR_ATTR_PEER_CFR_AFTER_LAST,
++	QCA_WLAN_VENDOR_ATTR_PEER_CFR_MAX =
++	QCA_WLAN_VENDOR_ATTR_PEER_CFR_AFTER_LAST - 1,
++};
++
++enum qca_wlan_vendor_periodic_cfr_enable_attr {
++	QCA_WLAN_VENDOR_ATTR_PERIODIC_CFR_ENABLE_INVALID = 0,
++	QCA_WLAN_VENDOR_ATTR_PERIODIC_CFR_ENABLE = 1,
++	/*Keep last*/
++	QCA_WLAN_VENDOR_ATTR_PERIODIC_CFR_AFTER_LAST,
++	QCA_WLAN_VENDOR_ATTR_PERIODIC_CFR_MAX =
++	QCA_WLAN_VENDOR_ATTR_PERIODIC_CFR_AFTER_LAST - 1,
+ };
+ 
+ enum qca_wlan_vendor_attr_bss_filter {
+@@ -586,6 +610,14 @@ struct ath10k_htt_tx_stats {
+ 	u64 ack_fails;
+ };
+ 
++struct ath10k_cfr_capture {
++	u32 cfr_enable;
++	u32 cfr_period;
++	u32 cfr_bandwidth;
++	u32 cfr_method;
++};
++
++
+ struct ath10k_sta {
+ 	struct ath10k_vif *arvif;
+ 
+@@ -1077,13 +1109,6 @@ enum ath10k_dt_btcoex_support_flag {
+ 	ATH10K_DT_BTCOEX_NOT_SUPPORTED,
+ };
+ 
+-struct ath10k_cfr_capture {
+-	u32 cfr_enable;
+-	u32 cfr_period;
+-	u32 cfr_bandwidth;
+-	u32 cfr_method;
+-};
+-
+ struct ath10k_fw_file {
+ 	const struct firmware *firmware;
+ 
+--- a/drivers/net/wireless/ath/ath10k/mac.c
++++ b/drivers/net/wireless/ath/ath10k/mac.c
+@@ -108,6 +108,16 @@ static int ath10k_bss_filter_vendor_hand
+ 					    const void *data,
+ 					    int data_len);
+ 
++static int ath10k_peer_cfr_capture_cfg_handler(struct wiphy *wiphy,
++					       struct wireless_dev *wdev,
++					       const void *data,
++					       int data_len);
++
++static int ath10k_periodic_cfr_enable_handler(struct wiphy *wiphy,
++					      struct wireless_dev *wdev,
++					      const void *data,
++					      int data_len);
++
+ static const struct
+ nla_policy ath10k_bss_filter_policy[QCA_VENDOR_ATTR_MAX + 1] = {
+ 	[QCA_VENDOR_ATTR_BSS_FILTER_MAC_ADDR] = { .len = ETH_ALEN },
+@@ -117,6 +127,20 @@ nla_policy ath10k_bss_filter_policy[QCA_
+ 	[QCA_VENDOR_ATTR_BSS_FILTER_STA_STATS] = { .type = NLA_NESTED },
+ };
+ 
++static const struct
++nla_policy ath10k_peer_cfr_capture_cfg_policy[QCA_WLAN_VENDOR_ATTR_PEER_CFR_MAX + 1] = {
++	[QCA_WLAN_VENDOR_ATTR_CFR_PEER_MAC_ADDR] = { .len = ETH_ALEN },
++	[QCA_WLAN_VENDOR_ATTR_PEER_CFR_ENABLE] = { .type = NLA_U8 },
++	[QCA_WLAN_VENDOR_ATTR_PEER_CFR_BANDWIDTH] = { .type = NLA_U8 },
++	[QCA_WLAN_VENDOR_ATTR_PEER_CFR_PERIODICITY] = { .type = NLA_U32 },
++	[QCA_WLAN_VENDOR_ATTR_PEER_CFR_METHOD] = { .type = NLA_U8 },
++};
++
++static const struct
++nla_policy ath10k_periodic_cfr_capture_policy[QCA_WLAN_VENDOR_ATTR_PERIODIC_CFR_MAX + 1] = {
++	[QCA_WLAN_VENDOR_ATTR_PERIODIC_CFR_ENABLE] = { .type = NLA_U8 },
++};
++
+ static struct wiphy_vendor_command ath10k_vendor_commands[] = {
+ 	{
+ 		.info.vendor_id = QCA_NL80211_VENDOR_ID,
+@@ -124,6 +148,22 @@ static struct wiphy_vendor_command ath10
+ 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV |
+ 			 WIPHY_VENDOR_CMD_NEED_RUNNING,
+ 		.doit = ath10k_bss_filter_vendor_handler,
++	},
++	{
++		.info.vendor_id = QCA_NL80211_VENDOR_ID,
++		.info.subcmd = QCA_NL80211_VENDOR_SUBCMD_PEER_CFR_CAPTURE_CFG,
++		.flags = WIPHY_VENDOR_CMD_NEED_WDEV |
++			 WIPHY_VENDOR_CMD_NEED_NETDEV |
++			 WIPHY_VENDOR_CMD_NEED_RUNNING,
++		.doit = ath10k_peer_cfr_capture_cfg_handler,
++	},
++	{
++		.info.vendor_id = QCA_NL80211_VENDOR_ID,
++		.info.subcmd = QCA_NL80211_VENDOR_SUBCMD_PERIODIC_CFR_CAPTURE,
++		.flags = WIPHY_VENDOR_CMD_NEED_WDEV |
++			 WIPHY_VENDOR_CMD_NEED_NETDEV |
++			 WIPHY_VENDOR_CMD_NEED_RUNNING,
++		.doit = ath10k_periodic_cfr_enable_handler,
+ 	}
+ };
+ 
+@@ -1355,6 +1395,249 @@ ath10k_mac_get_any_chandef_iter(struct i
+ 	*def = &conf->def;
+ }
+ 
++static int ath10k_periodic_cfr_enable_handler(struct wiphy *wiphy,
++					      struct wireless_dev *wdev,
++					      const void *data,
++					      int data_len)
++{
++	struct ieee80211_vif *vif;
++	struct ath10k_vif *arvif;
++	struct ath10k *ar;
++	u8 cfr_enable;
++	u32 param;
++	struct nlattr *tb[QCA_WLAN_VENDOR_ATTR_PERIODIC_CFR_MAX + 1];
++	int ret;
++
++	if (!wdev)
++		return -EINVAL;
++
++	vif = wdev_to_ieee80211_vif(wdev);
++	if (!vif)
++		return -EINVAL;
++
++	arvif = (void *)vif->drv_priv;
++	if (!arvif)
++		return -EINVAL;
++
++	ar = arvif->ar;
++
++	mutex_lock(&ar->conf_mutex);
++
++	if (ar->state != ATH10K_STATE_ON) {
++		ret = -ENETDOWN;
++		goto out;
++	}
++
++	if (!test_bit(WMI_SERVICE_CFR_CAPTURE_SUPPORT, ar->wmi.svc_map)) {
++		ret = -EOPNOTSUPP;
++		goto out;
++	}
++
++	if (!data) {
++		ath10k_warn(ar, "invalid Data\n");
++		ret = -EINVAL;
++		goto out;
++	}
++
++	ret = nla_parse(tb, QCA_WLAN_VENDOR_ATTR_PERIODIC_CFR_MAX, data,
++			data_len, ath10k_periodic_cfr_capture_policy, NULL);
++	if (ret) {
++		ath10k_warn(ar, "invalid periodic CFR enable policy ATTR\n");
++		goto out;
++	}
++
++	if (!tb[QCA_WLAN_VENDOR_ATTR_PERIODIC_CFR_ENABLE]) {
++		ath10k_warn(ar, "invalid periodic CFR enable attr\n");
++		ret = -EINVAL;
++		goto out;
++	}
++
++	cfr_enable = nla_get_u8(tb[QCA_WLAN_VENDOR_ATTR_PERIODIC_CFR_ENABLE]);
++
++	if (cfr_enable < 0 || cfr_enable > 1) {
++		ret = -EINVAL;
++		goto out;
++	}
++
++	if (cfr_enable == ar->cfr_enable)
++		goto out;
++
++	param = ar->wmi.pdev_param->enable_cfr_capture;
++	ret = ath10k_wmi_pdev_set_param(ar, param, cfr_enable);
++	if (ret) {
++		ath10k_warn(ar, "CFR capture enable failed from netlink: %d\n",
++			    ret);
++		goto out;
++	}
++
++	ar->cfr_enable = cfr_enable;
++out:
++	mutex_unlock(&ar->conf_mutex);
++	return ret;
++}
++
++static int ath10k_peer_cfr_capture_cfg_handler(struct wiphy *wiphy,
++					       struct wireless_dev *wdev,
++					       const void *data,
++					       int data_len)
++{
++	struct ieee80211_vif *vif;
++	struct ath10k_vif *arvif;
++	struct ath10k *ar;
++	struct ieee80211_sta *sta;
++	struct ath10k_peer *peer;
++	struct ath10k_sta *arsta;
++	struct wmi_peer_cfr_capture_conf_arg arg = {0};
++	struct nlattr *tb[QCA_WLAN_VENDOR_ATTR_PEER_CFR_MAX + 1];
++	u8 addr[ETH_ALEN];
++	int ret;
++
++	if (!wdev)
++		return -EINVAL;
++
++	vif = wdev_to_ieee80211_vif(wdev);
++	if (!vif)
++		return -EINVAL;
++
++	arvif = (void *)vif->drv_priv;
++	if (!arvif)
++		return -EINVAL;
++
++	ar = arvif->ar;
++
++	mutex_lock(&ar->conf_mutex);
++
++	if (ar->state != ATH10K_STATE_ON) {
++		ret = -ENETDOWN;
++		goto out;
++	}
++
++	if (!test_bit(WMI_SERVICE_CFR_CAPTURE_SUPPORT, ar->wmi.svc_map)) {
++		ret = -EOPNOTSUPP;
++		goto out;
++	}
++
++	if (!data) {
++		ath10k_warn(ar, "invalid Data\n");
++		ret = -EINVAL;
++		goto out;
++	}
++
++	ret = nla_parse(tb, QCA_WLAN_VENDOR_ATTR_PEER_CFR_MAX, data, data_len,
++			ath10k_peer_cfr_capture_cfg_policy, NULL);
++	if (ret) {
++		ath10k_warn(ar, "invalid CFR capture policy attr\n");
++		goto out;
++	}
++
++	if (!tb[QCA_WLAN_VENDOR_ATTR_CFR_PEER_MAC_ADDR] ||
++	    !tb[QCA_WLAN_VENDOR_ATTR_PEER_CFR_ENABLE]) {
++		ath10k_warn(ar, "Invalid CFR attribute\n");
++		ret = -EINVAL;
++		goto out;
++	}
++
++	ether_addr_copy(addr,
++			nla_data(tb[QCA_WLAN_VENDOR_ATTR_CFR_PEER_MAC_ADDR]));
++
++	peer = ath10k_peer_find(ar, arvif->vdev_id, addr);
++	if (peer == NULL) {
++		ath10k_warn(ar, "peer is not associated to vdev\n");
++		ret = -EINVAL;
++		goto out;
++	}
++
++	rcu_read_lock();
++
++	sta = peer->sta;
++	arsta = (struct ath10k_sta *)sta->drv_priv;
++
++	arg.request = nla_get_u8(tb[QCA_WLAN_VENDOR_ATTR_PEER_CFR_ENABLE]);
++
++	if (arg.request < WMI_PEER_CFR_CAPTURE_DISABLE ||
++	    arg.request > WMI_PEER_CFR_CAPTURE_ENABLE) {
++		ath10k_warn(ar, "invalid CFR capture request\n");
++		ret = -EINVAL;
++		goto rcu_unlock;
++	}
++
++	if (arg.request == WMI_PEER_CFR_CAPTURE_ENABLE &&
++	    (!tb[QCA_WLAN_VENDOR_ATTR_PEER_CFR_BANDWIDTH] ||
++	    !tb[QCA_WLAN_VENDOR_ATTR_PEER_CFR_PERIODICITY] ||
++	    !tb[QCA_WLAN_VENDOR_ATTR_PEER_CFR_METHOD])) {
++		ath10k_warn(ar, "Request is for CFR enable, missing attributes\n");
++		ret = -EINVAL;
++		goto rcu_unlock;
++	}
++
++	if (arg.request == WMI_PEER_CFR_CAPTURE_DISABLE) {
++		arg.periodicity = arsta->cfr_capture.cfr_period;
++		arg.bandwidth = arsta->cfr_capture.cfr_bandwidth;
++		arg.capture_method = arsta->cfr_capture.cfr_method;
++	}
++
++	if (tb[QCA_WLAN_VENDOR_ATTR_PEER_CFR_PERIODICITY]) {
++		arg.periodicity = nla_get_u32(tb[QCA_WLAN_VENDOR_ATTR_PEER_CFR_PERIODICITY]);
++		if (arg.periodicity < WMI_PEER_CFR_PERIODICITY_MIN ||
++		    arg.periodicity > WMI_PEER_CFR_PERIODICITY_MAX) {
++			ath10k_warn(ar, "invalid CFR capture periodicity\n");
++			ret = -EINVAL;
++			goto rcu_unlock;
++		}
++
++		if (arg.periodicity % 10) {
++			ath10k_warn(ar, "periodicity should be multiple of 10\n");
++			ret = -EINVAL;
++			goto rcu_unlock;
++		}
++	}
++
++	if (tb[QCA_WLAN_VENDOR_ATTR_PEER_CFR_BANDWIDTH]) {
++		arg.bandwidth = nla_get_u8(tb[QCA_WLAN_VENDOR_ATTR_PEER_CFR_BANDWIDTH]);
++		if (arg.bandwidth >=  WMI_PEER_CFR_CAPTURE_BW_MAX ||
++		    arg.bandwidth < WMI_PEER_CFR_CAPTURE_BW_20MHZ) {
++			ath10k_warn(ar, "invalid CFR capture bandwidth\n");
++			ret = -EINVAL;
++			goto rcu_unlock;
++		}
++
++		if (arg.bandwidth > sta->bandwidth) {
++			ath10k_warn(ar, "peer doesn't support requested bw\n");
++			ret = -EINVAL;
++			goto rcu_unlock;
++		}
++	}
++
++	if (tb[QCA_WLAN_VENDOR_ATTR_PEER_CFR_METHOD]) {
++		arg.capture_method = nla_get_u8(tb[QCA_WLAN_VENDOR_ATTR_PEER_CFR_METHOD]);
++		if (arg.capture_method < WMI_PEER_CFR_CAPTURE_METHOD_NULL_FRAME ||
++		    arg.capture_method >= WMI_PEER_CFR_CAPTURE_METHOD_MAX) {
++			ath10k_warn(ar, "Requested CFR method is not supported\n");
++			ret = -EINVAL;
++			goto rcu_unlock;
++		}
++	}
++
++	ret = ath10k_wmi_peer_set_cfr_capture_conf(ar, arvif->vdev_id,
++						   sta->addr, &arg);
++	if (ret) {
++		ath10k_warn(ar, "failed to send cfr capture info vdev_id %u peer %pM\n",
++			    arvif->vdev_id, sta->addr);
++		goto rcu_unlock;
++	}
++
++	arsta->cfr_capture.cfr_enable = arg.request;
++	arsta->cfr_capture.cfr_period = arg.periodicity;
++	arsta->cfr_capture.cfr_bandwidth = arg.bandwidth;
++	arsta->cfr_capture.cfr_method = arg.capture_method;
++
++rcu_unlock:
++	rcu_read_unlock();
++out:
++	mutex_unlock(&ar->conf_mutex);
++	return ret;
++}
++
+ static int ath10k_peer_create(struct ath10k *ar,
+ 			      struct ieee80211_vif *vif,
+ 			      struct ieee80211_sta *sta,

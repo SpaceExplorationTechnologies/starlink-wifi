@@ -1,0 +1,297 @@
+/* Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
+
+#include "qcom-ipq4019-ap.dk07.1.dtsi"
+#include "qcom-ipq4019-audio.dtsi"
+
+/ {
+	model = "Qualcomm Technologies, Inc. IPQ4019/AP-DK07.1-C3";
+
+	soc {
+		qcom_mdss_qpic@7980000 {
+			status = "ok";
+		};
+
+		qcom_mdss_lcd_qpic_panel {
+			status = "ok";
+		};
+
+		serial@78b0000 {
+			status = "disabled";
+		};
+
+		spi_1: spi@78b6000 { /* BLSP1 QUP2 */
+			status = "ok";
+		};
+
+		pinctrl@0x01000000 {
+			audio_gpio_pins: audio_gpio_pinmux {
+				mux_1 {
+					pins = "gpio25";
+					function = "gpio";
+					output-high;
+				};
+				mux_2 {
+					pins = "gpio26";
+					function = "gpio";
+					output-high;
+				};
+				mux_3 {
+					pins = "gpio27";
+					function = "gpio";
+					output-high;
+				};
+			};
+			audio_pins: audio_pinmux {
+				mux_1 {
+					pins = "gpio25";
+					function = "i2s_tx_bclk";
+				};
+				mux_2 {
+					pins = "gpio26";
+					function = "i2s_tx_fsync";
+				};
+				mux_3 {
+					pins = "gpio27";
+					function = "i2s_td1";
+				};
+			};
+			uart1_pins: uart1_pinmux {
+				mux {
+					pins = "gpio8", "gpio9", "gpio10", "gpio11";
+					function = "blsp_uart1";
+					bias-disable;
+				};
+			};
+			spi_0_pins: spi_0_pinmux {
+				mux {
+					pins = "gpio12", "gpio13", "gpio14", "gpio15";
+					function = "blsp_spi0";
+					bias-disable;
+				};
+			};
+			wifi_0_pins: wifi1_pinmux {
+				mux_1 {
+					pins = "gpio37";
+					function="wcss0_dbg16";
+					bias-pull-down;
+					drive-cap = <DRV_CAP_QUARTER>;
+				};
+				mux_2 {
+					pins = "gpio43";
+					function="wifi_wci1";
+					bias-pull-down;
+					drive-cap = <DRV_CAP_QUARTER>;
+				};
+				mux_3 {
+					pins = "gpio52";
+					output-high;
+					function="gpio";
+					bias-pull-up;
+					drive-cap = <DRV_CAP_QUARTER>;
+				};
+				mux_4 {
+					pins = "gpio61";
+					output-high;
+					function="gpio";
+					bias-pull-down;
+				};
+			};
+		};
+
+		adcc: clock-controller@7700038 {
+			status = "ok";
+		};
+
+		/* Enable Audio Interfaces */
+		i2s: ipq4019-pcm-i2s@0 {
+			ipq,txmclk-fixed = <1>;
+			status = "ok";
+		};
+
+		i2splatform: qca-pcm-i2s@7709000 {
+			status = "ok";
+		};
+
+		uart1:uart@78b0000 {
+			pinctrl-0 = <&uart1_pins>;
+			pinctrl-1 = <&uart1_pins>;
+			pinctrl-names = "default", "sleep";
+			status = "ok";
+		};
+
+		spi_0: spi@78b5000 { /* BLSP1 QUP1 */
+			pinctrl-0 = <&spi_0_pins>;
+			pinctrl-names = "default";
+			status = "ok";
+		};
+
+
+		wifi0: wifi@a000000 {
+			pinctrl-0 = <&wifi_0_pins>;
+			pinctrl-names = "default";
+			btcoex_support = <1>;
+			wlan_prio_gpio = <52>;
+			dual_band_switch_gpio = <61>;
+		};
+
+		wifi1: wifi@a800000 {
+			btcoex_support = <0>;
+		};
+
+		i2c_0: i2c@78b7000 { /* BLSP1 QUP2 */
+			status = "ok";
+			qcom,clk-freq-out = <400000>;
+
+			/* IPQ4019 1.1 Audio Board Configuration */
+			tlc59116@60 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "ti,tlc59116";
+				reg = <0x60>;
+				out0@0 {
+					label = "ledsec1_g";
+					reg = <0x0>;
+				};
+				out1@1 {
+					label = "ledsec1_r";
+					reg = <0x1>;
+				};
+				out2@2 {
+					label = "ledsec1_b";
+					reg = <0x2>;
+				};
+				out3@3 {
+					label = "ledsec2_g";
+					reg = <0x3>;
+				};
+				out4@4 {
+					label = "ledsec2_r";
+					reg = <0x4>;
+				};
+				out5@5 {
+					label = "ledsec2_b";
+					reg = <0x5>;
+				};
+				out6@6 {
+					label = "ledsec3_g";
+					reg = <0x6>;
+				};
+				out7@7 {
+					label = "ledsec3_r";
+					reg = <0x7>;
+				};
+				out8@8 {
+					label = "ledsec3_b";
+					reg = <0x8>;
+				};
+				out9@9 {
+					label = "ledsec4_g";
+					reg = <0x9>;
+				};
+				out10@10 {
+					label = "ledsec4_r";
+					reg = <0xA>;
+				};
+				out11@11 {
+					label = "ledsec4_b";
+					reg = <0xB>;
+				};
+				out12@12 {
+					label = "ledsec5_g";
+					reg = <0xC>;
+				};
+				out13@13 {
+					label = "ledsec5_r";
+					reg = <0xD>;
+				};
+				out14@14 {
+					label = "ledsec5_b";
+					reg = <0xE>;
+				};
+			};
+
+			tlc59116@61 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "ti,tlc59116";
+				reg = <0x61>;
+				out0@0 {
+					label = "ledsec6_g";
+					reg = <0x0>;
+				};
+				out1@1 {
+					label = "ledsec6_r";
+					reg = <0x1>;
+				};
+				out2@2 {
+					label = "ledsec6_b";
+					reg = <0x2>;
+				};
+				out3@3 {
+					label = "ledsec7_g";
+					reg = <0x3>;
+				};
+				out4@4 {
+					label = "ledsec7_r";
+					reg = <0x4>;
+				};
+				out5@5 {
+					label = "ledsec7_b";
+					reg = <0x5>;
+				};
+				out6@6 {
+					label = "ledsec8_g";
+					reg = <0x6>;
+				};
+				out7@7 {
+					label = "ledsec8_r";
+					reg = <0x7>;
+				};
+				out8@8 {
+					label = "ledsec8_b";
+					reg = <0x8>;
+				};
+				out9@9 {
+					label = "ledsec9_g";
+					reg = <0x9>;
+				};
+				out10@10 {
+					label = "ledsec9_r";
+					reg = <0xA>;
+				};
+				out11@11 {
+					label = "ledsec9_b";
+					reg = <0xB>;
+				};
+			};
+		};
+
+		dummy_regulator: regulator@1 {
+			compatible = "reg-dummy";
+		};
+
+		sdhci@7824000 {
+			status = "disabled";
+		};
+
+		edma@c080000 {
+			qcom,num-cores = <2>;
+			qcom,tx-ring-count = <1024>;
+			qcom,rx-ring-count = <1024>;
+		};
+	};
+};

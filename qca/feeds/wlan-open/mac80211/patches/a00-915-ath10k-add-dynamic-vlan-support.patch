@@ -1,0 +1,165 @@
+--- a/drivers/net/wireless/ath/ath10k/core.h
++++ b/drivers/net/wireless/ath/ath10k/core.h
+@@ -128,6 +128,7 @@ enum ath10k_skb_flags {
+ 	ATH10K_SKB_F_MGMT = BIT(3),
+ 	ATH10K_SKB_F_QOS = BIT(4),
+ 	ATH10K_SKB_F_NO_80211_ENCAP = BIT(5),
++	ATH10K_SKB_F_RAW_TX = BIT(6),
+ };
+ 
+ struct ath10k_skb_cb {
+--- a/drivers/net/wireless/ath/ath10k/mac.c
++++ b/drivers/net/wireless/ath/ath10k/mac.c
+@@ -3364,6 +3364,7 @@ ath10k_mac_tx_h_get_txmode(struct ath10k
+ {
+ 	const struct ieee80211_hdr *hdr = (void *)skb->data;
+ 	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
++	const struct ath10k_skb_cb *skb_cb = ATH10K_SKB_CB(skb);
+ 	__le16 fc = hdr->frame_control;
+ 
+ 	if (!vif || vif->type == NL80211_IFTYPE_MONITOR)
+@@ -3408,7 +3409,8 @@ ath10k_mac_tx_h_get_txmode(struct ath10k
+ 	if (ieee80211_is_data_present(fc) && sta && sta->tdls)
+ 		return ATH10K_HW_TXRX_ETHERNET;
+ 
+-	if (test_bit(ATH10K_FLAG_RAW_MODE, &ar->dev_flags))
++	if (test_bit(ATH10K_FLAG_RAW_MODE, &ar->dev_flags) ||
++	    skb_cb->flags & ATH10K_SKB_F_RAW_TX)
+ 		return ATH10K_HW_TXRX_RAW;
+ 
+ 	return ATH10K_HW_TXRX_NATIVE_WIFI;
+@@ -3519,6 +3521,8 @@ static void ath10k_mac_tx_h_fill_cb(stru
+ 	struct ieee80211_hdr *hdr = (void *)skb->data;
+ 	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
+ 	struct ath10k_skb_cb *cb = ATH10K_SKB_CB(skb);
++	bool is_data = ieee80211_is_data(hdr->frame_control) ||
++			ieee80211_is_data_qos(hdr->frame_control);
+ 
+ 	cb->flags = 0;
+ 	cb->vif = vif;
+@@ -3537,6 +3541,17 @@ static void ath10k_mac_tx_h_fill_cb(stru
+ 
+ 	if (ieee80211_is_data_qos(hdr->frame_control))
+ 		cb->flags |= ATH10K_SKB_F_QOS;
++
++	/* Data frames encrypted in software will be posted to firmware
++	 * with tx encap mode set to RAW. One such case would be the
++	 * multicast traffic generated for a VLAN group.
++	 */
++	if (is_data && ieee80211_has_protected(hdr->frame_control) &&
++	    info->control.hw_key == NULL) {
++		cb->flags |= ATH10K_SKB_F_NO_HWCRYPT;
++		cb->flags |= ATH10K_SKB_F_RAW_TX;
++	}
++
+ }
+ 
+ bool ath10k_mac_tx_frm_has_freq(struct ath10k *ar)
+@@ -3643,6 +3658,7 @@ static int ath10k_mac_tx(struct ath10k *
+ {
+ 	struct ieee80211_hw *hw = ar->hw;
+ 	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
++	const struct ath10k_skb_cb *skb_cb = ATH10K_SKB_CB(skb);
+ 	int ret;
+ 
+ 	if (info->control.no_80211_encap)
+@@ -3663,7 +3679,8 @@ static int ath10k_mac_tx(struct ath10k *
+ 		ath10k_tx_h_8023(skb);
+ 		break;
+ 	case ATH10K_HW_TXRX_RAW:
+-		if (!test_bit(ATH10K_FLAG_RAW_MODE, &ar->dev_flags)) {
++		if (!test_bit(ATH10K_FLAG_RAW_MODE, &ar->dev_flags) &&
++		    !(skb_cb->flags & ATH10K_SKB_F_RAW_TX)) {
+ 			WARN_ON_ONCE(1);
+ 			ieee80211_free_txskb(hw, skb);
+ 			return -ENOTSUPP;
+@@ -8463,8 +8480,14 @@ int ath10k_mac_register(struct ath10k *a
+ 	else
+ 		ieee80211_hw_set(ar->hw, SUPPORT_FAST_XMIT);
+ 
+-	if (!test_bit(ATH10K_FLAG_RAW_MODE, &ar->dev_flags))
++	if (!test_bit(ATH10K_FLAG_RAW_MODE, &ar->dev_flags)) {
+ 		ieee80211_hw_set(ar->hw, SW_CRYPTO_CONTROL);
++		if (test_bit(WMI_SERVICE_PER_PACKET_SW_ENCRYPT,
++			     ar->wmi.svc_map)) {
++			ar->hw->supp_sw_crypto_iftypes =
++				BIT(NL80211_IFTYPE_AP_VLAN);
++		}
++	}
+ 
+ 	ar->hw->wiphy->features |= NL80211_FEATURE_STATIC_SMPS;
+ 	ar->hw->wiphy->flags |= WIPHY_FLAG_IBSS_RSN;
+--- a/drivers/net/wireless/ath/ath10k/wmi.h
++++ b/drivers/net/wireless/ath/ath10k/wmi.h
+@@ -203,6 +203,11 @@ enum wmi_service {
+ 	WMI_SERVICE_TPC_STATS_FINAL,
+ 	WMI_SERVICE_RESET_CHIP,
+ 	WMI_SERVICE_SPOOF_MAC_SUPPORT,
++	WMI_SERVICE_CFR_CAPTURE_SUPPORT,
++	WMI_SERVICE_TX_DATA_ACK_RSSI,
++	WMI_SERVICE_CFR_CAPTURE_IND_MSG_TYPE_1,
++	WMI_SERVICE_PER_PACKET_SW_ENCRYPT,
++	WMI_SERVICE_VDEV_BCN_RATE_CONTROL,
+ 
+ 	/* keep last */
+ 	WMI_SERVICE_MAX,
+@@ -242,6 +247,8 @@ enum wmi_10x_service {
+ 	WMI_10X_SERVICE_PEER_STATS,
+ 	WMI_10X_SERVICE_RESET_CHIP,
+ 	WMI_10X_SERVICE_HTT_MGMT_TX_COMP_VALID_FLAGS,
++	WMI_10X_SERVICE_VDEV_BCN_RATE_CONTROL,
++	WMI_10X_SERVICE_PER_PACKET_SW_ENCRYPT,
+ };
+ 
+ enum wmi_main_service {
+@@ -350,6 +357,10 @@ enum wmi_10_4_service {
+ 	WMI_10_4_SERVICE_HTT_MGMT_TX_COMP_VALID_FLAGS,
+ 	WMI_10_4_SERVICE_HOST_DFS_CHECK_SUPPORT,
+ 	WMI_10_4_SERVICE_TPC_STATS_FINAL,
++	WMI_10_4_SERVICE_CFR_CAPTURE_SUPPORT,
++	WMI_10_4_SERVICE_TX_DATA_ACK_RSSI,
++	WMI_10_4_SERVICE_CFR_CAPTURE_IND_MSG_TYPE_1,
++	WMI_10_4_SERVICE_PER_PACKET_SW_ENCRYPT,
+ };
+ 
+ static inline char *wmi_service_name(int service_id)
+@@ -463,6 +474,13 @@ static inline char *wmi_service_name(int
+ 	SVCSTR(WMI_SERVICE_HTT_MGMT_TX_COMP_VALID_FLAGS);
+ 	SVCSTR(WMI_SERVICE_HOST_DFS_CHECK_SUPPORT);
+ 	SVCSTR(WMI_SERVICE_TPC_STATS_FINAL);
++ 	SVCSTR(WMI_SERVICE_RESET_CHIP);
++	SVCSTR(WMI_SERVICE_CFR_CAPTURE_SUPPORT);
++	SVCSTR(WMI_SERVICE_TX_DATA_ACK_RSSI);
++	SVCSTR(WMI_SERVICE_CFR_CAPTURE_IND_MSG_TYPE_1);
++	SVCSTR(WMI_SERVICE_PER_PACKET_SW_ENCRYPT);
++	SVCSTR(WMI_SERVICE_VDEV_BCN_RATE_CONTROL);
++
+ 	default:
+ 		return NULL;
+ 	}
+@@ -557,6 +575,10 @@ static inline void wmi_10x_svc_map(const
+ 	       WMI_SERVICE_RESET_CHIP, len);
+ 	SVCMAP(WMI_10X_SERVICE_HTT_MGMT_TX_COMP_VALID_FLAGS,
+ 	       WMI_SERVICE_HTT_MGMT_TX_COMP_VALID_FLAGS, len);
++	SVCMAP(WMI_10X_SERVICE_VDEV_BCN_RATE_CONTROL,
++	       WMI_SERVICE_VDEV_BCN_RATE_CONTROL, len);
++	SVCMAP(WMI_10X_SERVICE_PER_PACKET_SW_ENCRYPT,
++	       WMI_SERVICE_PER_PACKET_SW_ENCRYPT, len);
+ }
+ 
+ static inline void wmi_main_svc_map(const __le32 *in, unsigned long *out,
+@@ -771,6 +793,14 @@ static inline void wmi_10_4_svc_map(cons
+ 	       WMI_SERVICE_HOST_DFS_CHECK_SUPPORT, len);
+ 	SVCMAP(WMI_10_4_SERVICE_TPC_STATS_FINAL,
+ 	       WMI_SERVICE_TPC_STATS_FINAL, len);
++	SVCMAP(WMI_10_4_SERVICE_CFR_CAPTURE_SUPPORT,
++	       WMI_SERVICE_CFR_CAPTURE_SUPPORT, len);
++	SVCMAP(WMI_10_4_SERVICE_TX_DATA_ACK_RSSI,
++	       WMI_SERVICE_TX_DATA_ACK_RSSI, len);
++	SVCMAP(WMI_10_4_SERVICE_CFR_CAPTURE_IND_MSG_TYPE_1,
++	       WMI_SERVICE_CFR_CAPTURE_IND_MSG_TYPE_1, len);
++	SVCMAP(WMI_10_4_SERVICE_PER_PACKET_SW_ENCRYPT,
++	       WMI_SERVICE_PER_PACKET_SW_ENCRYPT, len);
+ }
+ 
+ #undef SVCMAP

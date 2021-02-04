@@ -1,0 +1,51 @@
+CC =$(TOOLPREFIX)gcc
+LD =$(TOOLPREFIX)ld
+#CMN_INCLUDE_DIR = ../../../../../include
+HALPHY_TOOLS_COMPONENT_DIR ?= ../../..
+TLV1_INC_DIR = $(HALPHY_TOOLS_COMPONENT_DIR)/include/tlv1
+HALPHY_COMMON_INCLUDE_DIR = $(HALPHY_TOOLS_COMPONENT_DIR)/include/
+
+CFLAGS =  -fPIC -DDEBUG -DLINUX -DLinux -DTEST_STANDALONE -D_HOST_SIM_TESTING -D_FOR_HOST_TESTING -fno-stack-protector
+CFLAGS +=  -I. -I$(CMN_INCLUDE_DIR) -I$(HALPHY_TOOLS_COMPONENT_DIR)/include -I$(TLV1_INC_DIR) -I$(HALPHY_COMMON_INCLUDE_DIR) -I./genParmTemplate/outputTemplate
+
+COMMON_DIR = ../common 
+
+ifeq ($(OS),)
+OS := Linux
+endif
+
+ifeq ($(DEBUG),1)
+    CFLAGS += -g
+endif
+
+VPATH	+= ./genParmTemplate/outputTemplate $(COMMON_DIR)
+LIB   := $(OS)/libtlvutil.so
+SRCS  := genTxBinCmdTlv.c cmdParmsTemplate.c parseRxBinCmdTlv.c testUtil.c
+OBJS  :=  $(patsubst %.c,$(OS)/%.o,$(SRCS))
+LDFLAGS := -shared
+
+GENPARAM_DIR  = ./genParmTemplate
+GENPARAM_TEMPLATE_DIR  = ./genParmTemplate/outputTemplate
+
+all: dirs $(LIB) 
+
+dirs:
+	mkdir -p $(OS)
+	cd $(GENPARAM_DIR);$(MAKE) -f makefile.Linux all
+#Uncomment when you want to generate the NEW template
+	cd $(GENPARAM_DIR);./genAllParmTemplates.pl linux
+	cd $(GENPARAM_TEMPLATE_DIR);$(MAKE) -f makefile.Linux all
+
+$(LIB): $(OS) $(OBJS)
+	$(LD) $(LDFLAGS) -o $@ $(OBJS)
+	#$(AR) rcs $@ $(OBJS)
+
+$(OS)/%.o : %.c
+	$(CC) -c $(CFLAGS) $< -o $@
+
+clean:
+	rm -rf $(OS) 
+	cd $(GENPARAM_DIR);$(MAKE) -f makefile.Linux clean
+
+.PHONY:
+	clean all

@@ -1,0 +1,68 @@
+/* Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
+
+#include "qcom-ipq4019-ap.dk01.1.dtsi"
+
+/ {
+	model = "Qualcomm Technologies, Inc. IPQ4019/AP-DK05.1-C1";
+
+	aliases {
+		ethernet0 = "/soc/edma/gmac0";
+	};
+
+	soc {
+		mdio@90000 {
+			status = "ok";
+			pinctrl-0 = <&mdio_pins>;
+			pinctrl-names = "default";
+			phy-reset-gpio = <&tlmm 62 0>;
+			bias-disable;
+		};
+
+		spi_0: spi@78b5000 { /* BLSP1 QUP1 */
+			status = "ok";
+			cs-gpios = <&tlmm 54 0>, <&tlmm 59 0>;
+			num-cs = <2>;
+
+			mt29f@1 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				compatible = "spinand,mt29f";
+				reg = <1>;
+				spi-max-frequency = <24000000>;
+			};
+
+		};
+
+		edma@c080000 {
+			qcom,num-gmac = <2>;
+			gmac0 {
+				local-mac-address = [000000000000];
+				qcom,phy-mdio-addr = <4>;
+				qcom,poll-required = <1>;
+				qcom,poll-required-dynamic = <1>;
+				qcom,forced-speed = <1000>;
+				qcom,forced-duplex = <1>;
+				vlan-tag = <2 0x20>;
+			};
+			gmac1 {
+				local-mac-address = [000000000000];
+				qcom,poll-required-dynamic = <1>;
+				vlan-tag = <1 0x1e>;
+			};
+		};
+	};
+};

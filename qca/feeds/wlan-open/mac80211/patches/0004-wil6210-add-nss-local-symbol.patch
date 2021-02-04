@@ -1,0 +1,10 @@
+--- a/local-symbols
++++ b/local-symbols
+@@ -114,6 +114,7 @@ WIL6210=
+ WIL6210_ISR_COR=
+ WIL6210_TRACING=
+ WIL6210_DEBUGFS=
++WIL6210_NSS_SUPPORT=
+ ATH10K=
+ ATH10K_PCI=
+ ATH10K_AHB=

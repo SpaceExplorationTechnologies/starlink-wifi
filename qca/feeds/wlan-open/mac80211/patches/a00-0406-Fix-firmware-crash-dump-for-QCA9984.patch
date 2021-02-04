@@ -1,0 +1,95 @@
+--- a/drivers/net/wireless/ath/ath10k/ce.h
++++ b/drivers/net/wireless/ath/ath10k/ce.h
+@@ -273,6 +273,10 @@ void ath10k_ce_dump_registers(struct ath
+ void ath10k_ce_alloc_rri(struct ath10k *ar);
+ void ath10k_ce_free_rri(struct ath10k *ar);
+ 
++/*==================CE debug====================*/
++#define CE_DESC_DUMP_COUNT	60
++#define	CE4_HOST_TARGET_HTT	4
++
+ /* ce_attr.flags values */
+ /* Use NonSnooping PCIe accesses? */
+ #define CE_ATTR_NO_SNOOP		1
+--- a/drivers/net/wireless/ath/ath10k/debug.c
++++ b/drivers/net/wireless/ath/ath10k/debug.c
+@@ -2703,6 +2703,17 @@ static const struct fw_mem_map qca99x0_f
+ 	{QCA99X0_APB_REG_SPACE_2, QCA99X0_APB_REG_LEN_2, ATTR_REG_SPACE},
+ };
+ 
++static const struct fw_mem_map qca9984_fw_mem_map[] = {
++	{QCA99X0_DRAM_ADDR, QCA9984_DRAM_LEN, 0},
++	{QCA99X0_SRAM_ADDR, QCA99X0_SRAM_LEN, ATTR_SRAM_MEM},
++	{QCA99X0_IRAM_ADDR, QCA99X0_IRAM_LEN, 0},
++	{QCA99X0_APB_REG_SPACE_1, QCA99X0_APB_REG_LEN_1, ATTR_REG_SPACE},
++	{QCA99X0_WIFI_REG_SPACE, QCA99X0_WIFI_REG_LEN, ATTR_REG_SPACE},
++	{QCA99X0_CE_REG_SPACE, QCA99X0_CE_REG_LEN, ATTR_REG_SPACE},
++	{QCA99X0_SOC_REG_SPACE, QCA99X0_SOC_REG_LEN, ATTR_REG_SPACE},
++	{QCA99X0_APB_REG_SPACE_2, QCA99X0_APB_REG_LEN_2, ATTR_REG_SPACE},
++};
++
+ static const struct fw_mem_map ipq40xx_fw_mem_map[] = {
+ 	{QCA99X0_DRAM_ADDR, IPQ40XX_DRAM_LEN, 0},
+ 	{QCA99X0_SRAM_ADDR, QCA99X0_SRAM_LEN, ATTR_SRAM_MEM},
+@@ -2745,8 +2756,9 @@ static int ath10k_dbg_hw_reg_dump(struct
+ 
+ void ath10k_dbg_qca99x0_bug_on_fw_assert(struct ath10k *ar)
+ {
++	const struct fw_mem_map *ptr;
+ 	u32 rd_addr, rd_len;
+-	u8 *dump_addr, *pos, i;
++	u8 *dump_addr, *pos, i, attr_len;
+ 	int ret;
+ 
+ 	dump_addr = (u8 *)ioremap(ATH10K_FW_IO_MEM_REGION_2_ADDR,
+@@ -2759,11 +2771,19 @@ void ath10k_dbg_qca99x0_bug_on_fw_assert
+ 	pos = dump_addr;
+ 	memset(dump_addr, 0, ATH10K_FW_IO_MEM_REGION_2_SIZE);
+ 
++	if (QCA_REV_9984(ar) || QCA_REV_9888(ar)) {
++		ptr = qca9984_fw_mem_map;
++		attr_len = ARRAY_SIZE(qca9984_fw_mem_map);
++	} else {
++		ptr = qca99x0_fw_mem_map;
++		attr_len = ARRAY_SIZE(qca99x0_fw_mem_map);
++	}
++
+ 	ath10k_err(ar, "Collecting WLAN Firmware Dump...\n");
+ 
+-	for (i = 0; i < ARRAY_SIZE(qca99x0_fw_mem_map); i++) {
+-		rd_addr = qca99x0_fw_mem_map[i].addr;
+-		rd_len = qca99x0_fw_mem_map[i].len;
++	for (i = 0; i < attr_len; i++) {
++		rd_addr = ptr[i].addr;
++		rd_len = ptr[i].len;
+ 
+ 		if ((pos + rd_len) >
+ 		    (dump_addr + ATH10K_FW_IO_MEM_REGION_2_SIZE)) {
+@@ -2772,7 +2792,7 @@ void ath10k_dbg_qca99x0_bug_on_fw_assert
+                         return;
+ 		}
+ 
+-		switch(qca99x0_fw_mem_map[i].attr) {
++		switch(ptr[i].attr) {
+ 		case ATTR_SRAM_MEM:
+ 			ret = ath10k_dbg_qca99x0_fw_sram_dump(ar, rd_addr,
+ 							      pos, rd_len);
+@@ -2909,7 +2929,7 @@ void ath10k_dbg_bug_on_fw_assert(struct
+ 	if (!bug_on_fw_assert || ar->stats.fw_crash_counter == 0)
+ 		return;
+ 
+-	if (QCA_REV_99X0(ar))
++	if (QCA_REV_99X0(ar) || QCA_REV_9984(ar) || QCA_REV_9888(ar))
+ 		ath10k_dbg_qca99x0_bug_on_fw_assert(ar);
+ 	else if (QCA_REV_40XX(ar))
+ 		ath10k_dbg_ipq40xx_bug_on_fw_assert(ar);
+--- a/drivers/net/wireless/ath/ath10k/debug.h
++++ b/drivers/net/wireless/ath/ath10k/debug.h
+@@ -133,6 +133,7 @@ struct fw_mem_map {
+ #define QCA99X0_DRAM_ADDR              0x00400000
+ #define QCA99X0_DRAM_LEN               0x00060000 /* 384 kb */
+ #define IPQ40XX_DRAM_LEN               0x00068000 /* 416 kb */
++#define QCA9984_DRAM_LEN               0x00080000 /* 524 kb */
+ 
+ #define QCA99X0_IRAM_ADDR              0x00980000
+ #define QCA99X0_IRAM_LEN               0x00050000 /* 320 kb */

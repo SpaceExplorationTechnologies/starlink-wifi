@@ -1,0 +1,33 @@
+diff -Nur a/programs/pluto/ikev2_parent.c openswan-2.6.41/programs/pluto/ikev2_parent.c
+--- a/programs/pluto/ikev2_parent.c	2015-09-17 14:29:42.430564231 -0700
++++ openswan-2.6.41/programs/pluto/ikev2_parent.c	2015-09-17 14:31:31.138566968 -0700
+@@ -3115,13 +3115,14 @@
+ 
+         md.st = st;
+         md.pst= pst;
+-        /* beginning of data going out */
+-        authstart = reply_stream.cur;
+ 
+         /* make sure HDR is at start of a clean buffer */
+         zero(reply_buffer);
+         init_pbs(&reply_stream, reply_buffer, sizeof(reply_buffer), "information exchange request packet");
+ 
++	/* beginning of data going out */
++        authstart = reply_stream.cur;
++
+         /* HDR out */
+         {
+             struct isakmp_hdr r_hdr ;
+diff -Nur a/programs/pluto/state.c openswan-2.6.41/programs/pluto/state.c
+--- a/programs/pluto/state.c	2015-09-17 14:29:42.434564231 -0700
++++ openswan-2.6.41/programs/pluto/state.c	2015-09-17 14:32:48.966568928 -0700
+@@ -426,7 +426,8 @@
+ 
+     /* tell the other side of any IPSEC SAs that are going down */
+     if (IS_IPSEC_SA_ESTABLISHED(st->st_state)
+-    || IS_ISAKMP_SA_ESTABLISHED(st->st_state))
++    || IS_ISAKMP_SA_ESTABLISHED(st->st_state)
++    || IS_CHILD_SA_ESTABLISHED(st))
+ 	send_delete(st);
+ 
+     delete_event(st);	/* delete any pending timer event */

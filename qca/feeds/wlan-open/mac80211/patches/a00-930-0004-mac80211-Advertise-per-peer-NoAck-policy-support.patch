@@ -1,0 +1,15 @@
+diff --git a/net/mac80211/main.c b/net/mac80211/main.c
+index bad2d09..49bed5c 100644
+--- a/net/mac80211/main.c
++++ b/net/mac80211/main.c
+@@ -572,6 +572,10 @@ struct ieee80211_hw *ieee80211_alloc_hw_nm(size_t priv_data_len,
+ 
+ 	wiphy_ext_feature_set(wiphy, NL80211_EXT_FEATURE_RRM);
+ 
++	if (!ops->set_noack_tid_bitmap)
++		wiphy_ext_feature_set(wiphy,
++				      NL80211_EXT_FEATURE_PER_STA_NOACK_MAP);
++
+ 	wiphy->bss_priv_size = sizeof(struct ieee80211_bss);
+ 
+ 	local = wiphy_priv(wiphy);

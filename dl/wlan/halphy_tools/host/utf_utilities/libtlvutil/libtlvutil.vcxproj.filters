@@ -1,0 +1,153 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+    <Filter Include="outputTemplate">
+      <UniqueIdentifier>{516da697-e79e-4052-98f4-ed4981a12c9b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="cmdParmsTemplate.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="genTxBinCmdTlv.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="parseRxBinCmdTlv.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\testUtil.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_calDoneParmBinTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_calDoneParmTxtTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_calParmBinTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_calParmTxtTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_nartCmdParmBinTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_nartCmdParmTxtTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_nartRspParmBinTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_nartRspParmTxtTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_pmParmBinTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_pmParmTxtTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_rspGenericParmBinTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_rspGenericParmTxtTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_rxParmBinTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_rxParmTxtTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_rxStatusParmBinTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_rxStatusParmTxtTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_setRegParmBinTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_setRegParmTxtTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_submitreportParmBinTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_submitreportParmTxtTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_txParmBinTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_txParmTxtTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_txStatusParmBinTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="genParmTemplate\outputTemplate\_cmd_txStatusParmTxtTemplate.c">
+      <Filter>outputTemplate</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="genTxBinCmdTlv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\otaHostCommon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parseRxBinCmdTlv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_calDoneParmTxtTemplate.h">
+      <Filter>outputTemplate</Filter>
+    </ClInclude>
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_calParmTxtTemplate.h">
+      <Filter>outputTemplate</Filter>
+    </ClInclude>
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_nartCmdParmTxtTemplate.h">
+      <Filter>outputTemplate</Filter>
+    </ClInclude>
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_nartRspParmTxtTemplate.h">
+      <Filter>outputTemplate</Filter>
+    </ClInclude>
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_pmParmTxtTemplate.h">
+      <Filter>outputTemplate</Filter>
+    </ClInclude>
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_rspGenericParmTxtTemplate.h">
+      <Filter>outputTemplate</Filter>
+    </ClInclude>
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_rxParmTxtTemplate.h">
+      <Filter>outputTemplate</Filter>
+    </ClInclude>
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_rxStatusParmTxtTemplate.h">
+      <Filter>outputTemplate</Filter>
+    </ClInclude>
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_setRegParmTxtTemplate.h">
+      <Filter>outputTemplate</Filter>
+    </ClInclude>
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_submitreportParmTxtTemplate.h">
+      <Filter>outputTemplate</Filter>
+    </ClInclude>
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_txParmTxtTemplate.h">
+      <Filter>outputTemplate</Filter>
+    </ClInclude>
+    <ClInclude Include="genParmTemplate\outputTemplate\_cmd_txStatusParmTxtTemplate.h">
+      <Filter>outputTemplate</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

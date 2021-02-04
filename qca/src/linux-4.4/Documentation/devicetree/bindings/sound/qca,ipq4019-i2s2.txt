@@ -1,0 +1,29 @@
+* Qualcomm Technologies IPQ4019 ASoC I2S PCM driver
+
+This node models the Qualcomm Technologies IPQ4019 ASoC I2S PCM driver
+
+Required properties:
+
+- compatible	 : "qca,ipq4019-i2s2"
+- dma-tx-channel : should have the mbox tx channel id
+- stereo-tx-port : should have the stereo tx id
+- clocks	 : should have the audio tx bit clock, tx master clock,
+		   rx bit clock, rx master clock id
+- clock-names	 : should be "audio_tx_bclk", "audio_tx_mclk", "audio_rx_bclk",
+		   "audio_rx_mclk"
+
+Example:
+i2s1: ipq4019-pcm-i2s2@0 {
+	compatible = "qca,ipq4019-i2s2";
+	dma-tx-channel = <MBOX2_TX_ID>;
+	stereo-tx-port = <STEREO2_ID>;
+	clocks = <&adcc ADCC_TXB_CLK_SRC>,
+		<&adcc ADCC_TXM_CLK_SRC>,
+		<&adcc ADCC_RXB_CLK_SRC>,
+		<&adcc ADCC_RXM_CLK_SRC>;
+	clock-names = "audio_tx_bclk",
+		"audio_tx_mclk",
+		"audio_rx_bclk",
+		"audio_rx_mclk";
+	status = "disabled";
+};

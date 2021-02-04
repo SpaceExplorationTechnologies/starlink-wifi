@@ -1,0 +1,12 @@
+diff --git a/net/Kconfig b/net/Kconfig
+index 976cb63..4a7b0af 100644
+--- a/net/Kconfig
++++ b/net/Kconfig
+@@ -236,6 +236,7 @@ source "net/dcb/Kconfig"
+ source "net/dns_resolver/Kconfig"
+ source "net/batman-adv/Kconfig"
+ source "net/openvswitch/Kconfig"
++source "net/shortcut-fe/Kconfig"
+ 
+ config RPS
+ 	boolean "RPS"

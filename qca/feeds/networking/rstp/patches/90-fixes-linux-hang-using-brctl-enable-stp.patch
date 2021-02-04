@@ -1,0 +1,24 @@
+diff -Nur a/bridge-stp rstp-2011-10-11/bridge-stp
+--- a/bridge-stp	2015-09-11 15:07:22.317566056 -0700
++++ rstp-2011-10-11/bridge-stp	2015-09-11 16:17:16.365671676 -0700
+@@ -50,12 +50,17 @@
+     daemon
+ }
+ 
++#when kernel start stp, we can't start the rstp again.
++#otherwise it will cause deadlock issue
++checkpid $pid_file || exit 1
++
+ case $2 in
+      start) 
+-	daemon
+-	exec /sbin/rstpctl rstp $bridge on ;;
++	exec /sbin/rstpctl rstp $bridge on
++	;;
+      stop)  
+-	exec /sbin/rstpctl rstp $bridge off ;;
++	exec /sbin/rstpctl rstp $bridge off
++	;;
+      *)
+      	echo "Unknown action:" $2
+ 	echo "Usage: bridge-stp <bridge> {start|stop}"

@@ -1,0 +1,23 @@
+* Qualcomm Technologies IPQ4019 ASoC MBOX driver
+
+This node models the Qualcomm Technologies IPQ4019 ASoC mbox driver
+
+Required properties:
+
+- compatible	 : "qca,ipq4019-mbox"
+- dma-index	 : should have the mbox dma index
+- reg		 : should have the stereo register address, length
+- interrupts	 : should have the mbox interrupt no
+- tx-channel	 : should have the mbox tx id
+- rx-channel	 : should have the mbox rx id
+
+Example:
+mbox0: mbox@7708000 {
+	compatible = "qca,ipq4019-mbox";
+	dma-index = <0>;
+	reg = <0x7708000 0x1000>;
+	interrupts = <0 156 0>;
+	tx-channel = <MBOX0_TX_ID>;
+	rx-channel = <MBOX0_RX_ID>;
+	status = "disabled";
+};

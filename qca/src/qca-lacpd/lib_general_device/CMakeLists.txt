@@ -1,0 +1,2 @@
+add_library(general_device general_device.c general_device_linux.c general_device_qca_switch.c general_device_switch.c)
+target_link_libraries(general_device ubox)
