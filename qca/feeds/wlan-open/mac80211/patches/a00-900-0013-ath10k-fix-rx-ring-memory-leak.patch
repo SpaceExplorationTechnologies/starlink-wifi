@@ -1,0 +1,32 @@
+--- a/drivers/net/wireless/ath/ath10k/core.c
++++ b/drivers/net/wireless/ath/ath10k/core.c
+@@ -2560,6 +2560,7 @@ int ath10k_core_start(struct ath10k *ar, enum ath10k_firmware_mode mode,
+ 		}
+ 	}
+ 
++	ar->htt.rx_ring.ready_to_fill = true;
+ 	status = ath10k_htt_rx_ring_refill(ar);
+ 	if (status) {
+ 		ath10k_err(ar, "failed to refill htt rx ring: %d\n", status);
+--- a/drivers/net/wireless/ath/ath10k/htt.h
++++ b/drivers/net/wireless/ath/ath10k/htt.h
+@@ -1730,6 +1730,7 @@ struct ath10k_htt {
+ 		 * of hash collisions for sk_buffs.
+ 		 */
+ 		bool in_ord_rx;
++		bool ready_to_fill;
+ 		DECLARE_HASHTABLE(skb_table, 4);
+ 
+ 		/*
+--- a/drivers/net/wireless/ath/ath10k/htt_rx.c
++++ b/drivers/net/wireless/ath/ath10k/htt_rx.c
+@@ -217,6 +217,9 @@ static void ath10k_htt_rx_msdu_buff_replenish(struct ath10k_htt *htt)
+ {
+ 	int ret, num_deficit, num_to_fill;
+ 
++	if (!htt->rx_ring.ready_to_fill)
++		return;
++
+ 	/* Refilling the whole RX ring buffer proves to be a bad idea. The
+ 	 * reason is RX may take up significant amount of CPU cycles and starve
+ 	 * other tasks, e.g. TX on an ethernet device while acting as a bridge

@@ -1,0 +1,34 @@
+#!/bin/sh
+
+#common_execute_method_param "$parameter" "$permission" "$get_cmd" "$set_cmd" "xsd:$type" "$forcedinform"
+# $forcedinform should be set to 1 if the parameter is included in the inform message otherwise empty
+# Default of $type = string
+
+#############################
+#   Entry point functuons   #
+#############################
+
+prefix_list="$prefix_list $DMROOT.UPnP."
+entry_execute_method_list="$entry_execute_method_list entry_execute_method_root_UPnP"
+entry_execute_method_list_forcedinform="$entry_execute_method_list_forcedinform  entry_execute_method_root_UPnP"
+
+entry_execute_method_root_UPnP() {
+        case "$1" in ""|"$DMROOT."|"$DMROOT.UPnP."*)
+                common_execute_method_obj "$DMROOT.UPnP." "0"
+                common_execute_method_param "$DMROOT.UPnP.Enable" "1" "$UCI_GET upnpd.config.enable_upnp" "time_info_set_enable_UPnP" "" "1"
+                return 0;
+                ;;
+        esac
+        return $E_INVALID_PARAMETER_NAME;
+}
+
+#######################################
+#   Data model parameters functions   #
+#######################################
+
+time_info_set_enable_UPnP() {
+        local val="$1"
+        $UCI_SET upnpd.config.enable_upnp ="$val"
+        return 0
+}
+

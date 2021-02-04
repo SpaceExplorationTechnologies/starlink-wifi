@@ -1,0 +1,99 @@
+--- a/drivers/net/wireless/ath/ath10k/core.c
++++ b/drivers/net/wireless/ath/ath10k/core.c
+@@ -39,6 +39,8 @@
+ #include "fwlog.h"
+ 
+ unsigned int ath10k_debug_mask;
++EXPORT_SYMBOL(ath10k_debug_mask);
++
+ static unsigned int ath10k_cryptmode_param;
+ static unsigned int ath10k_dual_band_config;
+ static bool uart_print;
+--- a/drivers/net/wireless/ath/ath10k/debug.c
++++ b/drivers/net/wireless/ath/ath10k/debug.c
+@@ -2888,8 +2888,8 @@ void ath10k_debug_unregister(struct ath1
+ #endif /* CPTCFG_ATH10K_DEBUGFS */
+ 
+ #ifdef CPTCFG_ATH10K_DEBUG
+-void ath10k_dbg(struct ath10k *ar, enum ath10k_debug_mask mask,
+-		const char *fmt, ...)
++void __ath10k_dbg(struct ath10k *ar, enum ath10k_debug_mask mask,
++		  const char *fmt, ...)
+ {
+ 	struct va_format vaf;
+ 	va_list args;
+@@ -2899,14 +2899,13 @@ void ath10k_dbg(struct ath10k *ar, enum
+ 	vaf.fmt = fmt;
+ 	vaf.va = &args;
+ 
+-	if (ath10k_debug_mask & mask)
+-		dev_printk(KERN_DEBUG, ar->dev, "%pV", &vaf);
++	dev_printk(KERN_DEBUG, ar->dev, "%pV", &vaf);
+ 
+ 	trace_ath10k_log_dbg(ar, mask, &vaf);
+ 
+ 	va_end(args);
+ }
+-EXPORT_SYMBOL(ath10k_dbg);
++EXPORT_SYMBOL(__ath10k_dbg);
+ 
+ void ath10k_dbg_dump(struct ath10k *ar,
+ 		     enum ath10k_debug_mask mask,
+@@ -2919,7 +2918,7 @@ void ath10k_dbg_dump(struct ath10k *ar,
+ 
+ 	if (ath10k_debug_mask & mask) {
+ 		if (msg)
+-			ath10k_dbg(ar, mask, "%s\n", msg);
++			__ath10k_dbg(ar, mask, "%s\n", msg);
+ 
+ 		for (ptr = buf; (ptr - buf) < len; ptr += 16) {
+ 			linebuflen = 0;
+--- a/drivers/net/wireless/ath/ath10k/debug.h
++++ b/drivers/net/wireless/ath/ath10k/debug.h
+@@ -335,18 +335,18 @@ void ath10k_sta_update_rx_tid_stats_ampd
+ void ath10k_dbg_bug_on_fw_assert(struct ath10k *ar);
+ 
+ #ifdef CPTCFG_ATH10K_DEBUG
+-__printf(3, 4) void ath10k_dbg(struct ath10k *ar,
+-			       enum ath10k_debug_mask mask,
+-			       const char *fmt, ...);
++__printf(3, 4) void __ath10k_dbg(struct ath10k *ar,
++				 enum ath10k_debug_mask mask,
++				 const char *fmt, ...);
+ void ath10k_dbg_dump(struct ath10k *ar,
+ 		     enum ath10k_debug_mask mask,
+ 		     const char *msg, const char *prefix,
+ 		     const void *buf, size_t len);
+ #else /* CPTCFG_ATH10K_DEBUG */
+ 
+-static inline int ath10k_dbg(struct ath10k *ar,
+-			     enum ath10k_debug_mask dbg_mask,
+-			     const char *fmt, ...)
++static inline int __ath10k_dbg(struct ath10k *ar,
++			       enum ath10k_debug_mask dbg_mask,
++			       const char *fmt, ...)
+ {
+ 	return 0;
+ }
+@@ -358,4 +358,10 @@ static inline void ath10k_dbg_dump(struc
+ {
+ }
+ #endif /* CPTCFG_ATH10K_DEBUG */
++
++#define ath10k_dbg(ar, dbg_mask, fmt, ...)				\
++do {									\
++	if (ath10k_debug_mask & dbg_mask)				\
++		__ath10k_dbg(ar, dbg_mask, fmt, ##__VA_ARGS__);		\
++} while (0)
+ #endif /* _DEBUG_H_ */
+--- a/drivers/net/wireless/ath/ath10k/htc.c
++++ b/drivers/net/wireless/ath/ath10k/htc.c
+@@ -29,7 +29,7 @@ static void ath10k_htc_control_tx_comple
+ 	kfree_skb(skb);
+ }
+ 
+-static struct sk_buff *ath10k_htc_build_tx_ctrl_skb(void *ar)
++static struct sk_buff *ath10k_htc_build_tx_ctrl_skb(struct ath10k *ar)
+ {
+ 	struct sk_buff *skb;
+ 	struct ath10k_skb_cb *skb_cb;

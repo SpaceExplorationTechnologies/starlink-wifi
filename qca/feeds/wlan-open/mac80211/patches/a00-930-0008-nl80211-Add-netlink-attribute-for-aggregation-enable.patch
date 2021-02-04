@@ -1,0 +1,168 @@
+--- a/include/net/cfg80211.h
++++ b/include/net/cfg80211.h
+@@ -2992,6 +2992,9 @@ struct cfg80211_external_auth_params {
+  *
+  * @tx_control_port: TX a control port frame (EAPoL).  The noencrypt parameter
+  *	tells the driver that the frame should not be encrypted.
++ * @set_tid_aggr_config: enable/disable aggregation configuration for the given
++ *	TID. If this configuration needs to be peer specific peer MAC address
++ *	can be passed.
+  */
+ struct cfg80211_ops {
+ 	int	(*suspend)(struct wiphy *wiphy, struct cfg80211_wowlan *wow);
+@@ -3302,6 +3305,10 @@ struct cfg80211_ops {
+ 				   const u8 *buf, size_t len,
+ 				   const u8 *dest, const __be16 proto,
+ 				   const bool noencrypt);
++	int	(*set_tid_aggr_config)(struct wiphy *wiphy,
++				       struct net_device *dev,
++				       const u8 *peer, u8 tid,
++				       bool aggr);
+ };
+ 
+ /*
+--- a/include/uapi/linux/nl80211.h
++++ b/include/uapi/linux/nl80211.h
+@@ -4254,6 +4254,20 @@ enum nl80211_ps_state {
+  *	the max value should be advertised by the driver through
+  *	max_data_retry_count. when this attribute is not present, the driver
+  *	would use the default configuration.
++ * @NL80211_ATTR_TID_AMPDU_AGGR_CTRL: Enable/Disable aggregation for the TID
++ *	specified in %%NL80211_ATTR_TID. Its type is u8, if the peer MAC address
++ *	is passed in %NL80211_ATTR_MAC, the aggregation configuration is applied
++ *	to the data frame for the tid to that connected station.
++ *	Station specific aggregation configuration is valid only for STA's
++ *	current connection. i.e. the configuration will be reset to default when
++ *	the station connects back after disconnection/roaming.
++ *	when user-space does not include %NL80211_ATTR_MAC, this configuration
++ *	should be treated as per-netdev configuration. This configuration will
++ *	be cleared when the interface goes down and on the disconnection from a
++ *	BSS. Driver supporting this feature should advertise
++ *	NL80211_EXT_FEATURE_PER_STA_AMPDU_AGGR_CTRL and supporting per station
++ *	aggregation configuration should advertise
++ *	NL80211_EXT_FEATURE_PER_STA_AMPDU_AGGR_CTRL.
+  */
+ enum nl80211_attr_tid_config {
+ 	__NL80211_ATTR_TID_INVALID,
+@@ -4261,6 +4275,7 @@ enum nl80211_attr_tid_config {
+ 	NL80211_ATTR_TID_RETRY_CONFIG,
+ 	NL80211_ATTR_TID_RETRY_SHORT,
+ 	NL80211_ATTR_TID_RETRY_LONG,
++	NL80211_ATTR_TID_AMPDU_AGGR_CTRL,
+ 
+ 	/* keep last */
+ 	__NL80211_ATTR_TID_AFTER_LAST,
+@@ -5156,6 +5171,10 @@ enum nl80211_feature_flags {
+  *	count funcationality.
+  * @NL80211_EXT_FEATURE_PER_STA_RETRY_CONFIG: Driver supports STA specific
+  *	data retry count functionality.
++ * @NL80211_EXT_FEATURE_PER_TID_AMPDU_AGGR_CTRL: Driver supports TID specific
++ *	aggregation control(enable/disable).
++ * @NL80211_EXT_FEATURE_PER_STA_AMPDU_AGGR_CTRL: Driver supports per STA
++ *	specific TID aggregation control(enable/disable).
+  *
+  * @NUM_NL80211_EXT_FEATURES: number of extended features.
+  * @MAX_NL80211_EXT_FEATURES: highest extended feature index.
+@@ -5192,6 +5211,8 @@ enum nl80211_ext_feature_index {
+ 	NL80211_EXT_FEATURE_PER_STA_NOACK_MAP,
+ 	NL80211_EXT_FEATURE_PER_TID_RETRY_CONFIG,
+ 	NL80211_EXT_FEATURE_PER_STA_RETRY_CONFIG,
++	NL80211_EXT_FEATURE_PER_TID_AMPDU_AGGR_CTRL,
++	NL80211_EXT_FEATURE_PER_STA_AMPDU_AGGR_CTRL,
+ 
+ 	/* add new features before the definition below */
+ 	NUM_NL80211_EXT_FEATURES,
+--- a/net/wireless/nl80211.c
++++ b/net/wireless/nl80211.c
+@@ -12725,6 +12725,7 @@ nl80211_attr_tid_policy[NL80211_ATTR_TID
+ 	[NL80211_ATTR_TID_RETRY_CONFIG] = { .type = NLA_FLAG },
+ 	[NL80211_ATTR_TID_RETRY_SHORT] = { .type = NLA_U8 },
+ 	[NL80211_ATTR_TID_RETRY_LONG] = { .type = NLA_U8 },
++	[NL80211_ATTR_TID_AMPDU_AGGR_CTRL] = { .type = NLA_U8 },
+ };
+ 
+ static int nl80211_set_tid_config(struct sk_buff *skb,
+@@ -12737,6 +12738,7 @@ static int nl80211_set_tid_config(struct
+ 	const char *peer = NULL;
+ 	u8 tid_no;
+ 	int ret = -EINVAL, retry_short = -1, retry_long = -1;
++	bool aggr;
+ 
+ 	tid = info->attrs[NL80211_ATTR_TID_CONFIG];
+ 	if (!tid)
+@@ -12792,6 +12794,20 @@ static int nl80211_set_tid_config(struct
+ 						retry_short, retry_long);
+ 	}
+ 
++	if (attrs[NL80211_ATTR_TID_AMPDU_AGGR_CTRL]) {
++		if (!rdev->ops->set_tid_aggr_config ||
++		    !wiphy_ext_feature_isset(&rdev->wiphy,
++				NL80211_EXT_FEATURE_PER_TID_AMPDU_AGGR_CTRL))
++			return -EOPNOTSUPP;
++
++		if (peer && !wiphy_ext_feature_isset(
++				&rdev->wiphy,
++				NL80211_EXT_FEATURE_PER_STA_AMPDU_AGGR_CTRL))
++			return -EOPNOTSUPP;
++
++		aggr = !!nla_get_u8(attrs[NL80211_ATTR_TID_AMPDU_AGGR_CTRL]);
++		ret = rdev_set_tid_aggr_config(rdev, dev, peer, tid_no, aggr);
++	}
+ 	return ret;
+ }
+ 
+--- a/net/wireless/rdev-ops.h
++++ b/net/wireless/rdev-ops.h
+@@ -1251,4 +1251,19 @@ rdev_set_data_retry_count(struct cfg8021
+ 	return ret;
+ }
+ 
++static inline int
++rdev_set_tid_aggr_config(struct cfg80211_registered_device *rdev,
++			 struct net_device *dev, const u8 *peer,
++			 u8 tid, bool aggr)
++{
++	int ret;
++
++	trace_rdev_set_tid_aggr_config(&rdev->wiphy, dev, peer, tid,
++				       aggr);
++	ret = rdev->ops->set_tid_aggr_config(&rdev->wiphy, dev, peer,
++					     tid, aggr);
++	trace_rdev_return_int(&rdev->wiphy, ret);
++	return ret;
++}
++
+ #endif /* __CFG80211_RDEV_OPS */
+--- a/net/wireless/trace.h
++++ b/net/wireless/trace.h
+@@ -3319,6 +3319,30 @@ TRACE_EVENT(rdev_set_data_retry_count,
+ 		  NETDEV_PR_ARG, MAC_PR_ARG(peer), __entry->tid,
+ 		  __entry->retry_short, __entry->retry_long)
+ );
++
++TRACE_EVENT(rdev_set_tid_aggr_config,
++	TP_PROTO(struct wiphy *wiphy, struct net_device *netdev,
++		 const u8 *peer, u8 tid, bool aggr),
++	TP_ARGS(wiphy, netdev, peer, tid, aggr),
++	TP_STRUCT__entry(
++		WIPHY_ENTRY
++		NETDEV_ENTRY
++		MAC_ENTRY(peer)
++		__field(u8, tid)
++		__field(bool, aggr)
++	),
++	TP_fast_assign(
++		WIPHY_ASSIGN;
++		NETDEV_ASSIGN;
++		MAC_ASSIGN(peer, peer);
++		__entry->tid = tid;
++		__entry->aggr = aggr;
++	),
++	TP_printk(WIPHY_PR_FMT ", " NETDEV_PR_FMT ", peer: " MAC_PR_FMT
++		  ", tid: %u, aggregation: %s", WIPHY_PR_ARG,
++		  NETDEV_PR_ARG, MAC_PR_ARG(peer), __entry->tid,
++		  BOOL_TO_STR(__entry->aggr))
++);
+ #endif /* !__RDEV_OPS_TRACE || TRACE_HEADER_MULTI_READ */
+ 
+ #undef TRACE_INCLUDE_PATH

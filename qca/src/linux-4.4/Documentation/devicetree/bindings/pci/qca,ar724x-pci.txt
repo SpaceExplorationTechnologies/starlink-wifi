@@ -1,0 +1,31 @@
+Qualcomm Atheros AR724x PCI
+
+Qualcomm Atheros AR724x PCI root complex
+
+Required properties:
+  - compatible: should be "qca, ar724x-pci"
+  - reg: should contain PCIe register maps.
+  - reg-names: indicates various resources passed to driver by name.
+		Should be "cfg_base", "ctrl_base", "crp_base", "mem_base", "io_base".
+		These correspond to different modules within the PCIe core.
+  - interrupts: Should be in the format <0> and it is an index to the
+		interrupt-map that contains PCIe related interrupts.
+  - interrupt-parent: Indicates the interrupt controller where the PCI interrupt
+			belongs.
+
+Example:
+
+	pci: pci@0x16000000 {
+		compatible = "qca,ar724x-pci";
+		reg = <0x16000000 0x1000>,
+			<0x18280000 0x100>,
+			<0x18250000 0x1000>,
+			<0x12000000 0x02000000>,
+			<1 1>;
+		reg-names = "cfg_base","ctrl_base","crp_base",
+				"mem_base","io_base";
+		interrupt-parent = <&ip2_int>;
+		interrupts = <0>;
+		status = "okay";
+	};
+

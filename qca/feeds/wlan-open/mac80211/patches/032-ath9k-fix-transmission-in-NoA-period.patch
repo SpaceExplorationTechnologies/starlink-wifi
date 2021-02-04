@@ -1,0 +1,13 @@
+--- a/drivers/net/wireless/ath/ath9k/xmit.c
++++ b/drivers/net/wireless/ath/ath9k/xmit.c
+@@ -157,6 +157,10 @@ void ath9k_wake_tx_queue(struct ieee8021
+ 	struct ath_atx_tid *tid = (struct ath_atx_tid *) queue->drv_priv;
+ 	struct ath_txq *txq = tid->txq;
+ 
++	/* The node may sleep in a NoA period. */
++	if (tid->an->sleeping)
++		return;
++
+ 	ath_dbg(common, QUEUE, "Waking TX queue: %pM (%d)\n",
+ 		queue->sta ? queue->sta->addr : queue->vif->addr,
+ 		tid->tidno);

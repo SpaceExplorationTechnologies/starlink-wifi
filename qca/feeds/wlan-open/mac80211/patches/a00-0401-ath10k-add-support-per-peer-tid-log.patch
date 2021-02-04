@@ -1,0 +1,90 @@
+--- a/drivers/net/wireless/ath/ath10k/core.h
++++ b/drivers/net/wireless/ath/ath10k/core.h
+@@ -52,7 +52,7 @@
+ #define ATH10K_CONNECTION_LOSS_HZ (3 * HZ)
+ #define ATH10K_NUM_CHANS 40
+ #define ATH10K_FWLOG_MODULE_ID_MAX_10_2_4 28
+-#define ATH10K_FWLOG_MODULE_ID_MAX_10_4		34
++#define ATH10K_FWLOG_MODULE_ID_MAX_10_4		35
+ 
+ /* Antenna noise floor */
+ #define ATH10K_DEFAULT_NOISE_FLOOR -95
+--- a/drivers/net/wireless/ath/ath10k/debugfs_sta.c
++++ b/drivers/net/wireless/ath/ath10k/debugfs_sta.c
+@@ -1063,6 +1063,45 @@ static const struct file_operations fops_set_tpc = {
+ 	.llseek = default_llseek,
+ };
+ 
++static ssize_t ath10k_dbg_sta_read_peer_tid_log(struct file *file, char __user *user_buf,
++						size_t count, loff_t *ppos)
++{
++	struct ieee80211_sta *sta = file->private_data;
++	struct ath10k_sta *arsta = (struct ath10k_sta *)sta->drv_priv;
++	struct ath10k *ar = arsta->arvif->ar;
++	char buf[50];
++	int ret, len;
++
++	mutex_lock(&ar->conf_mutex);
++
++	len = 0;
++	if (ar->state != ATH10K_STATE_ON) {
++		ret = -ENETDOWN;
++		goto out;
++	}
++
++	ret = ath10k_wmi_peer_set_param(ar, arsta->arvif->vdev_id, sta->addr,
++					WMI_PEER_DEBUG, 1);
++	if (ret) {
++		len = scnprintf(buf, sizeof(buf) - len, "%s %d\n",
++				"failed to set peer tid for station ret: :", ret);
++		goto out;
++	} else
++		len = scnprintf(buf, sizeof(buf) - len, "\n %s \n\n",
++				"dumping peer tid logs on the console");
++
++out:
++	mutex_unlock(&ar->conf_mutex);
++	return simple_read_from_buffer(user_buf, count, ppos, buf, len);
++}
++
++static const struct file_operations fops_peer_tid_log = {
++	.open = simple_open,
++	.read = ath10k_dbg_sta_read_peer_tid_log,
++	.owner = THIS_MODULE,
++	.llseek = default_llseek,
++};
++
+ void ath10k_sta_add_debugfs(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
+ 			    struct ieee80211_sta *sta, struct dentry *dir)
+ {
+@@ -1078,4 +1117,5 @@ void ath10k_sta_add_debugfs(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
+ 			    &fops_tx_stats);
+ 	debugfs_create_file("tpc", S_IRUGO | S_IWUSR, dir, sta,
+ 			    &fops_set_tpc);
++	debugfs_create_file("peer_tid_log", S_IRUSR, dir, sta, &fops_peer_tid_log);
+ }
+--- a/drivers/net/wireless/ath/ath10k/fwlog.c
++++ b/drivers/net/wireless/ath/ath10k/fwlog.c
+@@ -96,7 +96,7 @@ typedef enum {
+ 	/* Add various modules supported by 10.4 fw
+ 	 * when module IDs are needed to be used
+ 	 */
+-	WLAN_10_4_MODULE_ID_MAX = 34,
++	WLAN_10_4_MODULE_ID_MAX = 35,
+ 	WLAN_10_4_MODULE_ID_INVALID = WLAN_10_4_MODULE_ID_MAX,
+ } WLAN_10_4_MODULE_ID;
+ 
+@@ -1381,6 +1381,13 @@ char *FW_10_4_DBG_MSG_ARR[WLAN_10_4_MODULE_ID_MAX][MAX_DBG_MSGS] =
+ 	"WAL_DBGID_PFSCHED_SCH_CMD",
+ 	"WAL_DBGID_PFSCHED_USER_INFO",
+ },
++{
++	"WLAN_DEBUG_MODULE_DBGID_START",
++	"WLAN_DEBUG_DBGID_PEER",
++	"WLAN_DEBUG_DBGID_PDEV",
++	"WLAN_DEBUG_DBGID_VDEV",
++	"WLAN_DEBUG_MODULE_DBGID_END",
++},
+ };
+ 
+ static char * fw_dbglog_get_msg(u32 moduleid, u32 debugid,

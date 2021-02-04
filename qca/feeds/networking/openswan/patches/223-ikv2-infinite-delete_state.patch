@@ -1,0 +1,48 @@
+diff -Nur a/programs/pluto/ikev2_parent.c b/programs/pluto/ikev2_parent.c
+--- a/programs/pluto/ikev2_parent.c	2017-06-15 17:21:16.502281746 -0700
++++ b/programs/pluto/ikev2_parent.c	2017-06-15 17:31:16.098263995 -0700
+@@ -3256,37 +3256,13 @@
+     goto real_end;
+ 
+  end:
+-    /* If some error occurs above that prevents us sending a request packet*/
+-    /* delete the states right now*/
+-
+-    if(st->st_clonedfrom != SOS_NOBODY) {
+-        change_state(st, STATE_CHILDSA_DEL);
+-        delete_state(st);
+-    } else {
+-
+-        struct state *current_st = pst;
+-        struct state *next_st = NULL;
+-        struct state *first_st = NULL;
+-
+-        /* Find the first state in the hash chain*/
+-        while(current_st != (struct state *) NULL) {
+-            first_st = current_st;
+-            current_st = first_st->st_hashchain_prev;
+-        }
+-
+-        current_st = first_st;
+-        while (current_st != (struct state *) NULL) {
+-            next_st = current_st->st_hashchain_next;
+-            if(current_st->st_clonedfrom !=0 ) {
+-                change_state(current_st, STATE_CHILDSA_DEL);
+-            } else {
+-                change_state(current_st, STATE_IKESA_DEL);
+-            }
+-            delete_state(current_st);
+-            current_st = next_st;
+-        }
+-    }
+-
++    /* If some error occurs above that prevents us sending a request packet
++     * Nothing should be done here, if deleting the state again, it will go
++     * into infinite loop of delete in this way:
++     * delete_state->send_delete->ikev2_delete_out->delte_state
++     * This is not what we expect
++     */
++     ;
+  real_end:;
+ }
+ 

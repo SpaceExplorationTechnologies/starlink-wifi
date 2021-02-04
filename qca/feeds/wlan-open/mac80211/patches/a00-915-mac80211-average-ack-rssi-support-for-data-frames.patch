@@ -1,0 +1,55 @@
+--- a/net/mac80211/sta_info.c
++++ b/net/mac80211/sta_info.c
+@@ -357,6 +357,7 @@ struct sta_info *sta_info_alloc(struct ieee80211_sub_if_data *sdata,
+ 
+ 	sta->last_connected = ktime_get_seconds();
+ 	ewma_signal_init(&sta->rx_stats_avg.signal);
++	ewma_avg_signal_init(&sta->avg_ack_signal);
+ 	for (i = 0; i < ARRAY_SIZE(sta->rx_stats_avg.chain_signal); i++)
+ 		ewma_signal_init(&sta->rx_stats_avg.chain_signal[i]);
+ 
+@@ -2294,6 +2295,15 @@ void sta_set_sinfo(struct sta_info *sta, struct station_info *sinfo)
+ 		sinfo->ack_signal = sta->status_stats.last_ack_signal;
+ 		sinfo->filled |= BIT_ULL(NL80211_STA_INFO_ACK_SIGNAL);
+ 	}
++	if (ieee80211_hw_check(&sta->local->hw, REPORTS_TX_ACK_STATUS)) {
++		if (!(sinfo->filled &
++			BIT_ULL(NL80211_STA_INFO_DATA_ACK_SIGNAL_AVG))) {
++			sinfo->avg_ack_signal =
++			-(s8)ewma_avg_signal_read(&sta->avg_ack_signal);
++			sinfo->filled |=
++				BIT_ULL(NL80211_STA_INFO_DATA_ACK_SIGNAL_AVG);
++		}
++	}
+ }
+ 
+ u32 sta_get_expected_throughput(struct sta_info *sta)
+--- a/net/mac80211/sta_info.h
++++ b/net/mac80211/sta_info.h
+@@ -119,6 +119,7 @@ enum ieee80211_sta_info_flags {
+ #define HT_AGG_STATE_START_CB		6
+ #define HT_AGG_STATE_STOP_CB		7
+ 
++DECLARE_EWMA(avg_signal, 10, 8)
+ enum ieee80211_agg_stop_reason {
+ 	AGG_STOP_DECLINED,
+ 	AGG_STOP_LOCAL_REQUEST,
+@@ -605,6 +606,7 @@ struct sta_info {
+ 	int last_cqm_event_signal;
+ 	int count_rx_signal;
+ 
++	struct ewma_avg_signal avg_ack_signal;
+ 	/* keep last! */
+ 	struct ieee80211_sta sta;
+ };
+--- a/net/mac80211/status.c
++++ b/net/mac80211/status.c
+@@ -195,6 +195,8 @@ static void ieee80211_frame_acked(struct sta_info *sta, struct sk_buff *skb)
+ 			sta->status_stats.last_ack_signal =
+ 					 (s8)txinfo->status.ack_signal;
+ 			sta->status_stats.ack_signal_filled = true;
++			ewma_avg_signal_add(&sta->avg_ack_signal,
++					    -(txinfo->status.ack_signal));
+ 		}
+ 	}
+ 

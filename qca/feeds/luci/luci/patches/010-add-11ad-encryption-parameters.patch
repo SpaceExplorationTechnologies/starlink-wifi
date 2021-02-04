@@ -1,0 +1,29 @@
+--- a/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
++++ b/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
+@@ -792,6 +792,7 @@
+ cipher:depends({encryption="psk-mixed"})
+ cipher:value("auto", translate("auto"))
+ cipher:value("ccmp", translate("Force CCMP (AES)"))
++cipher:value("gcmp", translate("Force GCMP"))
+ cipher:value("tkip", translate("Force TKIP"))
+ cipher:value("tkip+ccmp", translate("Force TKIP and CCMP (AES)"))
+ 
+@@ -811,7 +812,7 @@
+ 	if value == "wpa" or value == "wpa2"  then
+ 		self.map.uci:delete("wireless", section, "key")
+ 	end
+-	if e and (c == "tkip" or c == "ccmp" or c == "tkip+ccmp") then
++	if e and (c == "tkip" or c == "ccmp" or c == "gcmp" or c == "tkip+ccmp") then
+ 		e = e .. "+" .. c
+ 	end
+ 	self.map:set(section, "encryption", e)
+--- a/modules/admin-full/luasrc/view/admin_network/wifi_overview.htm
++++ b/modules/admin-full/luasrc/view/admin_network/wifi_overview.htm
+@@ -36,6 +36,7 @@
+ 				if bl.b then bands = bands .. "b" end
+ 				if bl.g then bands = bands .. "g" end
+ 				if bl.n then bands = bands .. "n" end
++				if bl.ad then bands = bands .. "ad" end
+ 			end
+ 
+ 			local hw = dev.iwinfo.hardware_name

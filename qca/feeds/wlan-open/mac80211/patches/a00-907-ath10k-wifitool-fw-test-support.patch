@@ -1,0 +1,218 @@
+--- a/drivers/net/wireless/ath/ath10k/core.h
++++ b/drivers/net/wireless/ath/ath10k/core.h
+@@ -666,6 +666,8 @@ struct ath10k_debug {
+ 	/* protected by conf_mutex */
+ 	u64 fw_dbglog_mask;
+ 	u32 fw_dbglog_level;
++	u32 fw_test_param_id;
++	u32 fw_test_param_value;
+ 	u32 reg_addr;
+ 	u32 nf_cal_period;
+ 	void *cal_data;
+--- a/drivers/net/wireless/ath/ath10k/debug.c
++++ b/drivers/net/wireless/ath/ath10k/debug.c
+@@ -1287,6 +1287,85 @@ static const struct file_operations fops_fw_dbglog = {
+ 	.llseek = default_llseek,
+ };
+ 
++static ssize_t ath10k_read_fops_fw_test(struct file *file,
++                                             char __user *user_buf,
++                                             size_t count, loff_t *ppos)
++{
++        const char buf[] =
++		"Commands used for fetching FW stats'\n"
++		"Syntax example: \n"
++		"1. 'echo 191 2 > /sys/kernel/debug/ieee80211/phy0/ath10k/fw_test' - "
++		"FW video stats in 'dmesg'.\n"
++		"2. 'echo 195 1 > /sys/kernel/debug/ieee80211/phy0/ath10k/fw_test' - "
++		"'dmesg' shows no:of FW decrypt error pkts sent to host.\n";
++
++        return simple_read_from_buffer(user_buf, count, ppos, buf, strlen(buf));
++}
++
++/* fw_test support
++ */
++static ssize_t ath10k_write_fw_test(struct file *file,
++                                              const char __user *user_buf,
++                                              size_t count, loff_t *ppos)
++{
++        struct ath10k *ar = file->private_data;
++        char buf[32] = {0};
++        ssize_t rc;
++        u32 param_id;
++        u32 param_value;
++        int ret;
++
++        rc = simple_write_to_buffer(buf, sizeof(buf) - 1, ppos, user_buf, count);
++        if (rc < 0)
++                return rc;
++
++        buf[*ppos - 1] = '\0';
++
++        ret = sscanf(buf, "%u %x", &param_id, &param_value);
++
++        if (ret != 2)
++                return -EINVAL;
++
++        mutex_lock(&ar->conf_mutex);
++
++        if (ar->state != ATH10K_STATE_ON &&
++            ar->state != ATH10K_STATE_RESTARTED) {
++                ret = -ENETDOWN;
++                goto exit;
++        }
++
++        if(param_id) {
++                ar->debug.fw_test_param_id = param_id;
++                ar->debug.fw_test_param_value = param_value;
++        } else {
++                ath10k_warn(ar, "Enter a valid param ID!");
++                ret = -EINVAL;
++                goto exit;
++        }
++
++        ret = ath10k_wmi_fw_test(ar, ar->debug.fw_test_param_id,
++                                 ar->debug.fw_test_param_value);
++
++        if (ret) {
++                ath10k_warn(ar, "failed to do fw_test: %d\n", ret);
++                goto exit;
++        }
++
++        ret = count;
++
++exit:
++        mutex_unlock(&ar->conf_mutex);
++        return ret;
++}
++
++static const struct file_operations fops_fw_test = {
++        .read = ath10k_read_fops_fw_test,
++        .write = ath10k_write_fw_test,
++        .open = simple_open,
++        .owner = THIS_MODULE,
++        .llseek = default_llseek,
++};
++
+ static int ath10k_debug_cal_data_fetch(struct ath10k *ar)
+ {
+ 	u32 hi_addr;
+@@ -2719,6 +2798,9 @@ int ath10k_debug_register(struct ath10k *ar)
+ 	debugfs_create_file("ps_state_enable", S_IRUSR | S_IWUSR,
+ 			    ar->debug.debugfs_phy, ar, &fops_ps_state_enable);
+ 
++	debugfs_create_file("fw_test", 0600, ar->debug.debugfs_phy, ar,
++			    &fops_fw_test);
++
+ 	return 0;
+ }
+ 
+--- a/drivers/net/wireless/ath/ath10k/wmi-ops.h
++++ b/drivers/net/wireless/ath/ath10k/wmi-ops.h
+@@ -129,6 +129,8 @@ struct wmi_ops {
+ 	struct sk_buff *(*gen_mgmt_tx_send)(struct ath10k *ar,
+ 					    struct sk_buff *skb,
+ 					    dma_addr_t paddr);
++	struct sk_buff *(*gen_fw_test)(struct ath10k *ar, u32 param_id,
++				       u32 param_value);
+ 	struct sk_buff *(*gen_dbglog_cfg)(struct ath10k *ar, u64 module_enable,
+ 					  u32 log_level);
+ 	struct sk_buff *(*gen_pktlog_enable)(struct ath10k *ar, u32 filter);
+@@ -1000,6 +1002,21 @@ ath10k_wmi_force_fw_hang(struct ath10k *ar,
+ }
+ 
+ static inline int
++ath10k_wmi_fw_test(struct ath10k *ar, u32 param_id, u32 param_value)
++{
++        struct sk_buff *skb;
++
++        if(!ar->wmi.ops->gen_fw_test)
++		return -EOPNOTSUPP;
++
++        skb = ar->wmi.ops->gen_fw_test(ar, param_id, param_value);
++        if (IS_ERR(skb))
++                return PTR_ERR(skb);
++
++        return ath10k_wmi_cmd_send(ar, skb, ar->wmi.cmd->fwtest_cmdid);
++}
++
++static inline int
+ ath10k_wmi_dbglog_cfg(struct ath10k *ar, u64 module_enable, u32 log_level)
+ {
+ 	struct sk_buff *skb;
+--- a/drivers/net/wireless/ath/ath10k/wmi.c
++++ b/drivers/net/wireless/ath/ath10k/wmi.c
+@@ -526,7 +526,7 @@ static struct wmi_cmd_map wmi_10_2_4_cmd_map = {
+ 	.pdev_ratepwr_chainmsk_table_cmdid = WMI_CMD_UNSUPPORTED,
+ 	.pdev_fips_cmdid = WMI_CMD_UNSUPPORTED,
+ 	.tt_set_conf_cmdid = WMI_CMD_UNSUPPORTED,
+-	.fwtest_cmdid = WMI_CMD_UNSUPPORTED,
++	.fwtest_cmdid = WMI_10_2_FWTEST_CMDID,
+ 	.vdev_atf_request_cmdid = WMI_CMD_UNSUPPORTED,
+ 	.peer_atf_request_cmdid = WMI_CMD_UNSUPPORTED,
+ 	.pdev_get_ani_cck_config_cmdid = WMI_CMD_UNSUPPORTED,
+@@ -7471,6 +7471,26 @@ ath10k_wmi_op_gen_force_fw_hang(struct ath10k *ar,
+ }
+ 
+ static struct sk_buff *
++ath10k_wmi_op_gen_fw_test(struct ath10k *ar, u32 param_id,
++					u32 param_value)
++{
++        struct wmi_fw_test_cmd *cmd;
++        struct sk_buff *skb;
++
++        skb = ath10k_wmi_alloc_skb(ar, sizeof(*cmd));
++        if (!skb)
++                return ERR_PTR(-ENOMEM);
++
++        cmd = (struct wmi_fw_test_cmd*)skb->data;
++        cmd->param_id = __cpu_to_le32(param_id);
++        cmd->param_value = __cpu_to_le32(param_value);
++
++        ath10k_dbg(ar, ATH10K_DBG_WMI, "ath10k WMI: fw_test %d %d",
++                   param_id, param_value);
++        return skb;
++}
++
++static struct sk_buff *
+ ath10k_wmi_op_gen_dbglog_cfg(struct ath10k *ar, u64 module_enable,
+ 			     u32 log_level)
+ {
+@@ -9082,6 +9102,7 @@ static const struct wmi_ops wmi_10_2_4_ops = {
+ 	.gen_peer_cfg_smart_ant_fb = ath10k_wmi_op_gen_peer_cfg_smart_ant,
+ 	.gen_peer_set_smart_ant_train_info =
+ 				ath10k_wmi_op_gen_set_smart_ant_train_info,
++	.gen_fw_test = ath10k_wmi_op_gen_fw_test,
+ };
+ 
+ static const struct wmi_ops wmi_10_4_ops = {
+@@ -9132,6 +9153,7 @@ static const struct wmi_ops wmi_10_4_ops = {
+ 	.gen_pdev_set_wmm = ath10k_wmi_op_gen_pdev_set_wmm,
+ 	.gen_force_fw_hang = ath10k_wmi_op_gen_force_fw_hang,
+ 	.gen_mgmt_tx = ath10k_wmi_op_gen_mgmt_tx,
++	.gen_fw_test = ath10k_wmi_op_gen_fw_test,
+ 	.gen_dbglog_cfg = ath10k_wmi_10_4_op_gen_dbglog_cfg,
+ 	.gen_pktlog_enable = ath10k_wmi_op_gen_pktlog_enable,
+ 	.gen_pktlog_disable = ath10k_wmi_op_gen_pktlog_disable,
+--- a/drivers/net/wireless/ath/ath10k/wmi.h
++++ b/drivers/net/wireless/ath/ath10k/wmi.h
+@@ -1581,6 +1581,7 @@ enum wmi_10_2_cmd_id {
+ 	WMI_10_2_SET_LTEU_CONFIG_CMDID,
+ 	WMI_10_2_SET_CCA_PARAMS,
+ 	WMI_10_2_PDEV_BSS_CHAN_INFO_REQUEST_CMDID,
++	WMI_10_2_FWTEST_CMDID,
+ 	WMI_10_2_PDEV_UTF_CMDID = WMI_10_2_END_CMDID - 1,
+ };
+ 
+@@ -6496,6 +6497,11 @@ struct wmi_force_fw_hang_cmd {
+ 	__le32 delay_ms;
+ } __packed;
+ 
++struct wmi_fw_test_cmd {
++	__le32 param_id;
++	__le32 param_value;
++} __packed;
++
+ enum ath10k_dbglog_level {
+ 	ATH10K_DBGLOG_LEVEL_VERBOSE = 0,
+ 	ATH10K_DBGLOG_LEVEL_INFO = 1,

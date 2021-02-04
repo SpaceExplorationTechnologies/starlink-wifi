@@ -1,0 +1,253 @@
+#!/bin/sh
+
+#common_execute_method_param "$parameter" "$permission" "$get_cmd" "$set_cmd" "xsd:$type" "$forcedinform"
+# $forcedinform should be set to 1 if the parameter is included in the inform message otherwise empty
+# Default of $type = string
+
+#############################
+#   Entry point functuons   #
+#############################
+
+prefix_list="$prefix_list $DMROOT.USB."
+entry_execute_method_list="$entry_execute_method_list entry_execute_method_root_USB"
+entry_execute_method_list_forcedinform="$entry_execute_method_list_forcedinform  entry_execute_method_root_USB"
+
+entry_execute_method_root_USB() {
+        case "$1" in ""|"$DMROOT."|"$DMROOT.USB."*)
+                common_execute_method_obj "$DMROOT.USB." "0"
+                common_execute_method_obj "$DMROOT.USB.Port." "0" "" "" "usb_browse_ports $1"
+                common_execute_method_obj "$DMROOT.USB.USBHosts." "0"
+                common_execute_method_param "$DMROOT.USB.USBHosts.HostNumberOfEntries" "0" "usb_get_host_number_enteries" "" "xsd:unsigned int" "1"
+                common_execute_method_obj "$DMROOT.USB.USBHosts.Host." "0" "" "" "usb_browse_hosts $1"
+                return 0;
+                ;;
+        esac
+        return $E_INVALID_PARAMETER_NAME;
+}
+
+#######################################
+#   Data model parameters functions   #
+#######################################
+
+usb_get_host_number_enteries() {
+        ls /sys/bus/usb/devices/ | grep 'usb' | awk '{print NR}' | tail -1
+        return 0
+}
+
+
+usb_get_host_name () {
+        local j="$1"
+        cat /sys/bus/usb/devices/$j/product
+        return 0
+}
+
+usb_get_host_type () {
+        local j="$1"
+        cat /sys/bus/usb/devices/$j/uevent | grep "DEVTYPE" | cut -d '=' -f2
+        return 0
+}
+
+usb_get_host_version() {
+        local j="$1"
+        cat /sys/bus/usb/devices/$j/version
+        return 0
+}
+
+usb_get_device_devno() {
+        local j="$1"
+        local i="$2"
+        cat /sys/bus/usb/devices/$j/$i/busnum
+        return 0
+}
+
+usb_get_device_usb_Version() {
+        local j="$1"
+        local i="$2"
+        cat /sys/bus/usb/devices/$j/$i/version
+        return 0
+}
+
+usb_get_device_devclass() {
+        local j="$1"
+        local i="$2"
+        cat /sys/bus/usb/devices/$j/$i/bDeviceClass
+        return 0
+}
+
+usb_get_device_devsubclass() {
+        local j="$1"
+        local i="$2"
+        cat /sys/bus/usb/devices/$j/$i/bDeviceSubClass
+        return 0
+}
+
+usb_get_device_dev_Version() {
+        local j="$1"
+        local i="$2"
+        cat /sys/bus/usb/devices/$j/$i/bcdDevice
+        return 0
+}
+
+usb_get_device_dev_protocol() {
+        local j="$1"
+        local i="$2"
+        cat /sys/bus/usb/devices/$j/$i/bDeviceProtocol
+        return 0
+}
+
+usb_get_device_prodID() {
+        local j="$1"
+        local i="$2"
+        cat /sys/bus/usb/devices/$j/$i/idProduct
+        return 0
+}
+
+usb_get_device_vendorID() {
+        local j="$1"
+        local i="$2"
+        cat /sys/bus/usb/devices/$j/$i/idVendor
+        return 0
+}
+
+usb_get_device_Manufacturer() {
+        local j="$1"
+        local i="$2"
+        cat /sys/bus/usb/devices/$j/$i/manufacturer
+        return 0
+}
+
+usb_get_device_product_class() {
+        local j="$1"
+        local i="$2"
+        cat /sys/bus/usb/devices/$j/$i/product
+        return 0
+}
+
+usb_get_device_serial_number() {
+        local j="$1"
+        local i="$2"
+        cat /sys/bus/usb/devices/$j/$i/serial
+        return 0
+}
+
+usb_get_device_rate() {
+        local j="$1"
+        local i="$2"
+        cat /sys/bus/usb/devices/$j/$i/speed
+        return 0
+}
+
+usb_get_device_max_child() {
+        local j="$1"
+        local i="$2"
+        cat /sys/bus/usb/devices/$j/$i/maxchild
+        return 0
+}
+
+usb_display_device_param ()
+{
+        local j="$1"
+        local i="$2"
+        case_param "$1" belongto "$DMROOT.USB.USBHosts.Host.$j.Device.$i" && {
+        common_execute_method_obj "$DMROOT.USB.USBHosts.Host.$j.Device.$i." "0"
+        common_execute_method_param "$DMROOT.USB.USBHosts.Host.$j.Device.$i.DeviceNumber" "0" "usb_get_device_devno $j $i" "" "" "1"
+        common_execute_method_param "$DMROOT.USB.USBHosts.Host.$j.Device.$i.USBVersion" "0" "usb_get_device_usb_Version $j $i" "" "" "1"
+        common_execute_method_param "$DMROOT.USB.USBHosts.Host.$j.Device.$i.DeviceClass" "0" "usb_get_device_devclass $j $i" "" "" "1"
+        common_execute_method_param "$DMROOT.USB.USBHosts.Host.$j.Device.$i.DeviceSubClass" "0" "usb_get_device_devsubclass $j $i" "" "" "1"
+        common_execute_method_param "$DMROOT.USB.USBHosts.Host.$j.Device.$i.DeviceVersion" "0" "usb_get_device_dev_Version $j $i" "" "" "1"
+        common_execute_method_param "$DMROOT.USB.USBHosts.Host.$j.Device.$i.DeviceProtocol" "0" "usb_get_device_dev_protocol $j $i" "" "" "1"
+        common_execute_method_param "$DMROOT.USB.USBHosts.Host.$j.Device.$i.ProductID" "0" "usb_get_device_prodID $j $i" "" "" "1"
+        common_execute_method_param "$DMROOT.USB.USBHosts.Host.$j.Device.$i.VendorID" "0" "usb_get_device_vendorID $j $i" "" "" "1"
+        common_execute_method_param "$DMROOT.USB.USBHosts.Host.$j.Device.$i.ProductClass" "0" "usb_get_device_product_class $j $i" "" "" "1"
+        common_execute_method_param "$DMROOT.USB.USBHosts.Host.$j.Device.$i.SerialNumber" "0" "usb_get_device_serial_number $j $i" "" "" "1"
+        common_execute_method_param "$DMROOT.USB.USBHosts.Host.$j.Device.$i.Rate" "0" "usb_get_device_rate $j $i" "" "" "1"
+        common_execute_method_param "$DMROOT.USB.USBHosts.Host.$j.Device.$i.MaxChildren" "0" "usb_get_device_max_child $j $i" "" "" "1"
+        }
+        return $E_INVALID_PARAMETER_NAME;
+}
+
+usb_browse_devices () {
+        local j="$1"
+        for i in 1-1 2-1 3-1; do
+                if [ -d /sys/bus/usb/devices/$j/$i ]; then
+                usb_display_device_param $j $i
+                fi
+        done
+}
+
+usb_host_display_param () {
+        local j="$1"
+        case_param "$1" belongto "$DMROOT.USB.USBHosts.Host.$j." && {
+        common_execute_method_obj "$DMROOT.USB.USBHosts.Host.$j." "0"
+        common_execute_method_param "$DMROOT.USB.USBHosts.Host.$j.Name" "0" "usb_get_host_name $j" "" "" "1"
+        common_execute_method_param "$DMROOT.USB.USBHosts.Host.$j.Type" "0" "usb_get_host_type $j" "" "" "1"
+        common_execute_method_param "$DMROOT.USB.USBHosts.Host.$j.USBVersion" "0" "usb_get_host_version $j" "" "" "1"
+        common_execute_method_obj "$DMROOT.USB.USBHosts.Host.$j.Device." "0" "" "" "usb_browse_devices $j"
+        }
+        return $E_INVALID_PARAMETER_NAME;
+}
+
+usb_get_port_name () {
+        local j="$1"
+        cat /sys/bus/usb/devices/$j/manufacturer
+        return 0
+}
+
+usb_get_port_std () {
+        local j="$1"
+        cat /sys/bus/usb/devices/$j/version
+        return 0
+}
+
+usb_get_port_power () {
+        local j="$1"
+        cat /sys/bus/usb/devices/$j/bmAttributes
+        return 0
+}
+
+
+usb_get_port_rate () {
+        local j="$1"
+        cat /sys/bus/usb/devices/$j/speed
+        return 0
+}
+
+usb_get_port_type () {
+        local j="$1"
+        cat /sys/bus/usb/devices/$j/uevent | grep "DEVTYPE" | cut -d '=' -f2
+        return 0
+}
+
+usb_port_display_param () {
+        local j="$1"
+        case_param "$1" belongto "$DMROOT.USB.Port.$j." && {
+        common_execute_method_obj "$DMROOT.USB.Port.$j." "0"
+        common_execute_method_param "$DMROOT.USB.Port.$j.Name" "0" "usb_get_port_name $j" "" "" "1"
+        common_execute_method_param "$DMROOT.USB.Port.$j.Standard" "0" "usb_get_port_std $j" "" "" "1"
+        common_execute_method_param "$DMROOT.USB.Port.$j.Type" "0" "usb_get_port_type $j" "" "" "1"
+        common_execute_method_param "$DMROOT.USB.Port.$j.Rate" "0" "usb_get_port_rate $j" "" "" "1"
+        common_execute_method_param "$DMROOT.USB.Port.$j.Power" "0" "usb_get_port_power $j" "" "" "1"
+        }
+        return $E_INVALID_PARAMETER_NAME;
+}
+
+
+
+
+usb_browse_ports () {
+local usb_host usb_host_list=`ls /sys/bus/usb/devices/usb* | grep /sys/bus/usb/devices/ | cut -d '/' -f6 | cut -d ':' -f1`
+        for usb_host in $usb_host_list; do
+                usb_port_display_param $usb_host
+        done
+}
+
+
+usb_browse_hosts () {
+        local usb_host usb_host_list=`ls /sys/bus/usb/devices/usb* | grep /sys/bus/usb/devices/ | cut -d '/' -f6 | cut -d ':' -f1`
+        for usb_host in $usb_host_list; do
+                usb_host_display_param $usb_host
+        done
+}
+
+
+

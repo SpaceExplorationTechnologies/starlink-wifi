@@ -1,0 +1,87 @@
+diff -Nur a/rstplib/rolesel.c rstp-2011-10-11/rstplib/rolesel.c
+--- a/rstplib/rolesel.c	2018-01-10 13:46:13.647060180 -0800
++++ rstp-2011-10-11/rstplib/rolesel.c	2018-01-10 13:55:47.775074638 -0800
+  **********************************************************************/
+
+ /* Port Role Selection state machine : 17.22 */
+@@ -59,11 +59,32 @@
+   }
+ }
+
++#ifdef STP_DBG
++static const char * role_to_name(PORT_ROLE_T newRole)
++{
++	switch(newRole) {
++	case DisabledPort:
++		return "Disabled";
++	case AlternatePort:
++		return "Alternate";
++	case BackupPort:
++		return  "Backup";
++	case RootPort:
++		return "Root";
++	case DesignatedPort:
++		return "Designated";
++	case NonStpPort:
++		return "NonStp";
++	default:
++		return "Unknow";
++	}
++}
++#endif
++
+ static void
+ setRoleSelected (char* reason, STPM_T* stpm, PORT_T* port,
+                 PORT_ROLE_T newRole)
+ {
+-  char* new_role_name;
+
+   port->selectedRole = newRole;
+
+@@ -72,22 +93,16 @@
+
+   switch (newRole) {
+     case DisabledPort:
+-      new_role_name = "Disabled";
+       break;
+     case AlternatePort:
+-      new_role_name = "Alternate";
+       break;
+     case BackupPort:
+-      new_role_name = "Backup";
+       break;
+     case RootPort:
+-      new_role_name = "Root";
+       break;
+     case DesignatedPort:
+-      new_role_name = "Designated";
+       break;
+     case NonStpPort:
+-      new_role_name = "NonStp";
+       port->role = newRole;
+       break;
+     default:
+@@ -99,7 +114,7 @@
+ #ifdef STP_DBG
+   if (port->roletrns->debug)
+     stp_trace ("%s(%s-%s) => %s",
+-               reason, stpm->name, port->port_name, new_role_name);
++               reason, stpm->name, port->port_name, role_to_name(newRole));
+ #endif
+ }
+
+@@ -174,10 +189,13 @@
+ {               /* 17.19.21 */
+   register PORT_T* port;
+   register STPM_T* stpm;
++#ifdef STP_DBG
+   PORT_ID old_root_port; /* for tracing of root port changing */
+
+-  stpm = this->owner.stpm;
+   old_root_port = stpm->rootPortId;
++#endif
++
++  stpm = this->owner.stpm;
+
+   STP_VECT_create (&stpm->rootPrio, &stpm->BrId, 0, &stpm->BrId, 0, 0);
+   STP_copy_times (&stpm->rootTimes, &stpm->BrTimes);

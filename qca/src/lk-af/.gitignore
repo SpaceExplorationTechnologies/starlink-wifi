@@ -1,0 +1,12 @@
+build-*
+*.swp
+*~
+tags
+TAGS
+local.mk
+target/*/tools/mkheader
+
+# cscope files
+cscope.*
+ncscope.*
+

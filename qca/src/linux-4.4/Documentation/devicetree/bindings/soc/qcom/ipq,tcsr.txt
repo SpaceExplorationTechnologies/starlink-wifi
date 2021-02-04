@@ -1,0 +1,25 @@
+Qualcomm Technologies Inc TCSR (Top Control and Status Register) Driver
+
+The TCSR provides miscellaneous control functions and status registers for
+Qualcomm Technologies Inc processors.
+
+Required properties:
+- compatible: must contain "ipq,tcsr" for IPQ806x
+- reg: Address range for TCSR registers
+
+Optional properties:
+- ipq,usb-ctrl-select : indicates USB port type selection.  Please reference
+  dt-bindings/soc/ipq,tcsr.h for valid USB port selection values.
+
+Example for IPQ8064:
+
+#include <dt-bindings/soc/ipq,tcsr.h>
+
+		tcsr: tcsr@1a400000 {
+			compatible = "ipq,tcsr";
+			reg = <0x1a400000 0x100>;
+
+			ipq,usb-ctrl-select = <TCSR_USB_SELECT_USB3_DUAL>;
+		};
+
+

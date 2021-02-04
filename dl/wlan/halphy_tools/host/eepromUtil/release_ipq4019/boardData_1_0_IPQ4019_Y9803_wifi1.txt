@@ -1,0 +1,5203 @@
+length__0_0 12064 
+checksum__0_0 0x964c 
+eeprom_version__0_0 0x1 
+template_version__0_0 0x1 
+macAddr__0_0 0x12 0x34 0x56 0x78 0x90 0x12 
+regDmn__0_0 0x0 0x0 
+opFlags__0_0 0x15 
+featureEnable__0_0 0xa0 
+miscConfiguration__0_0 0x0 
+flag1__0_0 0x2 
+boardFlags__0_0 0x6000 
+opFlags2__0_0 0x15 
+flag2__0_0 0x7 
+flag3__0_0 0x0 
+secGlutCalFlag__0_0 0x0 
+boardFlagsExt__0_0 0x0 
+refDesignId__0_0 0x11 
+customerId__0_0 0x0 
+projectId__0_0 0x0 
+boardDataRev__0_0 0x23 
+txrxMask__0_0 0x33 
+rfSilent__0_0 0x0 
+wlanLedGpio__0_0 0x0 
+swreg__0_0 0x0 
+deltaCck__0_0 0 
+delta20__0_0 0 
+delta40__0_0 4 
+delta80__0_0 4 
+custData__0_0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 
+param_for_tuning_caps__0_0 0x23 
+param_for_tuning_caps_1__0_0 0x53 
+tpc_flag__0_0 0x33 
+dpdRfbMode__0_0 0x1 
+dpdTrainingSample__0_0 0x0 
+dpdHeavyClipEnable__0_0 0x0 
+dpdQuickDrop__0_0 0x0 
+dpdTargetLvlHi__0_0 51 
+dpdTargetLvlLow__0_0 51 
+dpdTargetLvlWeak__0_0 51 
+dpdPwrHi__0_0 -12 
+dpdPwrLow__0_0 -14 
+dpdPwrWeak__0_0 -14 
+dpdEnable__0_0 0 
+dpdSqLimit__0_0 60 
+dpdSqBestLimit__0_0 20 
+dpdCorexRange__0_0 6 
+dpdForceClock_TxRadioBW__0_0 0 
+dpdAm2AmMask__0_0 0x3fffffff 
+dpdAm2PmMask__0_0 0x3fffffff 
+dpdHt40Mask__0_0 0x3fffffff 
+dpdTrainingBW__0_0 3 
+dpdAgc2Settling__0_0 20 
+dpdDebugMode__0_0 0 
+dpdXpaOn__0_0 0x0 
+deltaCapin_0__0_0 0 
+deltaCapout_0__0_0 0 
+temperature_0__0_0 0 
+deltaCapin_1__0_0 0 
+deltaCapout_1__0_0 0 
+temperature_1__0_0 0 
+deltaCapin_2__0_0 0 
+deltaCapout_2__0_0 0 
+temperature_2__0_0 0 
+deltaCapin_3__0_0 0 
+deltaCapout_3__0_0 0 
+temperature_3__0_0 0 
+deltaCapin_4__0_0 0 
+deltaCapout_4__0_0 0 
+temperature_4__0_0 0 
+deltaCapin_5__0_0 0 
+deltaCapout_5__0_0 0 
+temperature_5__0_0 0 
+deltaCapin_6__0_0 0 
+deltaCapout_6__0_0 0 
+temperature_6__0_0 0 
+deltaCapin_7__0_0 0 
+deltaCapout_7__0_0 0 
+temperature_7__0_0 0 
+deltaCapin_8__0_0 0 
+deltaCapout_8__0_0 0 
+temperature_8__0_0 0 
+deltaCapin_9__0_0 0 
+deltaCapout_9__0_0 0 
+temperature_9__0_0 0 
+baseFuture1__0_0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 
+clpc_error__0_0 0 
+clpcFlag__0_0 0x0 
+tempSlopeCharacterized__0_0 0xc0 
+xtal_cap_interval__0_0 0 0 0 0 
+xtal_cap_offset__0_0 0 0 0 0 
+pefFlag__0_0 0x0 
+pefCalMax__0_0 0 
+pefCalMin__0_0 0 
+pefCalStep__0_0 0 
+pefMaxCalAtt__0_0 0 
+pefMaxCalBw__0_0 0 
+pefMagSel__0_0 0 
+pefLbSel__0_0 0 
+checkTrainingStatusDelay__0_0 0x190 
+dpdLNASETTING__0_0 0x0 
+nvMacFlag__0_0 0 
+mipiPowerMode__0_0 0 
+pefMask__0_0 0xffffffff 
+sensitivityAdjustment__0_0 0 
+smartAntennaEnable__0_0 0 
+ccaThresh__0_0 0 
+packageType__0_0 0x0 
+paBiasSetting__0_0 0x0 0x0 0x0 0x0 
+refDesignIdForFilename__0_0 0x0 
+paprdShortCal__0_0 0 
+nonLinerTxFirEnable__0_0 0 
+thermOffset__0_0 0x0 
+droopingFlag__0_0 0x0 
+droopingEnableTempThresh__0_0 0 
+droopingDisableTempThresh__0_0 0 
+hal_cal_version_major__0_0 0x0 
+hal_cal_version_minor__0_0 0x0 
+sensitivityLevel__0_0 0 
+disableDPDStartfreq__0_0 0 
+disableDPDEndfreq__0_0 0 
+CurClpcErrValue__0_0 0 
+triggerTemp__0_0 0 0 0 0 
+ForceDacGain__0_0 0 
+baseFuture__0_0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 
+voltSlope_A_0_0 0 0 0 0 
+biModal_resv1_A_0_0 0x0 0x0 
+xpaBiasLvl_A_0_0 0xf 
+antennaGainCh_A_0_0 0x0 
+antCtrlCommon_A_0_0 0x0 
+antCtrlCommon2_A_0_0 0x0 
+antCtrlChain_A_0_0 0x10 0x10 0x10 0x10 
+fem_xpa_set_A_0_0 0x0 
+rxFilterCap_A_0_0 0x0 
+rxGainCap_A_0_0 0x0 
+txrxgain_A_0_0 0x0 
+dpdCtrl_A_0_0 0x0 
+dpdTxFirCoeffSel_A_0_0 0x0 
+dpdInitRxBbGain_A_0_0 0x0 
+dpdVht80Mask_A_0_0 0x3fffffff 
+dpdInitRxBbGainLow_A_0_0 0x0 
+dpdInitRxBbGainHi_A_0_0 0x0 
+dpdMaxIndexRef_A_0_0 0x0 
+dpdTrainPwrInc_t7_A_0_0 0x0 
+dpdNoiseRatio_A_0_0 30 
+dpdStartCoarseIdx_A_0_0 0 
+unUsed_A_0_0 0x0 0x0 
+dpdTxFirCoeffMem_A_0_0 0x0 
+clpcAttenTargetPwrChain0_A_0_0 0x0 
+clpcAttenTargetPwrChain1_A_0_0 0x0 
+clpcPdetTiaGain_A_0_0 0x0 
+clpcSensitivePdadc_A_0_0 0x0 
+thermal_interval_A_0_0 0 
+thermal_interval_lowTemp_A_0_0 0 
+calPowerOffset_A_0_0 0 
+clpcLpfHighLowTiaHighGain_A_0_0 0x0 
+clpcSqGain_A_0_0 0x0 
+dpdTargetPwrMax_A_0_0 63 
+dpdTargetPwrMin_A_0_0 20 
+paprdAtten_calTbl0_A_0_0 0 0 0 
+paprdAtten_calTbl1_A_0_0 0 0 0 
+paprdAtten_calTbl2_A_0_0 0 0 0 
+paprdAtten_calTbl3_A_0_0 0 0 0 
+paprdAtten_calTbl4_A_0_0 0 0 0 
+paprdAtten_calTbl5_A_0_0 0 0 0 
+reserved_A_0_0 0x0 0x0 
+minCCAPwrThresh_A_0_0 -76 
+TxIQCalMaxTxGain_A_0_0 0 
+minPwr4TPCErrCorr_A_0_0 0 
+startChannel_A_0_0 0 
+endChannel_A_0_0 0 
+tempSlopeGLUTShift_A_0_0 0 
+antennaGainPerChainChan_A_0_0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+enableAntennaGainPerChainChan_A_0_0 0 
+CCAThresh_A_0_0 -76 
+futureBiModal_A_0_0 0x0 0x0 
+voltSlope_G_0_0 0 0 0 0 
+biModal_resv1_G_0_0 0x0 0x0 
+xpaBiasLvl_G_0_0 0xa 
+antennaGainCh_G_0_0 0x0 
+antCtrlCommon_G_0_0 0x0 
+antCtrlCommon2_G_0_0 0x0 
+antCtrlChain_G_0_0 0x20 0x20 0x20 0x20 
+fem_xpa_set_G_0_0 0x0 
+rxFilterCap_G_0_0 0x0 
+rxGainCap_G_0_0 0x0 
+txrxgain_G_0_0 0x0 
+dpdCtrl_G_0_0 0x0 
+dpdTxFirCoeffSel_G_0_0 0x0 
+dpdInitRxBbGain_G_0_0 0x0 
+dpdVht80Mask_G_0_0 0x0 
+dpdInitRxBbGainLow_G_0_0 0x0 
+dpdInitRxBbGainHi_G_0_0 0x0 
+dpdMaxIndexRef_G_0_0 0x0 
+dpdTrainPwrInc_t7_G_0_0 0x0 
+dpdNoiseRatio_G_0_0 20 
+dpdStartCoarseIdx_G_0_0 0 
+unUsed_G_0_0 0x0 0x0 
+dpdTxFirCoeffMem_G_0_0 0x0 
+clpcAttenTargetPwrChain0_G_0_0 0x0 
+clpcAttenTargetPwrChain1_G_0_0 0x0 
+clpcPdetTiaGain_G_0_0 0x0 
+clpcSensitivePdadc_G_0_0 0x0 
+thermal_interval_G_0_0 0 
+thermal_interval_lowTemp_G_0_0 0 
+calPowerOffset_G_0_0 0 
+clpcLpfHighLowTiaHighGain_G_0_0 0x0 
+clpcSqGain_G_0_0 0x0 
+dpdTargetPwrMax_G_0_0 63 
+dpdTargetPwrMin_G_0_0 20 
+paprdAtten_calTbl0_G_0_0 0 0 0 
+paprdAtten_calTbl1_G_0_0 0 0 0 
+paprdAtten_calTbl2_G_0_0 0 0 0 
+paprdAtten_calTbl3_G_0_0 0 0 0 
+paprdAtten_calTbl4_G_0_0 0 0 0 
+paprdAtten_calTbl5_G_0_0 0 0 0 
+reserved_G_0_0 0x0 0x0 
+minCCAPwrThresh_G_0_0 -67 
+TxIQCalMaxTxGain_G_0_0 0 
+minPwr4TPCErrCorr_G_0_0 0 
+startChannel_G_0_0 0 
+endChannel_G_0_0 0 
+tempSlopeGLUTShift_G_0_0 0 
+antennaGainPerChainChan_G_0_0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+enableAntennaGainPerChainChan_G_0_0 0 
+CCAThresh_G_0_0 0 
+futureBiModal_G_0_0 0x0 0x0 
+xatten1DB2G__0_0 0x0 
+xatten1DB5GLow__0_0 0x13 
+xatten1DB5GMid__0_0 0x13 
+xatten1DB5GHigh__0_0 0x13 
+xatten1DB2G__1_0 0x0 
+xatten1DB5GLow__1_0 0x13 
+xatten1DB5GMid__1_0 0x13 
+xatten1DB5GHigh__1_0 0x13 
+xatten1DB2G__2_0 0x0 
+xatten1DB5GLow__2_0 0x13 
+xatten1DB5GMid__2_0 0x13 
+xatten1DB5GHigh__2_0 0x13 
+xatten1DB2G__3_0 0x0 
+xatten1DB5GLow__3_0 0x13 
+xatten1DB5GMid__3_0 0x13 
+xatten1DB5GHigh__3_0 0x13 
+xatten1Margin2G__0_0 0x0 
+xatten1Margin5GLow__0_0 0x13 
+xatten1Margin5GMid__0_0 0x13 
+xatten1Margin5GHigh__0_0 0x13 
+xatten1Margin2G__1_0 0x0 
+xatten1Margin5GLow__1_0 0x13 
+xatten1Margin5GMid__1_0 0x13 
+xatten1Margin5GHigh__1_0 0x13 
+xatten1Margin2G__2_0 0x0 
+xatten1Margin5GLow__2_0 0x1c 
+xatten1Margin5GMid__2_0 0x1c 
+xatten1Margin5GHigh__2_0 0x1c 
+xatten1Margin2G__3_0 0x0 
+xatten1Margin5GLow__3_0 0x1c 
+xatten1Margin5GMid__3_0 0x1c 
+xatten1Margin5GHigh__3_0 0x1c 
+xatten1Hyst2G__0_0 0x0 
+xatten1Hyst5GLow__0_0 0xc 
+xatten1Hyst5GMid__0_0 0xc 
+xatten1Hyst5GHigh__0_0 0xc 
+xatten1Hyst2G__1_0 0x0 
+xatten1Hyst5GLow__1_0 0xc 
+xatten1Hyst5GMid__1_0 0xc 
+xatten1Hyst5GHigh__1_0 0xc 
+xatten1Hyst2G__2_0 0x0 
+xatten1Hyst5GLow__2_0 0xc 
+xatten1Hyst5GMid__2_0 0xc 
+xatten1Hyst5GHigh__2_0 0xc 
+xatten1Hyst2G__3_0 0x0 
+xatten1Hyst5GLow__3_0 0xc 
+xatten1Hyst5GMid__3_0 0xc 
+xatten1Hyst5GHigh__3_0 0xc 
+xatten1Hyst2G__0_0 0x0 
+xatten1Hyst5GHT40Low__0_0 0xc 
+xatten1Hyst5GHT40Mid__0_0 0xc 
+xatten1Hyst5GHT40High__0_0 0xc 
+xatten1Hyst2G__1_0 0x0 
+xatten1Hyst5GHT40Low__1_0 0xc 
+xatten1Hyst5GHT40Mid__1_0 0xc 
+xatten1Hyst5GHT40High__1_0 0xc 
+xatten1Hyst2G__2_0 0x0 
+xatten1Hyst5GHT40Low__2_0 0xc 
+xatten1Hyst5GHT40Mid__2_0 0xc 
+xatten1Hyst5GHT40High__2_0 0xc 
+xatten1Hyst2G__3_0 0x0 
+xatten1Hyst5GHT40Low__3_0 0xc 
+xatten1Hyst5GHT40Mid__3_0 0xc 
+xatten1Hyst5GHT40High__3_0 0xc 
+xatten1Hyst2G__0_0 0x0 
+xatten1Hyst5GHT80Low__0_0 0xc 
+xatten1Hyst5GHT80Mid__0_0 0xc 
+xatten1Hyst5GHT80High__0_0 0xc 
+xatten1Hyst2G__1_0 0x0 
+xatten1Hyst5GHT80Low__1_0 0xc 
+xatten1Hyst5GHT80Mid__1_0 0xc 
+xatten1Hyst5GHT80High__1_0 0xc 
+xatten1Hyst2G__2_0 0x0 
+xatten1Hyst5GHT80Low__2_0 0xc 
+xatten1Hyst5GHT80Mid__2_0 0xc 
+xatten1Hyst5GHT80High__2_0 0xc 
+xatten1Hyst2G__3_0 0x0 
+xatten1Hyst5GHT80Low__3_0 0xc 
+xatten1Hyst5GHT80Mid__3_0 0xc 
+xatten1Hyst5GHT80High__3_0 0xc 
+xlnaGain__0_0 0x9 
+xlnaGain__1_0 0x9 
+xlnaGain__2_0 0xe 
+xlnaGain__3_0 0xe 
+reserved2G__0_0 0x0 
+reserved5GLow__0_0 0x0 
+reserved5GMid__0_0 0x0 
+reserved5GHigh__0_0 0x0 
+reserved2G__1_0 0x0 
+reserved5GLow__1_0 0x0 
+reserved5GMid__1_0 0x0 
+reserved5GHigh__1_0 0x0 
+reserved2G__2_0 0x0 
+reserved5GLow__2_0 0x0 
+reserved5GMid__2_0 0x0 
+reserved5GHigh__2_0 0x0 
+reserved2G__3_0 0x0 
+reserved5GLow__3_0 0x0 
+reserved5GMid__3_0 0x0 
+reserved5GHigh__3_0 0x0 
+reserved2G__4_0 0x0 
+reserved5GLow__4_0 0x0 
+reserved5GMid__4_0 0x0 
+reserved5GHigh__4_0 0x0 
+reserved2G__5_0 0x0 
+reserved5GLow__5_0 0x0 
+reserved5GMid__5_0 0x0 
+reserved5GHigh__5_0 0x0 
+reserved2G__6_0 0x0 
+reserved5GLow__6_0 0x0 
+reserved5GMid__6_0 0x0 
+reserved5GHigh__6_0 0x0 
+reserved2G__7_0 0x0 
+reserved5GLow__7_0 0x0 
+reserved5GMid__7_0 0x0 
+reserved5GHigh__7_0 0x0 
+reserved2G__8_0 0x0 
+reserved5GLow__8_0 0x0 
+reserved5GMid__8_0 0x0 
+reserved5GHigh__8_0 0x0 
+reserved2G__9_0 0x0 
+reserved5GLow__9_0 0x0 
+reserved5GMid__9_0 0x0 
+reserved5GHigh__9_0 0x0 
+reserved2G__10_0 0x0 
+reserved5GLow__10_0 0x0 
+reserved5GMid__10_0 0x0 
+reserved5GHigh__10_0 0x0 
+reserved2G__11_0 0x0 
+reserved5GLow__11_0 0x0 
+reserved5GMid__11_0 0x0 
+reserved5GHigh__11_0 0x0 
+reserved2G__12_0 0x0 
+reserved5GLow__12_0 0x0 
+reserved5GMid__12_0 0x0 
+reserved5GHigh__12_0 0x0 
+reserved2G__13_0 0x0 
+reserved5GLow__13_0 0x0 
+reserved5GMid__13_0 0x0 
+reserved5GHigh__13_0 0x0 
+reserved2G__14_0 0x0 
+reserved5GLow__14_0 0x0 
+reserved5GMid__14_0 0x0 
+reserved5GHigh__14_0 0x0 
+reserved2G__15_0 0x0 
+reserved5GLow__15_0 0x0 
+reserved5GMid__15_0 0x0 
+reserved5GHigh__15_0 0x0 
+spurRssiThresh__0_0 0x22 
+spurRssiThreshCck__0_0 0x0 
+spurMitFlag__0_0 0x0 
+spurMitFreqMax__0_0 0x0 
+spurChans_CCK__0_0 0x0 0x0 0x0 0x0 0x0 0x0 
+spurChans_2G__0_0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 
+spurStr_2G__0_0 0 0 0 0 0 0 0 0 
+spurChans_5G__0_0 0x1440 0x14a0 0x14d0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 
+spurStr_5G__0_0 -85 -85 -85 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+spur_config_reserve__0_0 0x0 0x0 0x0 0x0 0x0 0x0 
+spurThreshold__0_0 0 0 0 0 0 
+spurPuncMask__0_0 0x0 
+spurPilotMask__0_0 0x0 
+spurChanMask__0_0 0x0 
+calFreqPier2G_G_0_0 255 255 255 255 255 255 255 255 255 255 255 255 255 255 
+calFreqPier2G_ext_G_0_0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+paSet_txgainIdx_A_G_0_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_0_0 0 
+paSet_txgainIdx_B_G_0_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_0_0 0 
+paSet_txgainIdx_C_G_0_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_0_0 0 
+paSet_txgainIdx_D_G_0_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_0_0 0 
+paSet_txgainIdx_E_G_0_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_0_0 0 
+paSet_txgainIdx_A_G_0_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_0_1 0 
+paSet_txgainIdx_B_G_0_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_0_1 0 
+paSet_txgainIdx_C_G_0_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_0_1 0 
+paSet_txgainIdx_D_G_0_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_0_1 0 
+paSet_txgainIdx_E_G_0_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_0_1 0 
+paSet_txgainIdx_A_G_0_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_0_2 0 
+paSet_txgainIdx_B_G_0_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_0_2 0 
+paSet_txgainIdx_C_G_0_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_0_2 0 
+paSet_txgainIdx_D_G_0_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_0_2 0 
+paSet_txgainIdx_E_G_0_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_0_2 0 
+paSet_txgainIdx_A_G_0_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_0_3 0 
+paSet_txgainIdx_B_G_0_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_0_3 0 
+paSet_txgainIdx_C_G_0_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_0_3 0 
+paSet_txgainIdx_D_G_0_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_0_3 0 
+paSet_txgainIdx_E_G_0_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_0_3 0 
+dacGain_G_0_0 0 
+dacGain_G_0_1 0 
+dacGain_G_0_2 0 
+dacGain_G_0_3 0 
+thermCalVal_G_0_0 121 121 121 121 
+voltCalVal_G_0_0 0 
+paSet_txgainIdx_A_G_1_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_1_0 0 
+paSet_txgainIdx_B_G_1_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_1_0 0 
+paSet_txgainIdx_C_G_1_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_1_0 0 
+paSet_txgainIdx_D_G_1_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_1_0 0 
+paSet_txgainIdx_E_G_1_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_1_0 0 
+paSet_txgainIdx_A_G_1_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_1_1 0 
+paSet_txgainIdx_B_G_1_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_1_1 0 
+paSet_txgainIdx_C_G_1_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_1_1 0 
+paSet_txgainIdx_D_G_1_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_1_1 0 
+paSet_txgainIdx_E_G_1_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_1_1 0 
+paSet_txgainIdx_A_G_1_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_1_2 0 
+paSet_txgainIdx_B_G_1_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_1_2 0 
+paSet_txgainIdx_C_G_1_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_1_2 0 
+paSet_txgainIdx_D_G_1_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_1_2 0 
+paSet_txgainIdx_E_G_1_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_1_2 0 
+paSet_txgainIdx_A_G_1_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_1_3 0 
+paSet_txgainIdx_B_G_1_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_1_3 0 
+paSet_txgainIdx_C_G_1_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_1_3 0 
+paSet_txgainIdx_D_G_1_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_1_3 0 
+paSet_txgainIdx_E_G_1_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_1_3 0 
+dacGain_G_1_0 0 
+dacGain_G_1_1 0 
+dacGain_G_1_2 0 
+dacGain_G_1_3 0 
+thermCalVal_G_1_0 121 121 121 121 
+voltCalVal_G_1_0 0 
+paSet_txgainIdx_A_G_2_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_2_0 0 
+paSet_txgainIdx_B_G_2_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_2_0 0 
+paSet_txgainIdx_C_G_2_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_2_0 0 
+paSet_txgainIdx_D_G_2_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_2_0 0 
+paSet_txgainIdx_E_G_2_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_2_0 0 
+paSet_txgainIdx_A_G_2_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_2_1 0 
+paSet_txgainIdx_B_G_2_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_2_1 0 
+paSet_txgainIdx_C_G_2_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_2_1 0 
+paSet_txgainIdx_D_G_2_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_2_1 0 
+paSet_txgainIdx_E_G_2_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_2_1 0 
+paSet_txgainIdx_A_G_2_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_2_2 0 
+paSet_txgainIdx_B_G_2_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_2_2 0 
+paSet_txgainIdx_C_G_2_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_2_2 0 
+paSet_txgainIdx_D_G_2_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_2_2 0 
+paSet_txgainIdx_E_G_2_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_2_2 0 
+paSet_txgainIdx_A_G_2_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_2_3 0 
+paSet_txgainIdx_B_G_2_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_2_3 0 
+paSet_txgainIdx_C_G_2_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_2_3 0 
+paSet_txgainIdx_D_G_2_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_2_3 0 
+paSet_txgainIdx_E_G_2_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_2_3 0 
+dacGain_G_2_0 0 
+dacGain_G_2_1 0 
+dacGain_G_2_2 0 
+dacGain_G_2_3 0 
+thermCalVal_G_2_0 121 121 121 121 
+voltCalVal_G_2_0 0 
+paSet_txgainIdx_A_G_3_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_3_0 0 
+paSet_txgainIdx_B_G_3_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_3_0 0 
+paSet_txgainIdx_C_G_3_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_3_0 0 
+paSet_txgainIdx_D_G_3_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_3_0 0 
+paSet_txgainIdx_E_G_3_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_3_0 0 
+paSet_txgainIdx_A_G_3_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_3_1 0 
+paSet_txgainIdx_B_G_3_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_3_1 0 
+paSet_txgainIdx_C_G_3_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_3_1 0 
+paSet_txgainIdx_D_G_3_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_3_1 0 
+paSet_txgainIdx_E_G_3_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_3_1 0 
+paSet_txgainIdx_A_G_3_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_3_2 0 
+paSet_txgainIdx_B_G_3_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_3_2 0 
+paSet_txgainIdx_C_G_3_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_3_2 0 
+paSet_txgainIdx_D_G_3_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_3_2 0 
+paSet_txgainIdx_E_G_3_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_3_2 0 
+paSet_txgainIdx_A_G_3_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_3_3 0 
+paSet_txgainIdx_B_G_3_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_3_3 0 
+paSet_txgainIdx_C_G_3_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_3_3 0 
+paSet_txgainIdx_D_G_3_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_3_3 0 
+paSet_txgainIdx_E_G_3_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_3_3 0 
+dacGain_G_3_0 0 
+dacGain_G_3_1 0 
+dacGain_G_3_2 0 
+dacGain_G_3_3 0 
+thermCalVal_G_3_0 121 121 121 121 
+voltCalVal_G_3_0 0 
+paSet_txgainIdx_A_G_4_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_4_0 0 
+paSet_txgainIdx_B_G_4_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_4_0 0 
+paSet_txgainIdx_C_G_4_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_4_0 0 
+paSet_txgainIdx_D_G_4_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_4_0 0 
+paSet_txgainIdx_E_G_4_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_4_0 0 
+paSet_txgainIdx_A_G_4_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_4_1 0 
+paSet_txgainIdx_B_G_4_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_4_1 0 
+paSet_txgainIdx_C_G_4_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_4_1 0 
+paSet_txgainIdx_D_G_4_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_4_1 0 
+paSet_txgainIdx_E_G_4_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_4_1 0 
+paSet_txgainIdx_A_G_4_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_4_2 0 
+paSet_txgainIdx_B_G_4_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_4_2 0 
+paSet_txgainIdx_C_G_4_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_4_2 0 
+paSet_txgainIdx_D_G_4_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_4_2 0 
+paSet_txgainIdx_E_G_4_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_4_2 0 
+paSet_txgainIdx_A_G_4_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_4_3 0 
+paSet_txgainIdx_B_G_4_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_4_3 0 
+paSet_txgainIdx_C_G_4_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_4_3 0 
+paSet_txgainIdx_D_G_4_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_4_3 0 
+paSet_txgainIdx_E_G_4_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_4_3 0 
+dacGain_G_4_0 0 
+dacGain_G_4_1 0 
+dacGain_G_4_2 0 
+dacGain_G_4_3 0 
+thermCalVal_G_4_0 121 121 121 121 
+voltCalVal_G_4_0 0 
+paSet_txgainIdx_A_G_5_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_5_0 0 
+paSet_txgainIdx_B_G_5_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_5_0 0 
+paSet_txgainIdx_C_G_5_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_5_0 0 
+paSet_txgainIdx_D_G_5_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_5_0 0 
+paSet_txgainIdx_E_G_5_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_5_0 0 
+paSet_txgainIdx_A_G_5_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_5_1 0 
+paSet_txgainIdx_B_G_5_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_5_1 0 
+paSet_txgainIdx_C_G_5_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_5_1 0 
+paSet_txgainIdx_D_G_5_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_5_1 0 
+paSet_txgainIdx_E_G_5_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_5_1 0 
+paSet_txgainIdx_A_G_5_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_5_2 0 
+paSet_txgainIdx_B_G_5_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_5_2 0 
+paSet_txgainIdx_C_G_5_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_5_2 0 
+paSet_txgainIdx_D_G_5_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_5_2 0 
+paSet_txgainIdx_E_G_5_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_5_2 0 
+paSet_txgainIdx_A_G_5_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_5_3 0 
+paSet_txgainIdx_B_G_5_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_5_3 0 
+paSet_txgainIdx_C_G_5_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_5_3 0 
+paSet_txgainIdx_D_G_5_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_5_3 0 
+paSet_txgainIdx_E_G_5_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_5_3 0 
+dacGain_G_5_0 0 
+dacGain_G_5_1 0 
+dacGain_G_5_2 0 
+dacGain_G_5_3 0 
+thermCalVal_G_5_0 121 121 121 121 
+voltCalVal_G_5_0 0 
+paSet_txgainIdx_A_G_6_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_6_0 0 
+paSet_txgainIdx_B_G_6_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_6_0 0 
+paSet_txgainIdx_C_G_6_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_6_0 0 
+paSet_txgainIdx_D_G_6_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_6_0 0 
+paSet_txgainIdx_E_G_6_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_6_0 0 
+paSet_txgainIdx_A_G_6_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_6_1 0 
+paSet_txgainIdx_B_G_6_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_6_1 0 
+paSet_txgainIdx_C_G_6_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_6_1 0 
+paSet_txgainIdx_D_G_6_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_6_1 0 
+paSet_txgainIdx_E_G_6_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_6_1 0 
+paSet_txgainIdx_A_G_6_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_6_2 0 
+paSet_txgainIdx_B_G_6_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_6_2 0 
+paSet_txgainIdx_C_G_6_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_6_2 0 
+paSet_txgainIdx_D_G_6_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_6_2 0 
+paSet_txgainIdx_E_G_6_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_6_2 0 
+paSet_txgainIdx_A_G_6_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_6_3 0 
+paSet_txgainIdx_B_G_6_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_6_3 0 
+paSet_txgainIdx_C_G_6_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_6_3 0 
+paSet_txgainIdx_D_G_6_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_6_3 0 
+paSet_txgainIdx_E_G_6_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_6_3 0 
+dacGain_G_6_0 0 
+dacGain_G_6_1 0 
+dacGain_G_6_2 0 
+dacGain_G_6_3 0 
+thermCalVal_G_6_0 121 121 121 121 
+voltCalVal_G_6_0 0 
+paSet_txgainIdx_A_G_7_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_7_0 0 
+paSet_txgainIdx_B_G_7_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_7_0 0 
+paSet_txgainIdx_C_G_7_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_7_0 0 
+paSet_txgainIdx_D_G_7_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_7_0 0 
+paSet_txgainIdx_E_G_7_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_7_0 0 
+paSet_txgainIdx_A_G_7_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_7_1 0 
+paSet_txgainIdx_B_G_7_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_7_1 0 
+paSet_txgainIdx_C_G_7_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_7_1 0 
+paSet_txgainIdx_D_G_7_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_7_1 0 
+paSet_txgainIdx_E_G_7_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_7_1 0 
+paSet_txgainIdx_A_G_7_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_7_2 0 
+paSet_txgainIdx_B_G_7_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_7_2 0 
+paSet_txgainIdx_C_G_7_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_7_2 0 
+paSet_txgainIdx_D_G_7_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_7_2 0 
+paSet_txgainIdx_E_G_7_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_7_2 0 
+paSet_txgainIdx_A_G_7_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_7_3 0 
+paSet_txgainIdx_B_G_7_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_7_3 0 
+paSet_txgainIdx_C_G_7_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_7_3 0 
+paSet_txgainIdx_D_G_7_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_7_3 0 
+paSet_txgainIdx_E_G_7_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_7_3 0 
+dacGain_G_7_0 0 
+dacGain_G_7_1 0 
+dacGain_G_7_2 0 
+dacGain_G_7_3 0 
+thermCalVal_G_7_0 121 121 121 121 
+voltCalVal_G_7_0 0 
+paSet_txgainIdx_A_G_8_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_8_0 0 
+paSet_txgainIdx_B_G_8_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_8_0 0 
+paSet_txgainIdx_C_G_8_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_8_0 0 
+paSet_txgainIdx_D_G_8_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_8_0 0 
+paSet_txgainIdx_E_G_8_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_8_0 0 
+paSet_txgainIdx_A_G_8_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_8_1 0 
+paSet_txgainIdx_B_G_8_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_8_1 0 
+paSet_txgainIdx_C_G_8_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_8_1 0 
+paSet_txgainIdx_D_G_8_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_8_1 0 
+paSet_txgainIdx_E_G_8_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_8_1 0 
+paSet_txgainIdx_A_G_8_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_8_2 0 
+paSet_txgainIdx_B_G_8_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_8_2 0 
+paSet_txgainIdx_C_G_8_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_8_2 0 
+paSet_txgainIdx_D_G_8_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_8_2 0 
+paSet_txgainIdx_E_G_8_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_8_2 0 
+paSet_txgainIdx_A_G_8_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_8_3 0 
+paSet_txgainIdx_B_G_8_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_8_3 0 
+paSet_txgainIdx_C_G_8_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_8_3 0 
+paSet_txgainIdx_D_G_8_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_8_3 0 
+paSet_txgainIdx_E_G_8_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_8_3 0 
+dacGain_G_8_0 0 
+dacGain_G_8_1 0 
+dacGain_G_8_2 0 
+dacGain_G_8_3 0 
+thermCalVal_G_8_0 121 121 121 121 
+voltCalVal_G_8_0 0 
+paSet_txgainIdx_A_G_9_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_9_0 0 
+paSet_txgainIdx_B_G_9_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_9_0 0 
+paSet_txgainIdx_C_G_9_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_9_0 0 
+paSet_txgainIdx_D_G_9_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_9_0 0 
+paSet_txgainIdx_E_G_9_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_9_0 0 
+paSet_txgainIdx_A_G_9_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_9_1 0 
+paSet_txgainIdx_B_G_9_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_9_1 0 
+paSet_txgainIdx_C_G_9_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_9_1 0 
+paSet_txgainIdx_D_G_9_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_9_1 0 
+paSet_txgainIdx_E_G_9_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_9_1 0 
+paSet_txgainIdx_A_G_9_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_9_2 0 
+paSet_txgainIdx_B_G_9_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_9_2 0 
+paSet_txgainIdx_C_G_9_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_9_2 0 
+paSet_txgainIdx_D_G_9_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_9_2 0 
+paSet_txgainIdx_E_G_9_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_9_2 0 
+paSet_txgainIdx_A_G_9_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_9_3 0 
+paSet_txgainIdx_B_G_9_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_9_3 0 
+paSet_txgainIdx_C_G_9_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_9_3 0 
+paSet_txgainIdx_D_G_9_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_9_3 0 
+paSet_txgainIdx_E_G_9_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_9_3 0 
+dacGain_G_9_0 0 
+dacGain_G_9_1 0 
+dacGain_G_9_2 0 
+dacGain_G_9_3 0 
+thermCalVal_G_9_0 121 121 121 121 
+voltCalVal_G_9_0 0 
+paSet_txgainIdx_A_G_10_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_10_0 0 
+paSet_txgainIdx_B_G_10_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_10_0 0 
+paSet_txgainIdx_C_G_10_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_10_0 0 
+paSet_txgainIdx_D_G_10_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_10_0 0 
+paSet_txgainIdx_E_G_10_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_10_0 0 
+paSet_txgainIdx_A_G_10_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_10_1 0 
+paSet_txgainIdx_B_G_10_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_10_1 0 
+paSet_txgainIdx_C_G_10_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_10_1 0 
+paSet_txgainIdx_D_G_10_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_10_1 0 
+paSet_txgainIdx_E_G_10_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_10_1 0 
+paSet_txgainIdx_A_G_10_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_10_2 0 
+paSet_txgainIdx_B_G_10_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_10_2 0 
+paSet_txgainIdx_C_G_10_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_10_2 0 
+paSet_txgainIdx_D_G_10_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_10_2 0 
+paSet_txgainIdx_E_G_10_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_10_2 0 
+paSet_txgainIdx_A_G_10_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_10_3 0 
+paSet_txgainIdx_B_G_10_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_10_3 0 
+paSet_txgainIdx_C_G_10_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_10_3 0 
+paSet_txgainIdx_D_G_10_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_10_3 0 
+paSet_txgainIdx_E_G_10_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_10_3 0 
+dacGain_G_10_0 0 
+dacGain_G_10_1 0 
+dacGain_G_10_2 0 
+dacGain_G_10_3 0 
+thermCalVal_G_10_0 121 121 121 121 
+voltCalVal_G_10_0 0 
+paSet_txgainIdx_A_G_11_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_11_0 0 
+paSet_txgainIdx_B_G_11_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_11_0 0 
+paSet_txgainIdx_C_G_11_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_11_0 0 
+paSet_txgainIdx_D_G_11_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_11_0 0 
+paSet_txgainIdx_E_G_11_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_11_0 0 
+paSet_txgainIdx_A_G_11_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_11_1 0 
+paSet_txgainIdx_B_G_11_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_11_1 0 
+paSet_txgainIdx_C_G_11_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_11_1 0 
+paSet_txgainIdx_D_G_11_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_11_1 0 
+paSet_txgainIdx_E_G_11_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_11_1 0 
+paSet_txgainIdx_A_G_11_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_11_2 0 
+paSet_txgainIdx_B_G_11_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_11_2 0 
+paSet_txgainIdx_C_G_11_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_11_2 0 
+paSet_txgainIdx_D_G_11_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_11_2 0 
+paSet_txgainIdx_E_G_11_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_11_2 0 
+paSet_txgainIdx_A_G_11_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_11_3 0 
+paSet_txgainIdx_B_G_11_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_11_3 0 
+paSet_txgainIdx_C_G_11_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_11_3 0 
+paSet_txgainIdx_D_G_11_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_11_3 0 
+paSet_txgainIdx_E_G_11_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_11_3 0 
+dacGain_G_11_0 0 
+dacGain_G_11_1 0 
+dacGain_G_11_2 0 
+dacGain_G_11_3 0 
+thermCalVal_G_11_0 121 121 121 121 
+voltCalVal_G_11_0 0 
+paSet_txgainIdx_A_G_12_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_12_0 0 
+paSet_txgainIdx_B_G_12_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_12_0 0 
+paSet_txgainIdx_C_G_12_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_12_0 0 
+paSet_txgainIdx_D_G_12_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_12_0 0 
+paSet_txgainIdx_E_G_12_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_12_0 0 
+paSet_txgainIdx_A_G_12_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_12_1 0 
+paSet_txgainIdx_B_G_12_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_12_1 0 
+paSet_txgainIdx_C_G_12_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_12_1 0 
+paSet_txgainIdx_D_G_12_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_12_1 0 
+paSet_txgainIdx_E_G_12_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_12_1 0 
+paSet_txgainIdx_A_G_12_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_12_2 0 
+paSet_txgainIdx_B_G_12_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_12_2 0 
+paSet_txgainIdx_C_G_12_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_12_2 0 
+paSet_txgainIdx_D_G_12_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_12_2 0 
+paSet_txgainIdx_E_G_12_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_12_2 0 
+paSet_txgainIdx_A_G_12_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_12_3 0 
+paSet_txgainIdx_B_G_12_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_12_3 0 
+paSet_txgainIdx_C_G_12_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_12_3 0 
+paSet_txgainIdx_D_G_12_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_12_3 0 
+paSet_txgainIdx_E_G_12_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_12_3 0 
+dacGain_G_12_0 0 
+dacGain_G_12_1 0 
+dacGain_G_12_2 0 
+dacGain_G_12_3 0 
+thermCalVal_G_12_0 121 121 121 121 
+voltCalVal_G_12_0 0 
+paSet_txgainIdx_A_G_13_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_13_0 0 
+paSet_txgainIdx_B_G_13_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_13_0 0 
+paSet_txgainIdx_C_G_13_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_13_0 0 
+paSet_txgainIdx_D_G_13_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_13_0 0 
+paSet_txgainIdx_E_G_13_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_13_0 0 
+paSet_txgainIdx_A_G_13_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_13_1 0 
+paSet_txgainIdx_B_G_13_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_13_1 0 
+paSet_txgainIdx_C_G_13_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_13_1 0 
+paSet_txgainIdx_D_G_13_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_13_1 0 
+paSet_txgainIdx_E_G_13_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_13_1 0 
+paSet_txgainIdx_A_G_13_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_13_2 0 
+paSet_txgainIdx_B_G_13_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_13_2 0 
+paSet_txgainIdx_C_G_13_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_13_2 0 
+paSet_txgainIdx_D_G_13_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_13_2 0 
+paSet_txgainIdx_E_G_13_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_13_2 0 
+paSet_txgainIdx_A_G_13_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_G_13_3 0 
+paSet_txgainIdx_B_G_13_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_G_13_3 0 
+paSet_txgainIdx_C_G_13_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_G_13_3 0 
+paSet_txgainIdx_D_G_13_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_G_13_3 0 
+paSet_txgainIdx_E_G_13_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_G_13_3 0 
+dacGain_G_13_0 0 
+dacGain_G_13_1 0 
+dacGain_G_13_2 0 
+dacGain_G_13_3 0 
+thermCalVal_G_13_0 121 121 121 121 
+voltCalVal_G_13_0 0 
+pad0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+calData2G_PLUT_Future 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+pad1 0 0 0 0 0 
+powerOffset_HT20_G_0_0 0 0 0 0 0 0 0 0 0 0 
+powerOffset_HT40_G_0_0 0 0 0 0 0 0 0 0 0 0 
+powerOffset_HT80_G_0_0 0 0 0 0 0 0 0 0 0 0 
+txcalMappingDeltaTbl__0_0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 
+TxIQ2ndGroupStartTGI__0_0 0 
+TxIQ3rdGroupStartTGI__0_0 0 
+TxIQ1stGroupDA__0_0 0 
+TxIQ2ndGroupDA__0_0 0 
+TxIQ3rdGroupDA__0_0 0 
+txiq_pad__0_0 0 0 0 
+powerOffset2G 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+fullpdadc_read_0_G_0_0 0 
+fullmeas_pwr_0_G_0_0 0 
+fullpdadc_read_1_G_0_0 0 
+fullmeas_pwr_1_G_0_0 0 
+fullpdadc_read_2_G_0_0 0 
+fullmeas_pwr_2_G_0_0 0 
+fullpdadc_read_3_G_0_0 0 
+fullmeas_pwr_3_G_0_0 0 
+fullpdadc_read_4_G_0_0 0 
+fullmeas_pwr_4_G_0_0 0 
+fullpdadc_read_0_G_0_1 0 
+fullmeas_pwr_0_G_0_1 0 
+fullpdadc_read_1_G_0_1 0 
+fullmeas_pwr_1_G_0_1 0 
+fullpdadc_read_2_G_0_1 0 
+fullmeas_pwr_2_G_0_1 0 
+fullpdadc_read_3_G_0_1 0 
+fullmeas_pwr_3_G_0_1 0 
+fullpdadc_read_4_G_0_1 0 
+fullmeas_pwr_4_G_0_1 0 
+fullpdadc_read_0_G_0_2 0 
+fullmeas_pwr_0_G_0_2 0 
+fullpdadc_read_1_G_0_2 0 
+fullmeas_pwr_1_G_0_2 0 
+fullpdadc_read_2_G_0_2 0 
+fullmeas_pwr_2_G_0_2 0 
+fullpdadc_read_3_G_0_2 0 
+fullmeas_pwr_3_G_0_2 0 
+fullpdadc_read_4_G_0_2 0 
+fullmeas_pwr_4_G_0_2 0 
+fullpdadc_read_0_G_0_3 0 
+fullmeas_pwr_0_G_0_3 0 
+fullpdadc_read_1_G_0_3 0 
+fullmeas_pwr_1_G_0_3 0 
+fullpdadc_read_2_G_0_3 0 
+fullmeas_pwr_2_G_0_3 0 
+fullpdadc_read_3_G_0_3 0 
+fullmeas_pwr_3_G_0_3 0 
+fullpdadc_read_4_G_0_3 0 
+fullmeas_pwr_4_G_0_3 0 
+fullpdadc_read_0_G_1_0 0 
+fullmeas_pwr_0_G_1_0 0 
+fullpdadc_read_1_G_1_0 0 
+fullmeas_pwr_1_G_1_0 0 
+fullpdadc_read_2_G_1_0 0 
+fullmeas_pwr_2_G_1_0 0 
+fullpdadc_read_3_G_1_0 0 
+fullmeas_pwr_3_G_1_0 0 
+fullpdadc_read_4_G_1_0 0 
+fullmeas_pwr_4_G_1_0 0 
+fullpdadc_read_0_G_1_1 0 
+fullmeas_pwr_0_G_1_1 0 
+fullpdadc_read_1_G_1_1 0 
+fullmeas_pwr_1_G_1_1 0 
+fullpdadc_read_2_G_1_1 0 
+fullmeas_pwr_2_G_1_1 0 
+fullpdadc_read_3_G_1_1 0 
+fullmeas_pwr_3_G_1_1 0 
+fullpdadc_read_4_G_1_1 0 
+fullmeas_pwr_4_G_1_1 0 
+fullpdadc_read_0_G_1_2 0 
+fullmeas_pwr_0_G_1_2 0 
+fullpdadc_read_1_G_1_2 0 
+fullmeas_pwr_1_G_1_2 0 
+fullpdadc_read_2_G_1_2 0 
+fullmeas_pwr_2_G_1_2 0 
+fullpdadc_read_3_G_1_2 0 
+fullmeas_pwr_3_G_1_2 0 
+fullpdadc_read_4_G_1_2 0 
+fullmeas_pwr_4_G_1_2 0 
+fullpdadc_read_0_G_1_3 0 
+fullmeas_pwr_0_G_1_3 0 
+fullpdadc_read_1_G_1_3 0 
+fullmeas_pwr_1_G_1_3 0 
+fullpdadc_read_2_G_1_3 0 
+fullmeas_pwr_2_G_1_3 0 
+fullpdadc_read_3_G_1_3 0 
+fullmeas_pwr_3_G_1_3 0 
+fullpdadc_read_4_G_1_3 0 
+fullmeas_pwr_4_G_1_3 0 
+fullpdadc_read_0_G_2_0 0 
+fullmeas_pwr_0_G_2_0 0 
+fullpdadc_read_1_G_2_0 0 
+fullmeas_pwr_1_G_2_0 0 
+fullpdadc_read_2_G_2_0 0 
+fullmeas_pwr_2_G_2_0 0 
+fullpdadc_read_3_G_2_0 0 
+fullmeas_pwr_3_G_2_0 0 
+fullpdadc_read_4_G_2_0 0 
+fullmeas_pwr_4_G_2_0 0 
+fullpdadc_read_0_G_2_1 0 
+fullmeas_pwr_0_G_2_1 0 
+fullpdadc_read_1_G_2_1 0 
+fullmeas_pwr_1_G_2_1 0 
+fullpdadc_read_2_G_2_1 0 
+fullmeas_pwr_2_G_2_1 0 
+fullpdadc_read_3_G_2_1 0 
+fullmeas_pwr_3_G_2_1 0 
+fullpdadc_read_4_G_2_1 0 
+fullmeas_pwr_4_G_2_1 0 
+fullpdadc_read_0_G_2_2 0 
+fullmeas_pwr_0_G_2_2 0 
+fullpdadc_read_1_G_2_2 0 
+fullmeas_pwr_1_G_2_2 0 
+fullpdadc_read_2_G_2_2 0 
+fullmeas_pwr_2_G_2_2 0 
+fullpdadc_read_3_G_2_2 0 
+fullmeas_pwr_3_G_2_2 0 
+fullpdadc_read_4_G_2_2 0 
+fullmeas_pwr_4_G_2_2 0 
+fullpdadc_read_0_G_2_3 0 
+fullmeas_pwr_0_G_2_3 0 
+fullpdadc_read_1_G_2_3 0 
+fullmeas_pwr_1_G_2_3 0 
+fullpdadc_read_2_G_2_3 0 
+fullmeas_pwr_2_G_2_3 0 
+fullpdadc_read_3_G_2_3 0 
+fullmeas_pwr_3_G_2_3 0 
+fullpdadc_read_4_G_2_3 0 
+fullmeas_pwr_4_G_2_3 0 
+fullpdadc_read_0_G_3_0 0 
+fullmeas_pwr_0_G_3_0 0 
+fullpdadc_read_1_G_3_0 0 
+fullmeas_pwr_1_G_3_0 0 
+fullpdadc_read_2_G_3_0 0 
+fullmeas_pwr_2_G_3_0 0 
+fullpdadc_read_3_G_3_0 0 
+fullmeas_pwr_3_G_3_0 0 
+fullpdadc_read_4_G_3_0 0 
+fullmeas_pwr_4_G_3_0 0 
+fullpdadc_read_0_G_3_1 0 
+fullmeas_pwr_0_G_3_1 0 
+fullpdadc_read_1_G_3_1 0 
+fullmeas_pwr_1_G_3_1 0 
+fullpdadc_read_2_G_3_1 0 
+fullmeas_pwr_2_G_3_1 0 
+fullpdadc_read_3_G_3_1 0 
+fullmeas_pwr_3_G_3_1 0 
+fullpdadc_read_4_G_3_1 0 
+fullmeas_pwr_4_G_3_1 0 
+fullpdadc_read_0_G_3_2 0 
+fullmeas_pwr_0_G_3_2 0 
+fullpdadc_read_1_G_3_2 0 
+fullmeas_pwr_1_G_3_2 0 
+fullpdadc_read_2_G_3_2 0 
+fullmeas_pwr_2_G_3_2 0 
+fullpdadc_read_3_G_3_2 0 
+fullmeas_pwr_3_G_3_2 0 
+fullpdadc_read_4_G_3_2 0 
+fullmeas_pwr_4_G_3_2 0 
+fullpdadc_read_0_G_3_3 0 
+fullmeas_pwr_0_G_3_3 0 
+fullpdadc_read_1_G_3_3 0 
+fullmeas_pwr_1_G_3_3 0 
+fullpdadc_read_2_G_3_3 0 
+fullmeas_pwr_2_G_3_3 0 
+fullpdadc_read_3_G_3_3 0 
+fullmeas_pwr_3_G_3_3 0 
+fullpdadc_read_4_G_3_3 0 
+fullmeas_pwr_4_G_3_3 0 
+fullpdadc_read_0_G_4_0 0 
+fullmeas_pwr_0_G_4_0 0 
+fullpdadc_read_1_G_4_0 0 
+fullmeas_pwr_1_G_4_0 0 
+fullpdadc_read_2_G_4_0 0 
+fullmeas_pwr_2_G_4_0 0 
+fullpdadc_read_3_G_4_0 0 
+fullmeas_pwr_3_G_4_0 0 
+fullpdadc_read_4_G_4_0 0 
+fullmeas_pwr_4_G_4_0 0 
+fullpdadc_read_0_G_4_1 0 
+fullmeas_pwr_0_G_4_1 0 
+fullpdadc_read_1_G_4_1 0 
+fullmeas_pwr_1_G_4_1 0 
+fullpdadc_read_2_G_4_1 0 
+fullmeas_pwr_2_G_4_1 0 
+fullpdadc_read_3_G_4_1 0 
+fullmeas_pwr_3_G_4_1 0 
+fullpdadc_read_4_G_4_1 0 
+fullmeas_pwr_4_G_4_1 0 
+fullpdadc_read_0_G_4_2 0 
+fullmeas_pwr_0_G_4_2 0 
+fullpdadc_read_1_G_4_2 0 
+fullmeas_pwr_1_G_4_2 0 
+fullpdadc_read_2_G_4_2 0 
+fullmeas_pwr_2_G_4_2 0 
+fullpdadc_read_3_G_4_2 0 
+fullmeas_pwr_3_G_4_2 0 
+fullpdadc_read_4_G_4_2 0 
+fullmeas_pwr_4_G_4_2 0 
+fullpdadc_read_0_G_4_3 0 
+fullmeas_pwr_0_G_4_3 0 
+fullpdadc_read_1_G_4_3 0 
+fullmeas_pwr_1_G_4_3 0 
+fullpdadc_read_2_G_4_3 0 
+fullmeas_pwr_2_G_4_3 0 
+fullpdadc_read_3_G_4_3 0 
+fullmeas_pwr_3_G_4_3 0 
+fullpdadc_read_4_G_4_3 0 
+fullmeas_pwr_4_G_4_3 0 
+fullpdadc_read_0_G_5_0 0 
+fullmeas_pwr_0_G_5_0 0 
+fullpdadc_read_1_G_5_0 0 
+fullmeas_pwr_1_G_5_0 0 
+fullpdadc_read_2_G_5_0 0 
+fullmeas_pwr_2_G_5_0 0 
+fullpdadc_read_3_G_5_0 0 
+fullmeas_pwr_3_G_5_0 0 
+fullpdadc_read_4_G_5_0 0 
+fullmeas_pwr_4_G_5_0 0 
+fullpdadc_read_0_G_5_1 0 
+fullmeas_pwr_0_G_5_1 0 
+fullpdadc_read_1_G_5_1 0 
+fullmeas_pwr_1_G_5_1 0 
+fullpdadc_read_2_G_5_1 0 
+fullmeas_pwr_2_G_5_1 0 
+fullpdadc_read_3_G_5_1 0 
+fullmeas_pwr_3_G_5_1 0 
+fullpdadc_read_4_G_5_1 0 
+fullmeas_pwr_4_G_5_1 0 
+fullpdadc_read_0_G_5_2 0 
+fullmeas_pwr_0_G_5_2 0 
+fullpdadc_read_1_G_5_2 0 
+fullmeas_pwr_1_G_5_2 0 
+fullpdadc_read_2_G_5_2 0 
+fullmeas_pwr_2_G_5_2 0 
+fullpdadc_read_3_G_5_2 0 
+fullmeas_pwr_3_G_5_2 0 
+fullpdadc_read_4_G_5_2 0 
+fullmeas_pwr_4_G_5_2 0 
+fullpdadc_read_0_G_5_3 0 
+fullmeas_pwr_0_G_5_3 0 
+fullpdadc_read_1_G_5_3 0 
+fullmeas_pwr_1_G_5_3 0 
+fullpdadc_read_2_G_5_3 0 
+fullmeas_pwr_2_G_5_3 0 
+fullpdadc_read_3_G_5_3 0 
+fullmeas_pwr_3_G_5_3 0 
+fullpdadc_read_4_G_5_3 0 
+fullmeas_pwr_4_G_5_3 0 
+fullpdadc_read_0_G_6_0 0 
+fullmeas_pwr_0_G_6_0 0 
+fullpdadc_read_1_G_6_0 0 
+fullmeas_pwr_1_G_6_0 0 
+fullpdadc_read_2_G_6_0 0 
+fullmeas_pwr_2_G_6_0 0 
+fullpdadc_read_3_G_6_0 0 
+fullmeas_pwr_3_G_6_0 0 
+fullpdadc_read_4_G_6_0 0 
+fullmeas_pwr_4_G_6_0 0 
+fullpdadc_read_0_G_6_1 0 
+fullmeas_pwr_0_G_6_1 0 
+fullpdadc_read_1_G_6_1 0 
+fullmeas_pwr_1_G_6_1 0 
+fullpdadc_read_2_G_6_1 0 
+fullmeas_pwr_2_G_6_1 0 
+fullpdadc_read_3_G_6_1 0 
+fullmeas_pwr_3_G_6_1 0 
+fullpdadc_read_4_G_6_1 0 
+fullmeas_pwr_4_G_6_1 0 
+fullpdadc_read_0_G_6_2 0 
+fullmeas_pwr_0_G_6_2 0 
+fullpdadc_read_1_G_6_2 0 
+fullmeas_pwr_1_G_6_2 0 
+fullpdadc_read_2_G_6_2 0 
+fullmeas_pwr_2_G_6_2 0 
+fullpdadc_read_3_G_6_2 0 
+fullmeas_pwr_3_G_6_2 0 
+fullpdadc_read_4_G_6_2 0 
+fullmeas_pwr_4_G_6_2 0 
+fullpdadc_read_0_G_6_3 0 
+fullmeas_pwr_0_G_6_3 0 
+fullpdadc_read_1_G_6_3 0 
+fullmeas_pwr_1_G_6_3 0 
+fullpdadc_read_2_G_6_3 0 
+fullmeas_pwr_2_G_6_3 0 
+fullpdadc_read_3_G_6_3 0 
+fullmeas_pwr_3_G_6_3 0 
+fullpdadc_read_4_G_6_3 0 
+fullmeas_pwr_4_G_6_3 0 
+fullpdadc_read_0_G_7_0 0 
+fullmeas_pwr_0_G_7_0 0 
+fullpdadc_read_1_G_7_0 0 
+fullmeas_pwr_1_G_7_0 0 
+fullpdadc_read_2_G_7_0 0 
+fullmeas_pwr_2_G_7_0 0 
+fullpdadc_read_3_G_7_0 0 
+fullmeas_pwr_3_G_7_0 0 
+fullpdadc_read_4_G_7_0 0 
+fullmeas_pwr_4_G_7_0 0 
+fullpdadc_read_0_G_7_1 0 
+fullmeas_pwr_0_G_7_1 0 
+fullpdadc_read_1_G_7_1 0 
+fullmeas_pwr_1_G_7_1 0 
+fullpdadc_read_2_G_7_1 0 
+fullmeas_pwr_2_G_7_1 0 
+fullpdadc_read_3_G_7_1 0 
+fullmeas_pwr_3_G_7_1 0 
+fullpdadc_read_4_G_7_1 0 
+fullmeas_pwr_4_G_7_1 0 
+fullpdadc_read_0_G_7_2 0 
+fullmeas_pwr_0_G_7_2 0 
+fullpdadc_read_1_G_7_2 0 
+fullmeas_pwr_1_G_7_2 0 
+fullpdadc_read_2_G_7_2 0 
+fullmeas_pwr_2_G_7_2 0 
+fullpdadc_read_3_G_7_2 0 
+fullmeas_pwr_3_G_7_2 0 
+fullpdadc_read_4_G_7_2 0 
+fullmeas_pwr_4_G_7_2 0 
+fullpdadc_read_0_G_7_3 0 
+fullmeas_pwr_0_G_7_3 0 
+fullpdadc_read_1_G_7_3 0 
+fullmeas_pwr_1_G_7_3 0 
+fullpdadc_read_2_G_7_3 0 
+fullmeas_pwr_2_G_7_3 0 
+fullpdadc_read_3_G_7_3 0 
+fullmeas_pwr_3_G_7_3 0 
+fullpdadc_read_4_G_7_3 0 
+fullmeas_pwr_4_G_7_3 0 
+fullpdadc_read_0_G_8_0 0 
+fullmeas_pwr_0_G_8_0 0 
+fullpdadc_read_1_G_8_0 0 
+fullmeas_pwr_1_G_8_0 0 
+fullpdadc_read_2_G_8_0 0 
+fullmeas_pwr_2_G_8_0 0 
+fullpdadc_read_3_G_8_0 0 
+fullmeas_pwr_3_G_8_0 0 
+fullpdadc_read_4_G_8_0 0 
+fullmeas_pwr_4_G_8_0 0 
+fullpdadc_read_0_G_8_1 0 
+fullmeas_pwr_0_G_8_1 0 
+fullpdadc_read_1_G_8_1 0 
+fullmeas_pwr_1_G_8_1 0 
+fullpdadc_read_2_G_8_1 0 
+fullmeas_pwr_2_G_8_1 0 
+fullpdadc_read_3_G_8_1 0 
+fullmeas_pwr_3_G_8_1 0 
+fullpdadc_read_4_G_8_1 0 
+fullmeas_pwr_4_G_8_1 0 
+fullpdadc_read_0_G_8_2 0 
+fullmeas_pwr_0_G_8_2 0 
+fullpdadc_read_1_G_8_2 0 
+fullmeas_pwr_1_G_8_2 0 
+fullpdadc_read_2_G_8_2 0 
+fullmeas_pwr_2_G_8_2 0 
+fullpdadc_read_3_G_8_2 0 
+fullmeas_pwr_3_G_8_2 0 
+fullpdadc_read_4_G_8_2 0 
+fullmeas_pwr_4_G_8_2 0 
+fullpdadc_read_0_G_8_3 0 
+fullmeas_pwr_0_G_8_3 0 
+fullpdadc_read_1_G_8_3 0 
+fullmeas_pwr_1_G_8_3 0 
+fullpdadc_read_2_G_8_3 0 
+fullmeas_pwr_2_G_8_3 0 
+fullpdadc_read_3_G_8_3 0 
+fullmeas_pwr_3_G_8_3 0 
+fullpdadc_read_4_G_8_3 0 
+fullmeas_pwr_4_G_8_3 0 
+fullpdadc_read_0_G_9_0 0 
+fullmeas_pwr_0_G_9_0 0 
+fullpdadc_read_1_G_9_0 0 
+fullmeas_pwr_1_G_9_0 0 
+fullpdadc_read_2_G_9_0 0 
+fullmeas_pwr_2_G_9_0 0 
+fullpdadc_read_3_G_9_0 0 
+fullmeas_pwr_3_G_9_0 0 
+fullpdadc_read_4_G_9_0 0 
+fullmeas_pwr_4_G_9_0 0 
+fullpdadc_read_0_G_9_1 0 
+fullmeas_pwr_0_G_9_1 0 
+fullpdadc_read_1_G_9_1 0 
+fullmeas_pwr_1_G_9_1 0 
+fullpdadc_read_2_G_9_1 0 
+fullmeas_pwr_2_G_9_1 0 
+fullpdadc_read_3_G_9_1 0 
+fullmeas_pwr_3_G_9_1 0 
+fullpdadc_read_4_G_9_1 0 
+fullmeas_pwr_4_G_9_1 0 
+fullpdadc_read_0_G_9_2 0 
+fullmeas_pwr_0_G_9_2 0 
+fullpdadc_read_1_G_9_2 0 
+fullmeas_pwr_1_G_9_2 0 
+fullpdadc_read_2_G_9_2 0 
+fullmeas_pwr_2_G_9_2 0 
+fullpdadc_read_3_G_9_2 0 
+fullmeas_pwr_3_G_9_2 0 
+fullpdadc_read_4_G_9_2 0 
+fullmeas_pwr_4_G_9_2 0 
+fullpdadc_read_0_G_9_3 0 
+fullmeas_pwr_0_G_9_3 0 
+fullpdadc_read_1_G_9_3 0 
+fullmeas_pwr_1_G_9_3 0 
+fullpdadc_read_2_G_9_3 0 
+fullmeas_pwr_2_G_9_3 0 
+fullpdadc_read_3_G_9_3 0 
+fullmeas_pwr_3_G_9_3 0 
+fullpdadc_read_4_G_9_3 0 
+fullmeas_pwr_4_G_9_3 0 
+fullpdadc_read_0_G_10_0 0 
+fullmeas_pwr_0_G_10_0 0 
+fullpdadc_read_1_G_10_0 0 
+fullmeas_pwr_1_G_10_0 0 
+fullpdadc_read_2_G_10_0 0 
+fullmeas_pwr_2_G_10_0 0 
+fullpdadc_read_3_G_10_0 0 
+fullmeas_pwr_3_G_10_0 0 
+fullpdadc_read_4_G_10_0 0 
+fullmeas_pwr_4_G_10_0 0 
+fullpdadc_read_0_G_10_1 0 
+fullmeas_pwr_0_G_10_1 0 
+fullpdadc_read_1_G_10_1 0 
+fullmeas_pwr_1_G_10_1 0 
+fullpdadc_read_2_G_10_1 0 
+fullmeas_pwr_2_G_10_1 0 
+fullpdadc_read_3_G_10_1 0 
+fullmeas_pwr_3_G_10_1 0 
+fullpdadc_read_4_G_10_1 0 
+fullmeas_pwr_4_G_10_1 0 
+fullpdadc_read_0_G_10_2 0 
+fullmeas_pwr_0_G_10_2 0 
+fullpdadc_read_1_G_10_2 0 
+fullmeas_pwr_1_G_10_2 0 
+fullpdadc_read_2_G_10_2 0 
+fullmeas_pwr_2_G_10_2 0 
+fullpdadc_read_3_G_10_2 0 
+fullmeas_pwr_3_G_10_2 0 
+fullpdadc_read_4_G_10_2 0 
+fullmeas_pwr_4_G_10_2 0 
+fullpdadc_read_0_G_10_3 0 
+fullmeas_pwr_0_G_10_3 0 
+fullpdadc_read_1_G_10_3 0 
+fullmeas_pwr_1_G_10_3 0 
+fullpdadc_read_2_G_10_3 0 
+fullmeas_pwr_2_G_10_3 0 
+fullpdadc_read_3_G_10_3 0 
+fullmeas_pwr_3_G_10_3 0 
+fullpdadc_read_4_G_10_3 0 
+fullmeas_pwr_4_G_10_3 0 
+fullpdadc_read_0_G_11_0 0 
+fullmeas_pwr_0_G_11_0 0 
+fullpdadc_read_1_G_11_0 0 
+fullmeas_pwr_1_G_11_0 0 
+fullpdadc_read_2_G_11_0 0 
+fullmeas_pwr_2_G_11_0 0 
+fullpdadc_read_3_G_11_0 0 
+fullmeas_pwr_3_G_11_0 0 
+fullpdadc_read_4_G_11_0 0 
+fullmeas_pwr_4_G_11_0 0 
+fullpdadc_read_0_G_11_1 0 
+fullmeas_pwr_0_G_11_1 0 
+fullpdadc_read_1_G_11_1 0 
+fullmeas_pwr_1_G_11_1 0 
+fullpdadc_read_2_G_11_1 0 
+fullmeas_pwr_2_G_11_1 0 
+fullpdadc_read_3_G_11_1 0 
+fullmeas_pwr_3_G_11_1 0 
+fullpdadc_read_4_G_11_1 0 
+fullmeas_pwr_4_G_11_1 0 
+fullpdadc_read_0_G_11_2 0 
+fullmeas_pwr_0_G_11_2 0 
+fullpdadc_read_1_G_11_2 0 
+fullmeas_pwr_1_G_11_2 0 
+fullpdadc_read_2_G_11_2 0 
+fullmeas_pwr_2_G_11_2 0 
+fullpdadc_read_3_G_11_2 0 
+fullmeas_pwr_3_G_11_2 0 
+fullpdadc_read_4_G_11_2 0 
+fullmeas_pwr_4_G_11_2 0 
+fullpdadc_read_0_G_11_3 0 
+fullmeas_pwr_0_G_11_3 0 
+fullpdadc_read_1_G_11_3 0 
+fullmeas_pwr_1_G_11_3 0 
+fullpdadc_read_2_G_11_3 0 
+fullmeas_pwr_2_G_11_3 0 
+fullpdadc_read_3_G_11_3 0 
+fullmeas_pwr_3_G_11_3 0 
+fullpdadc_read_4_G_11_3 0 
+fullmeas_pwr_4_G_11_3 0 
+fullpdadc_read_0_G_12_0 0 
+fullmeas_pwr_0_G_12_0 0 
+fullpdadc_read_1_G_12_0 0 
+fullmeas_pwr_1_G_12_0 0 
+fullpdadc_read_2_G_12_0 0 
+fullmeas_pwr_2_G_12_0 0 
+fullpdadc_read_3_G_12_0 0 
+fullmeas_pwr_3_G_12_0 0 
+fullpdadc_read_4_G_12_0 0 
+fullmeas_pwr_4_G_12_0 0 
+fullpdadc_read_0_G_12_1 0 
+fullmeas_pwr_0_G_12_1 0 
+fullpdadc_read_1_G_12_1 0 
+fullmeas_pwr_1_G_12_1 0 
+fullpdadc_read_2_G_12_1 0 
+fullmeas_pwr_2_G_12_1 0 
+fullpdadc_read_3_G_12_1 0 
+fullmeas_pwr_3_G_12_1 0 
+fullpdadc_read_4_G_12_1 0 
+fullmeas_pwr_4_G_12_1 0 
+fullpdadc_read_0_G_12_2 0 
+fullmeas_pwr_0_G_12_2 0 
+fullpdadc_read_1_G_12_2 0 
+fullmeas_pwr_1_G_12_2 0 
+fullpdadc_read_2_G_12_2 0 
+fullmeas_pwr_2_G_12_2 0 
+fullpdadc_read_3_G_12_2 0 
+fullmeas_pwr_3_G_12_2 0 
+fullpdadc_read_4_G_12_2 0 
+fullmeas_pwr_4_G_12_2 0 
+fullpdadc_read_0_G_12_3 0 
+fullmeas_pwr_0_G_12_3 0 
+fullpdadc_read_1_G_12_3 0 
+fullmeas_pwr_1_G_12_3 0 
+fullpdadc_read_2_G_12_3 0 
+fullmeas_pwr_2_G_12_3 0 
+fullpdadc_read_3_G_12_3 0 
+fullmeas_pwr_3_G_12_3 0 
+fullpdadc_read_4_G_12_3 0 
+fullmeas_pwr_4_G_12_3 0 
+fullpdadc_read_0_G_13_0 0 
+fullmeas_pwr_0_G_13_0 0 
+fullpdadc_read_1_G_13_0 0 
+fullmeas_pwr_1_G_13_0 0 
+fullpdadc_read_2_G_13_0 0 
+fullmeas_pwr_2_G_13_0 0 
+fullpdadc_read_3_G_13_0 0 
+fullmeas_pwr_3_G_13_0 0 
+fullpdadc_read_4_G_13_0 0 
+fullmeas_pwr_4_G_13_0 0 
+fullpdadc_read_0_G_13_1 0 
+fullmeas_pwr_0_G_13_1 0 
+fullpdadc_read_1_G_13_1 0 
+fullmeas_pwr_1_G_13_1 0 
+fullpdadc_read_2_G_13_1 0 
+fullmeas_pwr_2_G_13_1 0 
+fullpdadc_read_3_G_13_1 0 
+fullmeas_pwr_3_G_13_1 0 
+fullpdadc_read_4_G_13_1 0 
+fullmeas_pwr_4_G_13_1 0 
+fullpdadc_read_0_G_13_2 0 
+fullmeas_pwr_0_G_13_2 0 
+fullpdadc_read_1_G_13_2 0 
+fullmeas_pwr_1_G_13_2 0 
+fullpdadc_read_2_G_13_2 0 
+fullmeas_pwr_2_G_13_2 0 
+fullpdadc_read_3_G_13_2 0 
+fullmeas_pwr_3_G_13_2 0 
+fullpdadc_read_4_G_13_2 0 
+fullmeas_pwr_4_G_13_2 0 
+fullpdadc_read_0_G_13_3 0 
+fullmeas_pwr_0_G_13_3 0 
+fullpdadc_read_1_G_13_3 0 
+fullmeas_pwr_1_G_13_3 0 
+fullpdadc_read_2_G_13_3 0 
+fullmeas_pwr_2_G_13_3 0 
+fullpdadc_read_3_G_13_3 0 
+fullmeas_pwr_3_G_13_3 0 
+fullpdadc_read_4_G_13_3 0 
+fullmeas_pwr_4_G_13_3 0 
+gainIdxForCal_G_0_0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+dacGainForCal_G_0_0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+paConfigForCal_G_0_0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+calPwrTargets_G_0_0 0 0 0 0 0 
+calPdadcTargets_G_0_0 0 0 0 0 0 
+pdetAttenProfile_32nddb_G_0_0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+pdetTiaGainProfile_8thdb_G_0_0 0 
+alutOffset_G_0_0 0 
+pdetRange_8thdb_G_0_0 0 
+txPwrOffset_G_0_0 0 
+valid_G_0_0 0 
+unused_G_0_0 0 0 
+calDataTgtPwr_G_0_0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+calData2GFuture 0 0 0 0 0 0 0 0 
+rttChannel_t4_dyn160_0_0_0 0 0 0 
+rttChannel_t4mt2_dyn160_0_0_0 0 0 0 
+rttChannel_t4_dyn160_0_1_0 0 0 0 
+rttChannel_t4mt2_dyn160_0_1_0 0 0 0 
+rttChannel_t4_dyn160_0_2_0 0 0 0 
+rttChannel_t4mt2_dyn160_0_2_0 0 0 0 
+rttChannel_t4_dyn160_0_3_0 0 0 0 
+rttChannel_t4mt2_dyn160_0_3_0 0 0 0 
+rttChannel_t4_dyn160_1_0_0 0 0 0 
+rttChannel_t4mt2_dyn160_1_0_0 0 0 0 
+rttChannel_t4_dyn160_1_1_0 0 0 0 
+rttChannel_t4mt2_dyn160_1_1_0 0 0 0 
+rttChannel_t4_dyn160_1_2_0 0 0 0 
+rttChannel_t4mt2_dyn160_1_2_0 0 0 0 
+rttChannel_t4_dyn160_1_3_0 0 0 0 
+rttChannel_t4mt2_dyn160_1_3_0 0 0 0 
+rttChannel_t4_dyn80_0_0_0 0 0 0 
+rttChannel_t4mt2_dyn80_0_0_0 0 0 0 
+rttChannel_t4_dyn80_0_1_0 0 0 0 
+rttChannel_t4mt2_dyn80_0_1_0 0 0 0 
+rttChannel_t4_dyn80_0_2_0 0 0 0 
+rttChannel_t4mt2_dyn80_0_2_0 0 0 0 
+rttChannel_t4_dyn80_1_0_0 0 0 0 
+rttChannel_t4mt2_dyn80_1_0_0 0 0 0 
+rttChannel_t4_dyn80_1_1_0 0 0 0 
+rttChannel_t4mt2_dyn80_1_1_0 0 0 0 
+rttChannel_t4_dyn80_1_2_0 0 0 0 
+rttChannel_t4mt2_dyn80_1_2_0 0 0 0 
+rttChannel_t4_dyn20_0_0_0 0 0 0 
+rttChannel_t4mt2_dyn20_0_0_0 0 0 0 
+rttChannel_t4_dyn20_1_0_0 0 0 0 
+rttChannel_t4mt2_dyn20_1_0_0 0 0 0 
+txGainIdx_lnaGain__0_0 pasetting:0 txgainIdx:0 
+loopbackDelay_numCorrStages__0_0 loopbackDelay:0 numCorrStages:0 
+xlnaOn_xpaOn_xlnaStatePhaseComp__0_0 xlnaOn:0 xpaOn:0 xlnaStatePhaseComp:0 
+txChainSteps__0_0 0 0 0 0 0 0 
+rxChainSteps__0_0 0 0 0 0 0 0 
+computeSteps__0_0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+lnaGainPhaseComp__0_0 0 0 0 0 0 0 
+ibfCalFreqPiers__0_0 0 0 0 0 0 0 0 0 0 0 0 0 
+ibfCalData__0_0 0 0 0 0 0 0 0 0 0 0 0 0 
+ibfCalData__1_0 0 0 0 0 0 0 0 0 0 0 0 0 
+ibfCalData__2_0 0 0 0 0 0 0 0 0 0 0 0 0 
+heavyClipFactorQam__0_0 96 96 90 86 84 84 76 70 56 0 
+heavyClipCompFactorQam__0_0 18 18 16 13 0 0 0 0 0 0 
+heavyClipFactorQamNonHtDup40__0_0 56 41 37 35 34 34 31 0 0 0 
+heavyClipCompFactorQamNonHtDup40__0_0 20 7 -10 -8 -2 -2 21 0 0 0 
+heavyClipFactorQamNonHtDup80__0_0 56 41 37 35 34 34 34 31 0 0 
+heavyClipCompFactorQamNonHtDup80__0_0 29 12 7 2 4 4 -3 0 0 0 
+heavyClipEnableBitMap__0_0 0x0 
+heavyClipUsePreEmp__0_0 1 
+heavyClipBackoffPwr2x__0_0 0 
+heavyClipFactorQam_40Mhz__0_0 -112 -112 118 96 84 84 76 70 56 0 
+heavyClipCompFactorQam_40Mhz__0_0 13 13 2 -14 0 0 0 0 0 0 
+heavyClipFactorQam_80Mhz__0_0 102 102 90 86 84 84 76 70 56 0 
+heavyClipCompFactorQam_80Mhz__0_0 26 26 19 19 0 0 0 0 0 0 
+alutFuture2G 0 0 
+rtt_freq_list__0_0 0 0 
+rttChannel_t4_dyn40_0_0_0 0 0 0 
+rttChannel_t4mt2_dyn40_0_0_0 0 0 0 
+rttChannel_t4_dyn40_0_1_0 0 0 0 
+rttChannel_t4mt2_dyn40_0_1_0 0 0 0 
+rttChannel_t4_dyn40_1_0_0 0 0 0 
+rttChannel_t4mt2_dyn40_1_0_0 0 0 0 
+rttChannel_t4_dyn40_1_1_0 0 0 0 
+rttChannel_t4mt2_dyn40_1_1_0 0 0 0 
+extTPow2xDelta2G 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+targetFreqbinCck_G_0_0 112 172 
+targetFreqbin2G_G_0_0 112 142 172 
+thermal_interval_tempInDegC__0_0 0 0 0 
+targetFreqbin2GVHT20_G_0_0 112 127 142 172 
+targetFreqbin2GVHT40_G_0_0 112 127 142 172 
+pad2 0 0 0 0 
+targetPowerCck_2G_G_0_0 40 40 40 40 
+targetPowerCck_2G_G_1_0 40 40 40 40 
+tgtPow2xNss_SU_VHT20_G_0_0 38 36 36 36 36 36 34 32 29 22 
+tgtPow2xNss_MU_VHT20_G_0_0 38 36 34 34 32 30 28 26 24 22 
+tgtPow2xNss_SU_VHT20_G_1_0 38 36 36 36 36 36 34 32 29 22 
+tgtPow2xNss_MU_VHT20_G_1_0 38 36 34 34 32 30 28 26 24 22 
+tgtPow2xNss_SU_VHT20_G_2_0 38 36 36 36 36 36 34 32 29 22 
+tgtPow2xNss_MU_VHT20_G_2_0 38 36 34 34 32 30 28 26 24 22 
+tgtPow2xNss_SU_VHT20_G_3_0 38 36 36 36 36 36 34 32 29 22 
+tgtPow2xNss_MU_VHT20_G_3_0 38 36 34 34 32 30 28 26 24 22 
+tgtPow2xNss_SU_VHT40_G_0_0 36 36 36 35 35 35 34 32 30 28 
+tgtPow2xNss_MU_VHT40_G_0_0 36 36 34 34 32 30 28 26 24 22 
+tgtPow2xNss_SU_VHT40_G_1_0 36 36 36 35 35 35 34 32 30 28 
+tgtPow2xNss_MU_VHT40_G_1_0 36 36 34 34 32 30 28 26 24 22 
+tgtPow2xNss_SU_VHT40_G_2_0 36 36 36 35 35 35 34 32 30 28 
+tgtPow2xNss_MU_VHT40_G_2_0 36 36 34 34 32 30 28 26 24 22 
+tgtPow2xNss_SU_VHT40_G_3_0 36 36 36 35 35 35 34 32 30 28 
+tgtPow2xNss_MU_VHT40_G_3_0 36 36 34 34 32 30 28 26 24 22 
+pad 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ctlIndex2G_11b_0_G_0_0 mode:0x1 beamforming:0x0 regDmn:0x1 numChMask:0xe numSSMask:0x1 
+ctlIndex2G_11b_1_G_0_0 mode:0x1 beamforming:0x0 regDmn:0x1 numChMask:0x1 numSSMask:0x1 
+ctlIndex2G_11b_2_G_0_0 mode:0x1 beamforming:0x0 regDmn:0x4 numChMask:0xe numSSMask:0x1 
+ctlIndex2G_11b_3_G_0_0 mode:0x1 beamforming:0x0 regDmn:0x4 numChMask:0x1 numSSMask:0x1 
+ctlIndex2G_11b_4_G_0_0 mode:0x1 beamforming:0x0 regDmn:0x3 numChMask:0xe numSSMask:0x1 
+ctlIndex2G_11b_5_G_0_0 mode:0x1 beamforming:0x0 regDmn:0x3 numChMask:0x1 numSSMask:0x1 
+ctlFreqbin2G_11b_0_G_0_0 112 117 122 127 132 137 142 147 152 
+ctlFreqbin2G_11b_1_G_0_0 112 117 122 127 132 137 142 147 152 
+ctlFreqbin2G_11b_2_G_0_0 112 117 122 127 132 137 142 147 152 
+alignpad1 0 
+ctlData2G_11b_0_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_11b_1_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_11b_2_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_11b_3_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_11b_4_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_11b_5_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlIndex2G_20Mhz_0_G_0_0 mode:0x2 beamforming:0x0 regDmn:0x1 numChMask:0xe numSSMask:0x1 
+ctlIndex2G_20Mhz_1_G_0_0 mode:0x2 beamforming:0x0 regDmn:0x1 numChMask:0xe numSSMask:0x2 
+ctlIndex2G_20Mhz_2_G_0_0 mode:0x2 beamforming:0x0 regDmn:0x1 numChMask:0xc numSSMask:0xc 
+ctlIndex2G_20Mhz_3_G_0_0 mode:0x2 beamforming:0x0 regDmn:0x1 numChMask:0x1 numSSMask:0x1 
+ctlIndex2G_20Mhz_4_G_0_0 mode:0x2 beamforming:0x1 regDmn:0x1 numChMask:0xe numSSMask:0x1 
+ctlIndex2G_20Mhz_5_G_0_0 mode:0x2 beamforming:0x1 regDmn:0x1 numChMask:0xe numSSMask:0x2 
+ctlIndex2G_20Mhz_6_G_0_0 mode:0x2 beamforming:0x1 regDmn:0x1 numChMask:0xc numSSMask:0x4 
+ctlIndex2G_20Mhz_7_G_0_0 mode:0x0 beamforming:0x0 regDmn:0x1 numChMask:0xe numSSMask:0x1 
+ctlIndex2G_20Mhz_8_G_0_0 mode:0x0 beamforming:0x0 regDmn:0x1 numChMask:0x1 numSSMask:0x1 
+ctlIndex2G_20Mhz_9_G_0_0 mode:0x0 beamforming:0x1 regDmn:0x1 numChMask:0xe numSSMask:0x1 
+ctlIndex2G_20Mhz_10_G_0_0 mode:0x2 beamforming:0x0 regDmn:0x4 numChMask:0xe numSSMask:0x1 
+ctlIndex2G_20Mhz_11_G_0_0 mode:0x2 beamforming:0x0 regDmn:0x4 numChMask:0xe numSSMask:0x2 
+ctlIndex2G_20Mhz_12_G_0_0 mode:0x2 beamforming:0x0 regDmn:0x4 numChMask:0xc numSSMask:0xc 
+ctlIndex2G_20Mhz_13_G_0_0 mode:0x2 beamforming:0x0 regDmn:0x4 numChMask:0x1 numSSMask:0x1 
+ctlIndex2G_20Mhz_14_G_0_0 mode:0x2 beamforming:0x1 regDmn:0x4 numChMask:0xe numSSMask:0x1 
+ctlIndex2G_20Mhz_15_G_0_0 mode:0x2 beamforming:0x1 regDmn:0x4 numChMask:0xe numSSMask:0x2 
+ctlIndex2G_20Mhz_16_G_0_0 mode:0x2 beamforming:0x1 regDmn:0x4 numChMask:0xc numSSMask:0x4 
+ctlIndex2G_20Mhz_17_G_0_0 mode:0x0 beamforming:0x0 regDmn:0x4 numChMask:0xe numSSMask:0x1 
+ctlIndex2G_20Mhz_18_G_0_0 mode:0x0 beamforming:0x0 regDmn:0x4 numChMask:0x1 numSSMask:0x1 
+ctlIndex2G_20Mhz_19_G_0_0 mode:0x0 beamforming:0x1 regDmn:0x4 numChMask:0xe numSSMask:0x1 
+ctlIndex2G_20Mhz_20_G_0_0 mode:0x2 beamforming:0x0 regDmn:0x3 numChMask:0xe numSSMask:0x1 
+ctlIndex2G_20Mhz_21_G_0_0 mode:0x2 beamforming:0x0 regDmn:0x3 numChMask:0xe numSSMask:0x2 
+ctlIndex2G_20Mhz_22_G_0_0 mode:0x2 beamforming:0x0 regDmn:0x3 numChMask:0xc numSSMask:0xc 
+ctlIndex2G_20Mhz_23_G_0_0 mode:0x2 beamforming:0x0 regDmn:0x3 numChMask:0x1 numSSMask:0x1 
+ctlIndex2G_20Mhz_24_G_0_0 mode:0x2 beamforming:0x1 regDmn:0x3 numChMask:0xe numSSMask:0x1 
+ctlIndex2G_20Mhz_25_G_0_0 mode:0x2 beamforming:0x1 regDmn:0x3 numChMask:0xe numSSMask:0x2 
+ctlIndex2G_20Mhz_26_G_0_0 mode:0x2 beamforming:0x1 regDmn:0x3 numChMask:0xc numSSMask:0x4 
+ctlIndex2G_20Mhz_27_G_0_0 mode:0x0 beamforming:0x0 regDmn:0x3 numChMask:0xe numSSMask:0x1 
+ctlIndex2G_20Mhz_28_G_0_0 mode:0x0 beamforming:0x0 regDmn:0x3 numChMask:0x1 numSSMask:0x1 
+ctlIndex2G_20Mhz_29_G_0_0 mode:0x0 beamforming:0x1 regDmn:0x3 numChMask:0xe numSSMask:0x1 
+ctlFreqbin2G_20Mhz_0_G_0_0 112 117 122 127 132 137 142 147 152 157 162 
+ctlFreqbin2G_20Mhz_1_G_0_0 112 117 122 127 132 137 142 147 152 157 162 
+ctlFreqbin2G_20Mhz_2_G_0_0 112 117 122 127 132 137 142 147 152 157 162 
+alignpad3 0 
+ctlData2G_20Mhz_0_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_1_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_2_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_3_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_4_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_5_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_6_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_7_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_8_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_9_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_10_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_11_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_12_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_13_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_14_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_15_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_16_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_17_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_18_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_19_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_20_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_21_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_22_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_23_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_24_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_25_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_26_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_27_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_28_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_20Mhz_29_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlIndex2G_40Mhz_0_G_0_0 mode:0x3 beamforming:0x0 regDmn:0x1 numChMask:0xe numSSMask:0x1 
+ctlIndex2G_40Mhz_1_G_0_0 mode:0x3 beamforming:0x0 regDmn:0x1 numChMask:0xe numSSMask:0xe 
+ctlIndex2G_40Mhz_2_G_0_0 mode:0x3 beamforming:0x0 regDmn:0x1 numChMask:0x1 numSSMask:0x1 
+ctlIndex2G_40Mhz_3_G_0_0 mode:0x3 beamforming:0x1 regDmn:0x1 numChMask:0xe numSSMask:0x1 
+ctlIndex2G_40Mhz_4_G_0_0 mode:0x3 beamforming:0x1 regDmn:0x1 numChMask:0xe numSSMask:0x2 
+ctlIndex2G_40Mhz_5_G_0_0 mode:0x3 beamforming:0x1 regDmn:0x1 numChMask:0xc numSSMask:0x4 
+ctlIndex2G_40Mhz_6_G_0_0 mode:0x3 beamforming:0x0 regDmn:0x4 numChMask:0xe numSSMask:0x1 
+ctlIndex2G_40Mhz_7_G_0_0 mode:0x3 beamforming:0x0 regDmn:0x4 numChMask:0xe numSSMask:0xe 
+ctlIndex2G_40Mhz_8_G_0_0 mode:0x3 beamforming:0x0 regDmn:0x4 numChMask:0x1 numSSMask:0x1 
+ctlIndex2G_40Mhz_9_G_0_0 mode:0x3 beamforming:0x1 regDmn:0x4 numChMask:0xe numSSMask:0x1 
+ctlIndex2G_40Mhz_10_G_0_0 mode:0x3 beamforming:0x1 regDmn:0x4 numChMask:0xe numSSMask:0x2 
+ctlIndex2G_40Mhz_11_G_0_0 mode:0x3 beamforming:0x1 regDmn:0x4 numChMask:0xc numSSMask:0x4 
+ctlIndex2G_40Mhz_12_G_0_0 mode:0x3 beamforming:0x0 regDmn:0x3 numChMask:0xe numSSMask:0x1 
+ctlIndex2G_40Mhz_13_G_0_0 mode:0x3 beamforming:0x0 regDmn:0x3 numChMask:0xe numSSMask:0xe 
+ctlIndex2G_40Mhz_14_G_0_0 mode:0x3 beamforming:0x0 regDmn:0x3 numChMask:0x1 numSSMask:0x1 
+ctlIndex2G_40Mhz_15_G_0_0 mode:0x3 beamforming:0x1 regDmn:0x3 numChMask:0xe numSSMask:0x1 
+ctlIndex2G_40Mhz_16_G_0_0 mode:0x3 beamforming:0x1 regDmn:0x3 numChMask:0xe numSSMask:0x2 
+ctlIndex2G_40Mhz_17_G_0_0 mode:0x3 beamforming:0x1 regDmn:0x3 numChMask:0xc numSSMask:0x4 
+ctlFreqbin2G_40Mhz_0_G_0_0 112 117 122 127 132 137 
+ctlFreqbin2G_40Mhz_1_G_0_0 112 117 122 127 132 137 
+ctlFreqbin2G_40Mhz_2_G_0_0 112 117 122 127 132 137 
+ctlData2G_40Mhz_0_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_40Mhz_1_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_40Mhz_2_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_40Mhz_3_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_40Mhz_4_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_40Mhz_5_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_40Mhz_6_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_40Mhz_7_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_40Mhz_8_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_40Mhz_9_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_40Mhz_10_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_40Mhz_11_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_40Mhz_12_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_40Mhz_13_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_40Mhz_14_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_40Mhz_15_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_40Mhz_16_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlData2G_40Mhz_17_G_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0xbc 
+ctlSpare2G 0 0 0 0 
+alphaThermChans_2G_G_0_0 112 137 157 172 
+alphaThermChans_2G_G_1_0 112 137 157 172 
+alphaThermChans_2G_G_2_0 112 137 157 172 
+alphaThermChans_2G_G_3_0 112 137 157 172 
+alphaThermTbl_2G_G_0_0 0x25 0x25 0x25 0x25 
+alphaThermTbl_2G_G_0_1 0x25 0x25 0x25 0x25 
+alphaThermTbl_2G_G_0_2 0x25 0x25 0x25 0x25 
+alphaThermTbl_2G_G_0_3 0x25 0x25 0x25 0x25 
+alphaThermTbl_2G_G_1_0 0x25 0x25 0x25 0x25 
+alphaThermTbl_2G_G_1_1 0x25 0x25 0x25 0x25 
+alphaThermTbl_2G_G_1_2 0x25 0x25 0x25 0x25 
+alphaThermTbl_2G_G_1_3 0x25 0x25 0x25 0x25 
+alphaThermTbl_2G_G_2_0 0x25 0x25 0x25 0x25 
+alphaThermTbl_2G_G_2_1 0x25 0x25 0x25 0x25 
+alphaThermTbl_2G_G_2_2 0x25 0x25 0x25 0x25 
+alphaThermTbl_2G_G_2_3 0x25 0x25 0x25 0x25 
+alphaThermTbl_2G_G_3_0 0x25 0x25 0x25 0x25 
+alphaThermTbl_2G_G_3_1 0x25 0x25 0x25 0x25 
+alphaThermTbl_2G_G_3_2 0x25 0x25 0x25 0x25 
+alphaThermTbl_2G_G_3_3 0x25 0x25 0x25 0x25 
+calFreqPier5G_A_0_0 76 88 104 140 160 180 189 205 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 
+calFreqPier5G_ext_A_0_0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+paSet_txgainIdx_A_A_0_0 pasetting:0x7 txgainIdx:0x1d 
+meas_pwr_A_A_0_0 137 
+paSet_txgainIdx_B_A_0_0 pasetting:0x6 txgainIdx:0x19 
+meas_pwr_B_A_0_0 108 
+paSet_txgainIdx_C_A_0_0 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_C_A_0_0 76 
+paSet_txgainIdx_D_A_0_0 pasetting:0x5 txgainIdx:0x13 
+meas_pwr_D_A_0_0 49 
+paSet_txgainIdx_E_A_0_0 pasetting:0x4 txgainIdx:0x11 
+meas_pwr_E_A_0_0 28 
+paSet_txgainIdx_A_A_0_1 pasetting:0x7 txgainIdx:0x1d 
+meas_pwr_A_A_0_1 136 
+paSet_txgainIdx_B_A_0_1 pasetting:0x6 txgainIdx:0x19 
+meas_pwr_B_A_0_1 107 
+paSet_txgainIdx_C_A_0_1 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_C_A_0_1 75 
+paSet_txgainIdx_D_A_0_1 pasetting:0x5 txgainIdx:0x13 
+meas_pwr_D_A_0_1 50 
+paSet_txgainIdx_E_A_0_1 pasetting:0x4 txgainIdx:0x11 
+meas_pwr_E_A_0_1 29 
+paSet_txgainIdx_A_A_0_2 pasetting:0x7 txgainIdx:0x17 
+meas_pwr_A_A_0_2 182 
+paSet_txgainIdx_B_A_0_2 pasetting:0x5 txgainIdx:0x13 
+meas_pwr_B_A_0_2 150 
+paSet_txgainIdx_C_A_0_2 pasetting:0x3 txgainIdx:0xf 
+meas_pwr_C_A_0_2 113 
+paSet_txgainIdx_D_A_0_2 pasetting:0x1 txgainIdx:0xb 
+meas_pwr_D_A_0_2 70 
+paSet_txgainIdx_E_A_0_2 pasetting:0x0 txgainIdx:0x7 
+meas_pwr_E_A_0_2 37 
+paSet_txgainIdx_A_A_0_3 pasetting:0x7 txgainIdx:0x17 
+meas_pwr_A_A_0_3 178 
+paSet_txgainIdx_B_A_0_3 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_B_A_0_3 164 
+paSet_txgainIdx_C_A_0_3 pasetting:0x4 txgainIdx:0x11 
+meas_pwr_C_A_0_3 123 
+paSet_txgainIdx_D_A_0_3 pasetting:0x2 txgainIdx:0xd 
+meas_pwr_D_A_0_3 89 
+paSet_txgainIdx_E_A_0_3 pasetting:0x0 txgainIdx:0x7 
+meas_pwr_E_A_0_3 28 
+dacGain_A_0_0 -8 
+dacGain_A_0_1 -8 
+dacGain_A_0_2 -8 
+dacGain_A_0_3 -8 
+thermCalVal_A_0_0 156 152 39 40 
+voltCalVal_A_0_0 0 
+paSet_txgainIdx_A_A_1_0 pasetting:0x7 txgainIdx:0x1d 
+meas_pwr_A_A_1_0 147 
+paSet_txgainIdx_B_A_1_0 pasetting:0x6 txgainIdx:0x19 
+meas_pwr_B_A_1_0 121 
+paSet_txgainIdx_C_A_1_0 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_C_A_1_0 90 
+paSet_txgainIdx_D_A_1_0 pasetting:0x5 txgainIdx:0x13 
+meas_pwr_D_A_1_0 64 
+paSet_txgainIdx_E_A_1_0 pasetting:0x4 txgainIdx:0x11 
+meas_pwr_E_A_1_0 45 
+paSet_txgainIdx_A_A_1_1 pasetting:0x7 txgainIdx:0x1d 
+meas_pwr_A_A_1_1 149 
+paSet_txgainIdx_B_A_1_1 pasetting:0x6 txgainIdx:0x19 
+meas_pwr_B_A_1_1 123 
+paSet_txgainIdx_C_A_1_1 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_C_A_1_1 91 
+paSet_txgainIdx_D_A_1_1 pasetting:0x5 txgainIdx:0x13 
+meas_pwr_D_A_1_1 66 
+paSet_txgainIdx_E_A_1_1 pasetting:0x4 txgainIdx:0x11 
+meas_pwr_E_A_1_1 47 
+paSet_txgainIdx_A_A_1_2 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_A_A_1_2 180 
+paSet_txgainIdx_B_A_1_2 pasetting:0x5 txgainIdx:0x13 
+meas_pwr_B_A_1_2 160 
+paSet_txgainIdx_C_A_1_2 pasetting:0x2 txgainIdx:0xd 
+meas_pwr_C_A_1_2 106 
+paSet_txgainIdx_D_A_1_2 pasetting:0x1 txgainIdx:0xb 
+meas_pwr_D_A_1_2 78 
+paSet_txgainIdx_E_A_1_2 pasetting:0x0 txgainIdx:0x7 
+meas_pwr_E_A_1_2 44 
+paSet_txgainIdx_A_A_1_3 pasetting:0x7 txgainIdx:0x17 
+meas_pwr_A_A_1_3 183 
+paSet_txgainIdx_B_A_1_3 pasetting:0x5 txgainIdx:0x13 
+meas_pwr_B_A_1_3 146 
+paSet_txgainIdx_C_A_1_3 pasetting:0x3 txgainIdx:0xf 
+meas_pwr_C_A_1_3 109 
+paSet_txgainIdx_D_A_1_3 pasetting:0x1 txgainIdx:0xb 
+meas_pwr_D_A_1_3 66 
+paSet_txgainIdx_E_A_1_3 pasetting:0x0 txgainIdx:0x7 
+meas_pwr_E_A_1_3 32 
+dacGain_A_1_0 -8 
+dacGain_A_1_1 -8 
+dacGain_A_1_2 -8 
+dacGain_A_1_3 -8 
+thermCalVal_A_1_0 157 153 39 39 
+voltCalVal_A_1_0 0 
+paSet_txgainIdx_A_A_2_0 pasetting:0x7 txgainIdx:0x1d 
+meas_pwr_A_A_2_0 154 
+paSet_txgainIdx_B_A_2_0 pasetting:0x6 txgainIdx:0x19 
+meas_pwr_B_A_2_0 133 
+paSet_txgainIdx_C_A_2_0 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_C_A_2_0 103 
+paSet_txgainIdx_D_A_2_0 pasetting:0x5 txgainIdx:0x13 
+meas_pwr_D_A_2_0 80 
+paSet_txgainIdx_E_A_2_0 pasetting:0x4 txgainIdx:0x11 
+meas_pwr_E_A_2_0 61 
+paSet_txgainIdx_A_A_2_1 pasetting:0x7 txgainIdx:0x1d 
+meas_pwr_A_A_2_1 159 
+paSet_txgainIdx_B_A_2_1 pasetting:0x6 txgainIdx:0x19 
+meas_pwr_B_A_2_1 137 
+paSet_txgainIdx_C_A_2_1 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_C_A_2_1 108 
+paSet_txgainIdx_D_A_2_1 pasetting:0x5 txgainIdx:0x13 
+meas_pwr_D_A_2_1 85 
+paSet_txgainIdx_E_A_2_1 pasetting:0x3 txgainIdx:0xf 
+meas_pwr_E_A_2_1 45 
+paSet_txgainIdx_A_A_2_2 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_A_A_2_2 186 
+paSet_txgainIdx_B_A_2_2 pasetting:0x4 txgainIdx:0x11 
+meas_pwr_B_A_2_2 150 
+paSet_txgainIdx_C_A_2_2 pasetting:0x2 txgainIdx:0xd 
+meas_pwr_C_A_2_2 114 
+paSet_txgainIdx_D_A_2_2 pasetting:0x0 txgainIdx:0x9 
+meas_pwr_D_A_2_2 68 
+paSet_txgainIdx_E_A_2_2 pasetting:0x0 txgainIdx:0x7 
+meas_pwr_E_A_2_2 50 
+paSet_txgainIdx_A_A_2_3 pasetting:0x7 txgainIdx:0x17 
+meas_pwr_A_A_2_3 183 
+paSet_txgainIdx_B_A_2_3 pasetting:0x5 txgainIdx:0x13 
+meas_pwr_B_A_2_3 147 
+paSet_txgainIdx_C_A_2_3 pasetting:0x3 txgainIdx:0xf 
+meas_pwr_C_A_2_3 108 
+paSet_txgainIdx_D_A_2_3 pasetting:0x1 txgainIdx:0xb 
+meas_pwr_D_A_2_3 66 
+paSet_txgainIdx_E_A_2_3 pasetting:0x0 txgainIdx:0x7 
+meas_pwr_E_A_2_3 32 
+dacGain_A_2_0 -8 
+dacGain_A_2_1 -8 
+dacGain_A_2_2 -8 
+dacGain_A_2_3 -8 
+thermCalVal_A_2_0 158 153 39 41 
+voltCalVal_A_2_0 0 
+paSet_txgainIdx_A_A_3_0 pasetting:0x7 txgainIdx:0x1d 
+meas_pwr_A_A_3_0 159 
+paSet_txgainIdx_B_A_3_0 pasetting:0x6 txgainIdx:0x19 
+meas_pwr_B_A_3_0 141 
+paSet_txgainIdx_C_A_3_0 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_C_A_3_0 112 
+paSet_txgainIdx_D_A_3_0 pasetting:0x4 txgainIdx:0x11 
+meas_pwr_D_A_3_0 82 
+paSet_txgainIdx_E_A_3_0 pasetting:0x2 txgainIdx:0xd 
+meas_pwr_E_A_3_0 54 
+paSet_txgainIdx_A_A_3_1 pasetting:0x7 txgainIdx:0x1d 
+meas_pwr_A_A_3_1 165 
+paSet_txgainIdx_B_A_3_1 pasetting:0x6 txgainIdx:0x19 
+meas_pwr_B_A_3_1 147 
+paSet_txgainIdx_C_A_3_1 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_C_A_3_1 120 
+paSet_txgainIdx_D_A_3_1 pasetting:0x4 txgainIdx:0x11 
+meas_pwr_D_A_3_1 88 
+paSet_txgainIdx_E_A_3_1 pasetting:0x2 txgainIdx:0xd 
+meas_pwr_E_A_3_1 60 
+paSet_txgainIdx_A_A_3_2 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_A_A_3_2 191 
+paSet_txgainIdx_B_A_3_2 pasetting:0x4 txgainIdx:0x11 
+meas_pwr_B_A_3_2 155 
+paSet_txgainIdx_C_A_3_2 pasetting:0x2 txgainIdx:0xd 
+meas_pwr_C_A_3_2 116 
+paSet_txgainIdx_D_A_3_2 pasetting:0x0 txgainIdx:0x9 
+meas_pwr_D_A_3_2 69 
+paSet_txgainIdx_E_A_3_2 pasetting:0x0 txgainIdx:0x5 
+meas_pwr_E_A_3_2 24 
+paSet_txgainIdx_A_A_3_3 pasetting:0x7 txgainIdx:0x17 
+meas_pwr_A_A_3_3 183 
+paSet_txgainIdx_B_A_3_3 pasetting:0x5 txgainIdx:0x13 
+meas_pwr_B_A_3_3 146 
+paSet_txgainIdx_C_A_3_3 pasetting:0x3 txgainIdx:0xf 
+meas_pwr_C_A_3_3 107 
+paSet_txgainIdx_D_A_3_3 pasetting:0x2 txgainIdx:0xd 
+meas_pwr_D_A_3_3 91 
+paSet_txgainIdx_E_A_3_3 pasetting:0x0 txgainIdx:0x7 
+meas_pwr_E_A_3_3 28 
+dacGain_A_3_0 -8 
+dacGain_A_3_1 -8 
+dacGain_A_3_2 -8 
+dacGain_A_3_3 -8 
+thermCalVal_A_3_0 157 154 39 40 
+voltCalVal_A_3_0 0 
+paSet_txgainIdx_A_A_4_0 pasetting:0x7 txgainIdx:0x1d 
+meas_pwr_A_A_4_0 157 
+paSet_txgainIdx_B_A_4_0 pasetting:0x6 txgainIdx:0x19 
+meas_pwr_B_A_4_0 138 
+paSet_txgainIdx_C_A_4_0 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_C_A_4_0 107 
+paSet_txgainIdx_D_A_4_0 pasetting:0x3 txgainIdx:0xf 
+meas_pwr_D_A_4_0 68 
+paSet_txgainIdx_E_A_4_0 pasetting:0x1 txgainIdx:0xb 
+meas_pwr_E_A_4_0 36 
+paSet_txgainIdx_A_A_4_1 pasetting:0x7 txgainIdx:0x1d 
+meas_pwr_A_A_4_1 162 
+paSet_txgainIdx_B_A_4_1 pasetting:0x6 txgainIdx:0x19 
+meas_pwr_B_A_4_1 143 
+paSet_txgainIdx_C_A_4_1 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_C_A_4_1 114 
+paSet_txgainIdx_D_A_4_1 pasetting:0x4 txgainIdx:0x11 
+meas_pwr_D_A_4_1 85 
+paSet_txgainIdx_E_A_4_1 pasetting:0x2 txgainIdx:0xd 
+meas_pwr_E_A_4_1 62 
+paSet_txgainIdx_A_A_4_2 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_A_A_4_2 187 
+paSet_txgainIdx_B_A_4_2 pasetting:0x4 txgainIdx:0x11 
+meas_pwr_B_A_4_2 153 
+paSet_txgainIdx_C_A_4_2 pasetting:0x2 txgainIdx:0xd 
+meas_pwr_C_A_4_2 118 
+paSet_txgainIdx_D_A_4_2 pasetting:0x0 txgainIdx:0x9 
+meas_pwr_D_A_4_2 72 
+paSet_txgainIdx_E_A_4_2 pasetting:0x0 txgainIdx:0x5 
+meas_pwr_E_A_4_2 27 
+paSet_txgainIdx_A_A_4_3 pasetting:0x7 txgainIdx:0x17 
+meas_pwr_A_A_4_3 184 
+paSet_txgainIdx_B_A_4_3 pasetting:0x5 txgainIdx:0x13 
+meas_pwr_B_A_4_3 149 
+paSet_txgainIdx_C_A_4_3 pasetting:0x3 txgainIdx:0xf 
+meas_pwr_C_A_4_3 109 
+paSet_txgainIdx_D_A_4_3 pasetting:0x1 txgainIdx:0xb 
+meas_pwr_D_A_4_3 66 
+paSet_txgainIdx_E_A_4_3 pasetting:0x0 txgainIdx:0x7 
+meas_pwr_E_A_4_3 31 
+dacGain_A_4_0 -8 
+dacGain_A_4_1 -8 
+dacGain_A_4_2 -8 
+dacGain_A_4_3 -8 
+thermCalVal_A_4_0 158 154 40 41 
+voltCalVal_A_4_0 0 
+paSet_txgainIdx_A_A_5_0 pasetting:0x7 txgainIdx:0x1d 
+meas_pwr_A_A_5_0 152 
+paSet_txgainIdx_B_A_5_0 pasetting:0x6 txgainIdx:0x19 
+meas_pwr_B_A_5_0 131 
+paSet_txgainIdx_C_A_5_0 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_C_A_5_0 99 
+paSet_txgainIdx_D_A_5_0 pasetting:0x3 txgainIdx:0xf 
+meas_pwr_D_A_5_0 62 
+paSet_txgainIdx_E_A_5_0 pasetting:0x0 txgainIdx:0x9 
+meas_pwr_E_A_5_0 26 
+paSet_txgainIdx_A_A_5_1 pasetting:0x7 txgainIdx:0x1d 
+meas_pwr_A_A_5_1 157 
+paSet_txgainIdx_B_A_5_1 pasetting:0x6 txgainIdx:0x19 
+meas_pwr_B_A_5_1 136 
+paSet_txgainIdx_C_A_5_1 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_C_A_5_1 105 
+paSet_txgainIdx_D_A_5_1 pasetting:0x3 txgainIdx:0xf 
+meas_pwr_D_A_5_1 66 
+paSet_txgainIdx_E_A_5_1 pasetting:0x0 txgainIdx:0x9 
+meas_pwr_E_A_5_1 27 
+paSet_txgainIdx_A_A_5_2 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_A_A_5_2 177 
+paSet_txgainIdx_B_A_5_2 pasetting:0x5 txgainIdx:0x13 
+meas_pwr_B_A_5_2 159 
+paSet_txgainIdx_C_A_5_2 pasetting:0x2 txgainIdx:0xd 
+meas_pwr_C_A_5_2 109 
+paSet_txgainIdx_D_A_5_2 pasetting:0x0 txgainIdx:0x9 
+meas_pwr_D_A_5_2 65 
+paSet_txgainIdx_E_A_5_2 pasetting:0x0 txgainIdx:0x7 
+meas_pwr_E_A_5_2 47 
+paSet_txgainIdx_A_A_5_3 pasetting:0x6 txgainIdx:0x19 
+meas_pwr_A_A_5_3 187 
+paSet_txgainIdx_B_A_5_3 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_B_A_5_3 162 
+paSet_txgainIdx_C_A_5_3 pasetting:0x4 txgainIdx:0x11 
+meas_pwr_C_A_5_3 121 
+paSet_txgainIdx_D_A_5_3 pasetting:0x2 txgainIdx:0xd 
+meas_pwr_D_A_5_3 87 
+paSet_txgainIdx_E_A_5_3 pasetting:0x0 txgainIdx:0x7 
+meas_pwr_E_A_5_3 26 
+dacGain_A_5_0 -8 
+dacGain_A_5_1 -8 
+dacGain_A_5_2 -8 
+dacGain_A_5_3 -8 
+thermCalVal_A_5_0 159 154 41 38 
+voltCalVal_A_5_0 0 
+paSet_txgainIdx_A_A_6_0 pasetting:0x7 txgainIdx:0x1d 
+meas_pwr_A_A_6_0 150 
+paSet_txgainIdx_B_A_6_0 pasetting:0x6 txgainIdx:0x19 
+meas_pwr_B_A_6_0 128 
+paSet_txgainIdx_C_A_6_0 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_C_A_6_0 96 
+paSet_txgainIdx_D_A_6_0 pasetting:0x3 txgainIdx:0xf 
+meas_pwr_D_A_6_0 58 
+paSet_txgainIdx_E_A_6_0 pasetting:0x0 txgainIdx:0x9 
+meas_pwr_E_A_6_0 25 
+paSet_txgainIdx_A_A_6_1 pasetting:0x7 txgainIdx:0x1d 
+meas_pwr_A_A_6_1 153 
+paSet_txgainIdx_B_A_6_1 pasetting:0x6 txgainIdx:0x19 
+meas_pwr_B_A_6_1 132 
+paSet_txgainIdx_C_A_6_1 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_C_A_6_1 100 
+paSet_txgainIdx_D_A_6_1 pasetting:0x3 txgainIdx:0xf 
+meas_pwr_D_A_6_1 60 
+paSet_txgainIdx_E_A_6_1 pasetting:0x0 txgainIdx:0x9 
+meas_pwr_E_A_6_1 25 
+paSet_txgainIdx_A_A_6_2 pasetting:0x7 txgainIdx:0x17 
+meas_pwr_A_A_6_2 183 
+paSet_txgainIdx_B_A_6_2 pasetting:0x5 txgainIdx:0x13 
+meas_pwr_B_A_6_2 153 
+paSet_txgainIdx_C_A_6_2 pasetting:0x3 txgainIdx:0xf 
+meas_pwr_C_A_6_2 117 
+paSet_txgainIdx_D_A_6_2 pasetting:0x1 txgainIdx:0xb 
+meas_pwr_D_A_6_2 75 
+paSet_txgainIdx_E_A_6_2 pasetting:0x0 txgainIdx:0x7 
+meas_pwr_E_A_6_2 41 
+paSet_txgainIdx_A_A_6_3 pasetting:0x6 txgainIdx:0x19 
+meas_pwr_A_A_6_3 182 
+paSet_txgainIdx_B_A_6_3 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_B_A_6_3 154 
+paSet_txgainIdx_C_A_6_3 pasetting:0x4 txgainIdx:0x11 
+meas_pwr_C_A_6_3 114 
+paSet_txgainIdx_D_A_6_3 pasetting:0x2 txgainIdx:0xd 
+meas_pwr_D_A_6_3 79 
+paSet_txgainIdx_E_A_6_3 pasetting:0x0 txgainIdx:0x9 
+meas_pwr_E_A_6_3 36 
+dacGain_A_6_0 -8 
+dacGain_A_6_1 -8 
+dacGain_A_6_2 -8 
+dacGain_A_6_3 -8 
+thermCalVal_A_6_0 158 154 41 40 
+voltCalVal_A_6_0 0 
+paSet_txgainIdx_A_A_7_0 pasetting:0x7 txgainIdx:0x1d 
+meas_pwr_A_A_7_0 143 
+paSet_txgainIdx_B_A_7_0 pasetting:0x6 txgainIdx:0x19 
+meas_pwr_B_A_7_0 120 
+paSet_txgainIdx_C_A_7_0 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_C_A_7_0 88 
+paSet_txgainIdx_D_A_7_0 pasetting:0x3 txgainIdx:0xf 
+meas_pwr_D_A_7_0 50 
+paSet_txgainIdx_E_A_7_0 pasetting:0x0 txgainIdx:0x9 
+meas_pwr_E_A_7_0 20 
+paSet_txgainIdx_A_A_7_1 pasetting:0x7 txgainIdx:0x1d 
+meas_pwr_A_A_7_1 145 
+paSet_txgainIdx_B_A_7_1 pasetting:0x6 txgainIdx:0x19 
+meas_pwr_B_A_7_1 122 
+paSet_txgainIdx_C_A_7_1 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_C_A_7_1 90 
+paSet_txgainIdx_D_A_7_1 pasetting:0x3 txgainIdx:0xf 
+meas_pwr_D_A_7_1 50 
+paSet_txgainIdx_E_A_7_1 pasetting:0x0 txgainIdx:0x9 
+meas_pwr_E_A_7_1 17 
+paSet_txgainIdx_A_A_7_2 pasetting:0x6 txgainIdx:0x19 
+meas_pwr_A_A_7_2 185 
+paSet_txgainIdx_B_A_7_2 pasetting:0x6 txgainIdx:0x15 
+meas_pwr_B_A_7_2 161 
+paSet_txgainIdx_C_A_7_2 pasetting:0x3 txgainIdx:0xf 
+meas_pwr_C_A_7_2 106 
+paSet_txgainIdx_D_A_7_2 pasetting:0x1 txgainIdx:0xb 
+meas_pwr_D_A_7_2 64 
+paSet_txgainIdx_E_A_7_2 pasetting:0x0 txgainIdx:0x7 
+meas_pwr_E_A_7_2 30 
+paSet_txgainIdx_A_A_7_3 pasetting:0x6 txgainIdx:0x1b 
+meas_pwr_A_A_7_3 179 
+paSet_txgainIdx_B_A_7_3 pasetting:0x7 txgainIdx:0x17 
+meas_pwr_B_A_7_3 156 
+paSet_txgainIdx_C_A_7_3 pasetting:0x5 txgainIdx:0x13 
+meas_pwr_C_A_7_3 119 
+paSet_txgainIdx_D_A_7_3 pasetting:0x2 txgainIdx:0xd 
+meas_pwr_D_A_7_3 67 
+paSet_txgainIdx_E_A_7_3 pasetting:0x0 txgainIdx:0x9 
+meas_pwr_E_A_7_3 25 
+dacGain_A_7_0 -8 
+dacGain_A_7_1 -8 
+dacGain_A_7_2 -8 
+dacGain_A_7_3 -8 
+thermCalVal_A_7_0 159 154 39 40 
+voltCalVal_A_7_0 0 
+paSet_txgainIdx_A_A_8_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_8_0 0 
+paSet_txgainIdx_B_A_8_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_8_0 0 
+paSet_txgainIdx_C_A_8_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_8_0 0 
+paSet_txgainIdx_D_A_8_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_8_0 0 
+paSet_txgainIdx_E_A_8_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_8_0 0 
+paSet_txgainIdx_A_A_8_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_8_1 0 
+paSet_txgainIdx_B_A_8_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_8_1 0 
+paSet_txgainIdx_C_A_8_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_8_1 0 
+paSet_txgainIdx_D_A_8_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_8_1 0 
+paSet_txgainIdx_E_A_8_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_8_1 0 
+paSet_txgainIdx_A_A_8_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_8_2 0 
+paSet_txgainIdx_B_A_8_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_8_2 0 
+paSet_txgainIdx_C_A_8_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_8_2 0 
+paSet_txgainIdx_D_A_8_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_8_2 0 
+paSet_txgainIdx_E_A_8_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_8_2 0 
+paSet_txgainIdx_A_A_8_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_8_3 0 
+paSet_txgainIdx_B_A_8_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_8_3 0 
+paSet_txgainIdx_C_A_8_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_8_3 0 
+paSet_txgainIdx_D_A_8_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_8_3 0 
+paSet_txgainIdx_E_A_8_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_8_3 0 
+dacGain_A_8_0 0 
+dacGain_A_8_1 0 
+dacGain_A_8_2 0 
+dacGain_A_8_3 0 
+thermCalVal_A_8_0 121 121 121 121 
+voltCalVal_A_8_0 0 
+paSet_txgainIdx_A_A_9_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_9_0 0 
+paSet_txgainIdx_B_A_9_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_9_0 0 
+paSet_txgainIdx_C_A_9_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_9_0 0 
+paSet_txgainIdx_D_A_9_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_9_0 0 
+paSet_txgainIdx_E_A_9_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_9_0 0 
+paSet_txgainIdx_A_A_9_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_9_1 0 
+paSet_txgainIdx_B_A_9_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_9_1 0 
+paSet_txgainIdx_C_A_9_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_9_1 0 
+paSet_txgainIdx_D_A_9_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_9_1 0 
+paSet_txgainIdx_E_A_9_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_9_1 0 
+paSet_txgainIdx_A_A_9_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_9_2 0 
+paSet_txgainIdx_B_A_9_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_9_2 0 
+paSet_txgainIdx_C_A_9_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_9_2 0 
+paSet_txgainIdx_D_A_9_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_9_2 0 
+paSet_txgainIdx_E_A_9_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_9_2 0 
+paSet_txgainIdx_A_A_9_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_9_3 0 
+paSet_txgainIdx_B_A_9_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_9_3 0 
+paSet_txgainIdx_C_A_9_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_9_3 0 
+paSet_txgainIdx_D_A_9_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_9_3 0 
+paSet_txgainIdx_E_A_9_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_9_3 0 
+dacGain_A_9_0 0 
+dacGain_A_9_1 0 
+dacGain_A_9_2 0 
+dacGain_A_9_3 0 
+thermCalVal_A_9_0 121 121 121 121 
+voltCalVal_A_9_0 0 
+paSet_txgainIdx_A_A_10_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_10_0 0 
+paSet_txgainIdx_B_A_10_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_10_0 0 
+paSet_txgainIdx_C_A_10_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_10_0 0 
+paSet_txgainIdx_D_A_10_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_10_0 0 
+paSet_txgainIdx_E_A_10_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_10_0 0 
+paSet_txgainIdx_A_A_10_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_10_1 0 
+paSet_txgainIdx_B_A_10_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_10_1 0 
+paSet_txgainIdx_C_A_10_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_10_1 0 
+paSet_txgainIdx_D_A_10_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_10_1 0 
+paSet_txgainIdx_E_A_10_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_10_1 0 
+paSet_txgainIdx_A_A_10_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_10_2 0 
+paSet_txgainIdx_B_A_10_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_10_2 0 
+paSet_txgainIdx_C_A_10_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_10_2 0 
+paSet_txgainIdx_D_A_10_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_10_2 0 
+paSet_txgainIdx_E_A_10_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_10_2 0 
+paSet_txgainIdx_A_A_10_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_10_3 0 
+paSet_txgainIdx_B_A_10_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_10_3 0 
+paSet_txgainIdx_C_A_10_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_10_3 0 
+paSet_txgainIdx_D_A_10_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_10_3 0 
+paSet_txgainIdx_E_A_10_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_10_3 0 
+dacGain_A_10_0 0 
+dacGain_A_10_1 0 
+dacGain_A_10_2 0 
+dacGain_A_10_3 0 
+thermCalVal_A_10_0 121 121 121 121 
+voltCalVal_A_10_0 0 
+paSet_txgainIdx_A_A_11_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_11_0 0 
+paSet_txgainIdx_B_A_11_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_11_0 0 
+paSet_txgainIdx_C_A_11_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_11_0 0 
+paSet_txgainIdx_D_A_11_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_11_0 0 
+paSet_txgainIdx_E_A_11_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_11_0 0 
+paSet_txgainIdx_A_A_11_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_11_1 0 
+paSet_txgainIdx_B_A_11_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_11_1 0 
+paSet_txgainIdx_C_A_11_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_11_1 0 
+paSet_txgainIdx_D_A_11_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_11_1 0 
+paSet_txgainIdx_E_A_11_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_11_1 0 
+paSet_txgainIdx_A_A_11_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_11_2 0 
+paSet_txgainIdx_B_A_11_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_11_2 0 
+paSet_txgainIdx_C_A_11_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_11_2 0 
+paSet_txgainIdx_D_A_11_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_11_2 0 
+paSet_txgainIdx_E_A_11_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_11_2 0 
+paSet_txgainIdx_A_A_11_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_11_3 0 
+paSet_txgainIdx_B_A_11_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_11_3 0 
+paSet_txgainIdx_C_A_11_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_11_3 0 
+paSet_txgainIdx_D_A_11_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_11_3 0 
+paSet_txgainIdx_E_A_11_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_11_3 0 
+dacGain_A_11_0 0 
+dacGain_A_11_1 0 
+dacGain_A_11_2 0 
+dacGain_A_11_3 0 
+thermCalVal_A_11_0 121 121 121 121 
+voltCalVal_A_11_0 0 
+paSet_txgainIdx_A_A_12_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_12_0 0 
+paSet_txgainIdx_B_A_12_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_12_0 0 
+paSet_txgainIdx_C_A_12_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_12_0 0 
+paSet_txgainIdx_D_A_12_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_12_0 0 
+paSet_txgainIdx_E_A_12_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_12_0 0 
+paSet_txgainIdx_A_A_12_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_12_1 0 
+paSet_txgainIdx_B_A_12_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_12_1 0 
+paSet_txgainIdx_C_A_12_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_12_1 0 
+paSet_txgainIdx_D_A_12_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_12_1 0 
+paSet_txgainIdx_E_A_12_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_12_1 0 
+paSet_txgainIdx_A_A_12_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_12_2 0 
+paSet_txgainIdx_B_A_12_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_12_2 0 
+paSet_txgainIdx_C_A_12_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_12_2 0 
+paSet_txgainIdx_D_A_12_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_12_2 0 
+paSet_txgainIdx_E_A_12_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_12_2 0 
+paSet_txgainIdx_A_A_12_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_12_3 0 
+paSet_txgainIdx_B_A_12_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_12_3 0 
+paSet_txgainIdx_C_A_12_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_12_3 0 
+paSet_txgainIdx_D_A_12_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_12_3 0 
+paSet_txgainIdx_E_A_12_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_12_3 0 
+dacGain_A_12_0 0 
+dacGain_A_12_1 0 
+dacGain_A_12_2 0 
+dacGain_A_12_3 0 
+thermCalVal_A_12_0 121 121 121 121 
+voltCalVal_A_12_0 0 
+paSet_txgainIdx_A_A_13_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_13_0 0 
+paSet_txgainIdx_B_A_13_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_13_0 0 
+paSet_txgainIdx_C_A_13_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_13_0 0 
+paSet_txgainIdx_D_A_13_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_13_0 0 
+paSet_txgainIdx_E_A_13_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_13_0 0 
+paSet_txgainIdx_A_A_13_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_13_1 0 
+paSet_txgainIdx_B_A_13_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_13_1 0 
+paSet_txgainIdx_C_A_13_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_13_1 0 
+paSet_txgainIdx_D_A_13_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_13_1 0 
+paSet_txgainIdx_E_A_13_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_13_1 0 
+paSet_txgainIdx_A_A_13_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_13_2 0 
+paSet_txgainIdx_B_A_13_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_13_2 0 
+paSet_txgainIdx_C_A_13_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_13_2 0 
+paSet_txgainIdx_D_A_13_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_13_2 0 
+paSet_txgainIdx_E_A_13_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_13_2 0 
+paSet_txgainIdx_A_A_13_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_13_3 0 
+paSet_txgainIdx_B_A_13_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_13_3 0 
+paSet_txgainIdx_C_A_13_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_13_3 0 
+paSet_txgainIdx_D_A_13_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_13_3 0 
+paSet_txgainIdx_E_A_13_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_13_3 0 
+dacGain_A_13_0 0 
+dacGain_A_13_1 0 
+dacGain_A_13_2 0 
+dacGain_A_13_3 0 
+thermCalVal_A_13_0 121 121 121 121 
+voltCalVal_A_13_0 0 
+paSet_txgainIdx_A_A_14_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_14_0 0 
+paSet_txgainIdx_B_A_14_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_14_0 0 
+paSet_txgainIdx_C_A_14_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_14_0 0 
+paSet_txgainIdx_D_A_14_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_14_0 0 
+paSet_txgainIdx_E_A_14_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_14_0 0 
+paSet_txgainIdx_A_A_14_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_14_1 0 
+paSet_txgainIdx_B_A_14_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_14_1 0 
+paSet_txgainIdx_C_A_14_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_14_1 0 
+paSet_txgainIdx_D_A_14_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_14_1 0 
+paSet_txgainIdx_E_A_14_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_14_1 0 
+paSet_txgainIdx_A_A_14_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_14_2 0 
+paSet_txgainIdx_B_A_14_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_14_2 0 
+paSet_txgainIdx_C_A_14_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_14_2 0 
+paSet_txgainIdx_D_A_14_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_14_2 0 
+paSet_txgainIdx_E_A_14_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_14_2 0 
+paSet_txgainIdx_A_A_14_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_14_3 0 
+paSet_txgainIdx_B_A_14_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_14_3 0 
+paSet_txgainIdx_C_A_14_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_14_3 0 
+paSet_txgainIdx_D_A_14_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_14_3 0 
+paSet_txgainIdx_E_A_14_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_14_3 0 
+dacGain_A_14_0 0 
+dacGain_A_14_1 0 
+dacGain_A_14_2 0 
+dacGain_A_14_3 0 
+thermCalVal_A_14_0 121 121 121 121 
+voltCalVal_A_14_0 0 
+paSet_txgainIdx_A_A_15_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_15_0 0 
+paSet_txgainIdx_B_A_15_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_15_0 0 
+paSet_txgainIdx_C_A_15_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_15_0 0 
+paSet_txgainIdx_D_A_15_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_15_0 0 
+paSet_txgainIdx_E_A_15_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_15_0 0 
+paSet_txgainIdx_A_A_15_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_15_1 0 
+paSet_txgainIdx_B_A_15_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_15_1 0 
+paSet_txgainIdx_C_A_15_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_15_1 0 
+paSet_txgainIdx_D_A_15_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_15_1 0 
+paSet_txgainIdx_E_A_15_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_15_1 0 
+paSet_txgainIdx_A_A_15_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_15_2 0 
+paSet_txgainIdx_B_A_15_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_15_2 0 
+paSet_txgainIdx_C_A_15_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_15_2 0 
+paSet_txgainIdx_D_A_15_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_15_2 0 
+paSet_txgainIdx_E_A_15_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_15_2 0 
+paSet_txgainIdx_A_A_15_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_15_3 0 
+paSet_txgainIdx_B_A_15_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_15_3 0 
+paSet_txgainIdx_C_A_15_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_15_3 0 
+paSet_txgainIdx_D_A_15_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_15_3 0 
+paSet_txgainIdx_E_A_15_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_15_3 0 
+dacGain_A_15_0 0 
+dacGain_A_15_1 0 
+dacGain_A_15_2 0 
+dacGain_A_15_3 0 
+thermCalVal_A_15_0 121 121 121 121 
+voltCalVal_A_15_0 0 
+paSet_txgainIdx_A_A_16_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_16_0 0 
+paSet_txgainIdx_B_A_16_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_16_0 0 
+paSet_txgainIdx_C_A_16_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_16_0 0 
+paSet_txgainIdx_D_A_16_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_16_0 0 
+paSet_txgainIdx_E_A_16_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_16_0 0 
+paSet_txgainIdx_A_A_16_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_16_1 0 
+paSet_txgainIdx_B_A_16_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_16_1 0 
+paSet_txgainIdx_C_A_16_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_16_1 0 
+paSet_txgainIdx_D_A_16_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_16_1 0 
+paSet_txgainIdx_E_A_16_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_16_1 0 
+paSet_txgainIdx_A_A_16_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_16_2 0 
+paSet_txgainIdx_B_A_16_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_16_2 0 
+paSet_txgainIdx_C_A_16_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_16_2 0 
+paSet_txgainIdx_D_A_16_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_16_2 0 
+paSet_txgainIdx_E_A_16_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_16_2 0 
+paSet_txgainIdx_A_A_16_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_16_3 0 
+paSet_txgainIdx_B_A_16_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_16_3 0 
+paSet_txgainIdx_C_A_16_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_16_3 0 
+paSet_txgainIdx_D_A_16_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_16_3 0 
+paSet_txgainIdx_E_A_16_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_16_3 0 
+dacGain_A_16_0 0 
+dacGain_A_16_1 0 
+dacGain_A_16_2 0 
+dacGain_A_16_3 0 
+thermCalVal_A_16_0 121 121 121 121 
+voltCalVal_A_16_0 0 
+paSet_txgainIdx_A_A_17_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_17_0 0 
+paSet_txgainIdx_B_A_17_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_17_0 0 
+paSet_txgainIdx_C_A_17_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_17_0 0 
+paSet_txgainIdx_D_A_17_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_17_0 0 
+paSet_txgainIdx_E_A_17_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_17_0 0 
+paSet_txgainIdx_A_A_17_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_17_1 0 
+paSet_txgainIdx_B_A_17_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_17_1 0 
+paSet_txgainIdx_C_A_17_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_17_1 0 
+paSet_txgainIdx_D_A_17_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_17_1 0 
+paSet_txgainIdx_E_A_17_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_17_1 0 
+paSet_txgainIdx_A_A_17_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_17_2 0 
+paSet_txgainIdx_B_A_17_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_17_2 0 
+paSet_txgainIdx_C_A_17_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_17_2 0 
+paSet_txgainIdx_D_A_17_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_17_2 0 
+paSet_txgainIdx_E_A_17_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_17_2 0 
+paSet_txgainIdx_A_A_17_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_17_3 0 
+paSet_txgainIdx_B_A_17_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_17_3 0 
+paSet_txgainIdx_C_A_17_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_17_3 0 
+paSet_txgainIdx_D_A_17_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_17_3 0 
+paSet_txgainIdx_E_A_17_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_17_3 0 
+dacGain_A_17_0 0 
+dacGain_A_17_1 0 
+dacGain_A_17_2 0 
+dacGain_A_17_3 0 
+thermCalVal_A_17_0 121 121 121 121 
+voltCalVal_A_17_0 0 
+paSet_txgainIdx_A_A_18_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_18_0 0 
+paSet_txgainIdx_B_A_18_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_18_0 0 
+paSet_txgainIdx_C_A_18_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_18_0 0 
+paSet_txgainIdx_D_A_18_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_18_0 0 
+paSet_txgainIdx_E_A_18_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_18_0 0 
+paSet_txgainIdx_A_A_18_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_18_1 0 
+paSet_txgainIdx_B_A_18_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_18_1 0 
+paSet_txgainIdx_C_A_18_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_18_1 0 
+paSet_txgainIdx_D_A_18_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_18_1 0 
+paSet_txgainIdx_E_A_18_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_18_1 0 
+paSet_txgainIdx_A_A_18_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_18_2 0 
+paSet_txgainIdx_B_A_18_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_18_2 0 
+paSet_txgainIdx_C_A_18_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_18_2 0 
+paSet_txgainIdx_D_A_18_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_18_2 0 
+paSet_txgainIdx_E_A_18_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_18_2 0 
+paSet_txgainIdx_A_A_18_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_18_3 0 
+paSet_txgainIdx_B_A_18_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_18_3 0 
+paSet_txgainIdx_C_A_18_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_18_3 0 
+paSet_txgainIdx_D_A_18_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_18_3 0 
+paSet_txgainIdx_E_A_18_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_18_3 0 
+dacGain_A_18_0 0 
+dacGain_A_18_1 0 
+dacGain_A_18_2 0 
+dacGain_A_18_3 0 
+thermCalVal_A_18_0 121 121 121 121 
+voltCalVal_A_18_0 0 
+paSet_txgainIdx_A_A_19_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_19_0 0 
+paSet_txgainIdx_B_A_19_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_19_0 0 
+paSet_txgainIdx_C_A_19_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_19_0 0 
+paSet_txgainIdx_D_A_19_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_19_0 0 
+paSet_txgainIdx_E_A_19_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_19_0 0 
+paSet_txgainIdx_A_A_19_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_19_1 0 
+paSet_txgainIdx_B_A_19_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_19_1 0 
+paSet_txgainIdx_C_A_19_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_19_1 0 
+paSet_txgainIdx_D_A_19_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_19_1 0 
+paSet_txgainIdx_E_A_19_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_19_1 0 
+paSet_txgainIdx_A_A_19_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_19_2 0 
+paSet_txgainIdx_B_A_19_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_19_2 0 
+paSet_txgainIdx_C_A_19_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_19_2 0 
+paSet_txgainIdx_D_A_19_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_19_2 0 
+paSet_txgainIdx_E_A_19_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_19_2 0 
+paSet_txgainIdx_A_A_19_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_19_3 0 
+paSet_txgainIdx_B_A_19_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_19_3 0 
+paSet_txgainIdx_C_A_19_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_19_3 0 
+paSet_txgainIdx_D_A_19_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_19_3 0 
+paSet_txgainIdx_E_A_19_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_19_3 0 
+dacGain_A_19_0 0 
+dacGain_A_19_1 0 
+dacGain_A_19_2 0 
+dacGain_A_19_3 0 
+thermCalVal_A_19_0 121 121 121 121 
+voltCalVal_A_19_0 0 
+paSet_txgainIdx_A_A_20_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_20_0 0 
+paSet_txgainIdx_B_A_20_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_20_0 0 
+paSet_txgainIdx_C_A_20_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_20_0 0 
+paSet_txgainIdx_D_A_20_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_20_0 0 
+paSet_txgainIdx_E_A_20_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_20_0 0 
+paSet_txgainIdx_A_A_20_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_20_1 0 
+paSet_txgainIdx_B_A_20_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_20_1 0 
+paSet_txgainIdx_C_A_20_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_20_1 0 
+paSet_txgainIdx_D_A_20_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_20_1 0 
+paSet_txgainIdx_E_A_20_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_20_1 0 
+paSet_txgainIdx_A_A_20_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_20_2 0 
+paSet_txgainIdx_B_A_20_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_20_2 0 
+paSet_txgainIdx_C_A_20_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_20_2 0 
+paSet_txgainIdx_D_A_20_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_20_2 0 
+paSet_txgainIdx_E_A_20_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_20_2 0 
+paSet_txgainIdx_A_A_20_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_20_3 0 
+paSet_txgainIdx_B_A_20_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_20_3 0 
+paSet_txgainIdx_C_A_20_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_20_3 0 
+paSet_txgainIdx_D_A_20_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_20_3 0 
+paSet_txgainIdx_E_A_20_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_20_3 0 
+dacGain_A_20_0 0 
+dacGain_A_20_1 0 
+dacGain_A_20_2 0 
+dacGain_A_20_3 0 
+thermCalVal_A_20_0 121 121 121 121 
+voltCalVal_A_20_0 0 
+paSet_txgainIdx_A_A_21_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_21_0 0 
+paSet_txgainIdx_B_A_21_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_21_0 0 
+paSet_txgainIdx_C_A_21_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_21_0 0 
+paSet_txgainIdx_D_A_21_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_21_0 0 
+paSet_txgainIdx_E_A_21_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_21_0 0 
+paSet_txgainIdx_A_A_21_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_21_1 0 
+paSet_txgainIdx_B_A_21_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_21_1 0 
+paSet_txgainIdx_C_A_21_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_21_1 0 
+paSet_txgainIdx_D_A_21_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_21_1 0 
+paSet_txgainIdx_E_A_21_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_21_1 0 
+paSet_txgainIdx_A_A_21_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_21_2 0 
+paSet_txgainIdx_B_A_21_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_21_2 0 
+paSet_txgainIdx_C_A_21_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_21_2 0 
+paSet_txgainIdx_D_A_21_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_21_2 0 
+paSet_txgainIdx_E_A_21_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_21_2 0 
+paSet_txgainIdx_A_A_21_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_21_3 0 
+paSet_txgainIdx_B_A_21_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_21_3 0 
+paSet_txgainIdx_C_A_21_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_21_3 0 
+paSet_txgainIdx_D_A_21_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_21_3 0 
+paSet_txgainIdx_E_A_21_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_21_3 0 
+dacGain_A_21_0 0 
+dacGain_A_21_1 0 
+dacGain_A_21_2 0 
+dacGain_A_21_3 0 
+thermCalVal_A_21_0 121 121 121 121 
+voltCalVal_A_21_0 0 
+paSet_txgainIdx_A_A_22_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_22_0 0 
+paSet_txgainIdx_B_A_22_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_22_0 0 
+paSet_txgainIdx_C_A_22_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_22_0 0 
+paSet_txgainIdx_D_A_22_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_22_0 0 
+paSet_txgainIdx_E_A_22_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_22_0 0 
+paSet_txgainIdx_A_A_22_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_22_1 0 
+paSet_txgainIdx_B_A_22_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_22_1 0 
+paSet_txgainIdx_C_A_22_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_22_1 0 
+paSet_txgainIdx_D_A_22_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_22_1 0 
+paSet_txgainIdx_E_A_22_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_22_1 0 
+paSet_txgainIdx_A_A_22_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_22_2 0 
+paSet_txgainIdx_B_A_22_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_22_2 0 
+paSet_txgainIdx_C_A_22_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_22_2 0 
+paSet_txgainIdx_D_A_22_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_22_2 0 
+paSet_txgainIdx_E_A_22_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_22_2 0 
+paSet_txgainIdx_A_A_22_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_22_3 0 
+paSet_txgainIdx_B_A_22_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_22_3 0 
+paSet_txgainIdx_C_A_22_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_22_3 0 
+paSet_txgainIdx_D_A_22_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_22_3 0 
+paSet_txgainIdx_E_A_22_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_22_3 0 
+dacGain_A_22_0 0 
+dacGain_A_22_1 0 
+dacGain_A_22_2 0 
+dacGain_A_22_3 0 
+thermCalVal_A_22_0 121 121 121 121 
+voltCalVal_A_22_0 0 
+paSet_txgainIdx_A_A_23_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_23_0 0 
+paSet_txgainIdx_B_A_23_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_23_0 0 
+paSet_txgainIdx_C_A_23_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_23_0 0 
+paSet_txgainIdx_D_A_23_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_23_0 0 
+paSet_txgainIdx_E_A_23_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_23_0 0 
+paSet_txgainIdx_A_A_23_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_23_1 0 
+paSet_txgainIdx_B_A_23_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_23_1 0 
+paSet_txgainIdx_C_A_23_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_23_1 0 
+paSet_txgainIdx_D_A_23_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_23_1 0 
+paSet_txgainIdx_E_A_23_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_23_1 0 
+paSet_txgainIdx_A_A_23_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_23_2 0 
+paSet_txgainIdx_B_A_23_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_23_2 0 
+paSet_txgainIdx_C_A_23_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_23_2 0 
+paSet_txgainIdx_D_A_23_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_23_2 0 
+paSet_txgainIdx_E_A_23_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_23_2 0 
+paSet_txgainIdx_A_A_23_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_23_3 0 
+paSet_txgainIdx_B_A_23_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_23_3 0 
+paSet_txgainIdx_C_A_23_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_23_3 0 
+paSet_txgainIdx_D_A_23_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_23_3 0 
+paSet_txgainIdx_E_A_23_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_23_3 0 
+dacGain_A_23_0 0 
+dacGain_A_23_1 0 
+dacGain_A_23_2 0 
+dacGain_A_23_3 0 
+thermCalVal_A_23_0 121 121 121 121 
+voltCalVal_A_23_0 0 
+paSet_txgainIdx_A_A_24_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_24_0 0 
+paSet_txgainIdx_B_A_24_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_24_0 0 
+paSet_txgainIdx_C_A_24_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_24_0 0 
+paSet_txgainIdx_D_A_24_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_24_0 0 
+paSet_txgainIdx_E_A_24_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_24_0 0 
+paSet_txgainIdx_A_A_24_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_24_1 0 
+paSet_txgainIdx_B_A_24_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_24_1 0 
+paSet_txgainIdx_C_A_24_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_24_1 0 
+paSet_txgainIdx_D_A_24_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_24_1 0 
+paSet_txgainIdx_E_A_24_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_24_1 0 
+paSet_txgainIdx_A_A_24_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_24_2 0 
+paSet_txgainIdx_B_A_24_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_24_2 0 
+paSet_txgainIdx_C_A_24_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_24_2 0 
+paSet_txgainIdx_D_A_24_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_24_2 0 
+paSet_txgainIdx_E_A_24_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_24_2 0 
+paSet_txgainIdx_A_A_24_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_24_3 0 
+paSet_txgainIdx_B_A_24_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_24_3 0 
+paSet_txgainIdx_C_A_24_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_24_3 0 
+paSet_txgainIdx_D_A_24_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_24_3 0 
+paSet_txgainIdx_E_A_24_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_24_3 0 
+dacGain_A_24_0 0 
+dacGain_A_24_1 0 
+dacGain_A_24_2 0 
+dacGain_A_24_3 0 
+thermCalVal_A_24_0 121 121 121 121 
+voltCalVal_A_24_0 0 
+paSet_txgainIdx_A_A_25_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_25_0 0 
+paSet_txgainIdx_B_A_25_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_25_0 0 
+paSet_txgainIdx_C_A_25_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_25_0 0 
+paSet_txgainIdx_D_A_25_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_25_0 0 
+paSet_txgainIdx_E_A_25_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_25_0 0 
+paSet_txgainIdx_A_A_25_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_25_1 0 
+paSet_txgainIdx_B_A_25_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_25_1 0 
+paSet_txgainIdx_C_A_25_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_25_1 0 
+paSet_txgainIdx_D_A_25_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_25_1 0 
+paSet_txgainIdx_E_A_25_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_25_1 0 
+paSet_txgainIdx_A_A_25_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_25_2 0 
+paSet_txgainIdx_B_A_25_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_25_2 0 
+paSet_txgainIdx_C_A_25_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_25_2 0 
+paSet_txgainIdx_D_A_25_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_25_2 0 
+paSet_txgainIdx_E_A_25_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_25_2 0 
+paSet_txgainIdx_A_A_25_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_25_3 0 
+paSet_txgainIdx_B_A_25_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_25_3 0 
+paSet_txgainIdx_C_A_25_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_25_3 0 
+paSet_txgainIdx_D_A_25_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_25_3 0 
+paSet_txgainIdx_E_A_25_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_25_3 0 
+dacGain_A_25_0 0 
+dacGain_A_25_1 0 
+dacGain_A_25_2 0 
+dacGain_A_25_3 0 
+thermCalVal_A_25_0 121 121 121 121 
+voltCalVal_A_25_0 0 
+paSet_txgainIdx_A_A_26_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_26_0 0 
+paSet_txgainIdx_B_A_26_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_26_0 0 
+paSet_txgainIdx_C_A_26_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_26_0 0 
+paSet_txgainIdx_D_A_26_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_26_0 0 
+paSet_txgainIdx_E_A_26_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_26_0 0 
+paSet_txgainIdx_A_A_26_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_26_1 0 
+paSet_txgainIdx_B_A_26_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_26_1 0 
+paSet_txgainIdx_C_A_26_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_26_1 0 
+paSet_txgainIdx_D_A_26_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_26_1 0 
+paSet_txgainIdx_E_A_26_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_26_1 0 
+paSet_txgainIdx_A_A_26_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_26_2 0 
+paSet_txgainIdx_B_A_26_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_26_2 0 
+paSet_txgainIdx_C_A_26_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_26_2 0 
+paSet_txgainIdx_D_A_26_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_26_2 0 
+paSet_txgainIdx_E_A_26_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_26_2 0 
+paSet_txgainIdx_A_A_26_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_26_3 0 
+paSet_txgainIdx_B_A_26_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_26_3 0 
+paSet_txgainIdx_C_A_26_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_26_3 0 
+paSet_txgainIdx_D_A_26_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_26_3 0 
+paSet_txgainIdx_E_A_26_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_26_3 0 
+dacGain_A_26_0 0 
+dacGain_A_26_1 0 
+dacGain_A_26_2 0 
+dacGain_A_26_3 0 
+thermCalVal_A_26_0 121 121 121 121 
+voltCalVal_A_26_0 0 
+paSet_txgainIdx_A_A_27_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_27_0 0 
+paSet_txgainIdx_B_A_27_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_27_0 0 
+paSet_txgainIdx_C_A_27_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_27_0 0 
+paSet_txgainIdx_D_A_27_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_27_0 0 
+paSet_txgainIdx_E_A_27_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_27_0 0 
+paSet_txgainIdx_A_A_27_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_27_1 0 
+paSet_txgainIdx_B_A_27_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_27_1 0 
+paSet_txgainIdx_C_A_27_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_27_1 0 
+paSet_txgainIdx_D_A_27_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_27_1 0 
+paSet_txgainIdx_E_A_27_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_27_1 0 
+paSet_txgainIdx_A_A_27_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_27_2 0 
+paSet_txgainIdx_B_A_27_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_27_2 0 
+paSet_txgainIdx_C_A_27_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_27_2 0 
+paSet_txgainIdx_D_A_27_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_27_2 0 
+paSet_txgainIdx_E_A_27_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_27_2 0 
+paSet_txgainIdx_A_A_27_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_27_3 0 
+paSet_txgainIdx_B_A_27_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_27_3 0 
+paSet_txgainIdx_C_A_27_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_27_3 0 
+paSet_txgainIdx_D_A_27_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_27_3 0 
+paSet_txgainIdx_E_A_27_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_27_3 0 
+dacGain_A_27_0 0 
+dacGain_A_27_1 0 
+dacGain_A_27_2 0 
+dacGain_A_27_3 0 
+thermCalVal_A_27_0 121 121 121 121 
+voltCalVal_A_27_0 0 
+paSet_txgainIdx_A_A_28_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_28_0 0 
+paSet_txgainIdx_B_A_28_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_28_0 0 
+paSet_txgainIdx_C_A_28_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_28_0 0 
+paSet_txgainIdx_D_A_28_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_28_0 0 
+paSet_txgainIdx_E_A_28_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_28_0 0 
+paSet_txgainIdx_A_A_28_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_28_1 0 
+paSet_txgainIdx_B_A_28_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_28_1 0 
+paSet_txgainIdx_C_A_28_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_28_1 0 
+paSet_txgainIdx_D_A_28_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_28_1 0 
+paSet_txgainIdx_E_A_28_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_28_1 0 
+paSet_txgainIdx_A_A_28_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_28_2 0 
+paSet_txgainIdx_B_A_28_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_28_2 0 
+paSet_txgainIdx_C_A_28_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_28_2 0 
+paSet_txgainIdx_D_A_28_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_28_2 0 
+paSet_txgainIdx_E_A_28_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_28_2 0 
+paSet_txgainIdx_A_A_28_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_28_3 0 
+paSet_txgainIdx_B_A_28_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_28_3 0 
+paSet_txgainIdx_C_A_28_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_28_3 0 
+paSet_txgainIdx_D_A_28_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_28_3 0 
+paSet_txgainIdx_E_A_28_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_28_3 0 
+dacGain_A_28_0 0 
+dacGain_A_28_1 0 
+dacGain_A_28_2 0 
+dacGain_A_28_3 0 
+thermCalVal_A_28_0 121 121 121 121 
+voltCalVal_A_28_0 0 
+paSet_txgainIdx_A_A_29_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_29_0 0 
+paSet_txgainIdx_B_A_29_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_29_0 0 
+paSet_txgainIdx_C_A_29_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_29_0 0 
+paSet_txgainIdx_D_A_29_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_29_0 0 
+paSet_txgainIdx_E_A_29_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_29_0 0 
+paSet_txgainIdx_A_A_29_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_29_1 0 
+paSet_txgainIdx_B_A_29_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_29_1 0 
+paSet_txgainIdx_C_A_29_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_29_1 0 
+paSet_txgainIdx_D_A_29_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_29_1 0 
+paSet_txgainIdx_E_A_29_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_29_1 0 
+paSet_txgainIdx_A_A_29_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_29_2 0 
+paSet_txgainIdx_B_A_29_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_29_2 0 
+paSet_txgainIdx_C_A_29_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_29_2 0 
+paSet_txgainIdx_D_A_29_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_29_2 0 
+paSet_txgainIdx_E_A_29_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_29_2 0 
+paSet_txgainIdx_A_A_29_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_29_3 0 
+paSet_txgainIdx_B_A_29_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_29_3 0 
+paSet_txgainIdx_C_A_29_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_29_3 0 
+paSet_txgainIdx_D_A_29_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_29_3 0 
+paSet_txgainIdx_E_A_29_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_29_3 0 
+dacGain_A_29_0 0 
+dacGain_A_29_1 0 
+dacGain_A_29_2 0 
+dacGain_A_29_3 0 
+thermCalVal_A_29_0 121 121 121 121 
+voltCalVal_A_29_0 0 
+paSet_txgainIdx_A_A_30_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_30_0 0 
+paSet_txgainIdx_B_A_30_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_30_0 0 
+paSet_txgainIdx_C_A_30_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_30_0 0 
+paSet_txgainIdx_D_A_30_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_30_0 0 
+paSet_txgainIdx_E_A_30_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_30_0 0 
+paSet_txgainIdx_A_A_30_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_30_1 0 
+paSet_txgainIdx_B_A_30_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_30_1 0 
+paSet_txgainIdx_C_A_30_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_30_1 0 
+paSet_txgainIdx_D_A_30_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_30_1 0 
+paSet_txgainIdx_E_A_30_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_30_1 0 
+paSet_txgainIdx_A_A_30_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_30_2 0 
+paSet_txgainIdx_B_A_30_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_30_2 0 
+paSet_txgainIdx_C_A_30_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_30_2 0 
+paSet_txgainIdx_D_A_30_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_30_2 0 
+paSet_txgainIdx_E_A_30_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_30_2 0 
+paSet_txgainIdx_A_A_30_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_30_3 0 
+paSet_txgainIdx_B_A_30_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_30_3 0 
+paSet_txgainIdx_C_A_30_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_30_3 0 
+paSet_txgainIdx_D_A_30_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_30_3 0 
+paSet_txgainIdx_E_A_30_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_30_3 0 
+dacGain_A_30_0 0 
+dacGain_A_30_1 0 
+dacGain_A_30_2 0 
+dacGain_A_30_3 0 
+thermCalVal_A_30_0 121 121 121 121 
+voltCalVal_A_30_0 0 
+paSet_txgainIdx_A_A_31_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_31_0 0 
+paSet_txgainIdx_B_A_31_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_31_0 0 
+paSet_txgainIdx_C_A_31_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_31_0 0 
+paSet_txgainIdx_D_A_31_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_31_0 0 
+paSet_txgainIdx_E_A_31_0 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_31_0 0 
+paSet_txgainIdx_A_A_31_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_31_1 0 
+paSet_txgainIdx_B_A_31_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_31_1 0 
+paSet_txgainIdx_C_A_31_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_31_1 0 
+paSet_txgainIdx_D_A_31_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_31_1 0 
+paSet_txgainIdx_E_A_31_1 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_31_1 0 
+paSet_txgainIdx_A_A_31_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_31_2 0 
+paSet_txgainIdx_B_A_31_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_31_2 0 
+paSet_txgainIdx_C_A_31_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_31_2 0 
+paSet_txgainIdx_D_A_31_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_31_2 0 
+paSet_txgainIdx_E_A_31_2 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_31_2 0 
+paSet_txgainIdx_A_A_31_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_A_A_31_3 0 
+paSet_txgainIdx_B_A_31_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_B_A_31_3 0 
+paSet_txgainIdx_C_A_31_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_C_A_31_3 0 
+paSet_txgainIdx_D_A_31_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_D_A_31_3 0 
+paSet_txgainIdx_E_A_31_3 pasetting:0x0 txgainIdx:0x0 
+meas_pwr_E_A_31_3 0 
+dacGain_A_31_0 0 
+dacGain_A_31_1 0 
+dacGain_A_31_2 0 
+dacGain_A_31_3 0 
+thermCalVal_A_31_0 121 121 121 121 
+voltCalVal_A_31_0 0 
+B0_WLPA2_A_LUT0_A_0_0 0x0 
+B0_WLPA2_B_LUT0_A_0_0 0x0 
+B0_WLPA2_C_LUT0_A_0_0 0x0 
+B0_WLPA2_A_LUT1_A_0_0 0x0 
+B0_WLPA2_B_LUT1_A_0_0 0x0 
+B0_WLPA2_C_LUT1_A_0_0 0x0 
+B0_WLPA2_A_LUT2_A_0_0 0x0 
+B0_WLPA2_B_LUT2_A_0_0 0x0 
+B0_WLPA2_C_LUT2_A_0_0 0x0 
+B1_WLPA2_A_LUT0_A_0_0 0x0 
+B1_WLPA2_B_LUT0_A_0_0 0x0 
+B1_WLPA2_C_LUT0_A_0_0 0x0 
+B1_WLPA2_A_LUT1_A_0_0 0x0 
+B1_WLPA2_B_LUT1_A_0_0 0x0 
+B1_WLPA2_C_LUT1_A_0_0 0x0 
+B1_WLPA2_A_LUT2_A_0_0 0x0 
+B1_WLPA2_B_LUT2_A_0_0 0x0 
+B1_WLPA2_C_LUT2_A_0_0 0x0 
+B0_WLPA5_A_LUT0_A_0_0 0x0 
+B0_WLPA5_B_LUT0_A_0_0 0x0 
+B0_WLPA5_A_LUT1_A_0_0 0x0 
+B0_WLPA5_B_LUT1_A_0_0 0x0 
+B0_WLPA5_A_LUT2_A_0_0 0x0 
+B0_WLPA5_B_LUT2_A_0_0 0x0 
+B0_WLPA5_A_LUT3_A_0_0 0x0 
+B0_WLPA5_B_LUT3_A_0_0 0x0 
+B1_WLPA5_A_LUT0_A_0_0 0x0 
+B1_WLPA5_B_LUT0_A_0_0 0x0 
+B1_WLPA5_A_LUT1_A_0_0 0x0 
+B1_WLPA5_B_LUT1_A_0_0 0x0 
+B1_WLPA5_A_LUT2_A_0_0 0x0 
+B1_WLPA5_B_LUT2_A_0_0 0x0 
+B1_WLPA5_A_LUT3_A_0_0 0x0 
+B1_WLPA5_B_LUT3_A_0_0 0x0 
+PREEMP_CNTL_A_0_0 0x0 
+PEFTBL_SEL_B0_A_0_0 0x0 
+PEFTBL_SEL_B1_A_0_0 0x0 
+NOACH_CNTL_A_0_0 0x0 
+NOACH_COEF_A_0_0 0x0 
+BW_CNTL_A_0_0 0x0 
+PAPRD_BW_TABLE_DPDOFF_B0_A_0_0 0x0 
+PAPRD_BW_TABLE_1_0_B0_A_0_0 0x0 
+PAPRD_BW_TABLE_3_2_B0_A_0_0 0x0 
+PAPRD_BW_TABLE_5_4_B0_A_0_0 0x0 
+PAPRD_BW_TABLE_DPDOFF_B1_A_0_0 0x0 
+PAPRD_BW_TABLE_1_0_B1_A_0_0 0x0 
+PAPRD_BW_TABLE_3_2_B1_A_0_0 0x0 
+PAPRD_BW_TABLE_5_4_B1_A_0_0 0x0 
+pad30 0 0 
+antCtrlCommon_vmode5G_A_0_0 0x0 
+antCtrlCommon2_vmode5G_A_0_0 0x0 
+pad31 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+calData5G_PLUT_Future 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+powerOffset_HT20_A_0_0 0 0 0 0 0 0 0 0 0 0 
+powerOffset_HT40_A_0_0 0 0 0 0 0 0 0 0 0 0 
+powerOffset_HT80_A_0_0 0 0 0 0 0 0 0 0 0 0 
+powerOffset5G 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+fullpdadc_read_0_A_0_0 182 
+fullmeas_pwr_0_A_0_0 137 
+fullpdadc_read_1_A_0_0 124 
+fullmeas_pwr_1_A_0_0 93 
+fullpdadc_read_2_A_0_0 69 
+fullmeas_pwr_2_A_0_0 49 
+fullpdadc_read_3_A_0_0 45 
+fullmeas_pwr_3_A_0_0 28 
+fullpdadc_read_4_A_0_0 25 
+fullmeas_pwr_4_A_0_0 6 
+fullpdadc_read_0_A_0_1 165 
+fullmeas_pwr_0_A_0_1 136 
+fullpdadc_read_1_A_0_1 108 
+fullmeas_pwr_1_A_0_1 92 
+fullpdadc_read_2_A_0_1 55 
+fullmeas_pwr_2_A_0_1 50 
+fullpdadc_read_3_A_0_1 33 
+fullmeas_pwr_3_A_0_1 29 
+fullpdadc_read_4_A_0_1 14 
+fullmeas_pwr_4_A_0_1 8 
+fullpdadc_read_0_A_0_2 116 
+fullmeas_pwr_0_A_0_2 150 
+fullpdadc_read_1_A_0_2 70 
+fullmeas_pwr_1_A_0_2 132 
+fullpdadc_read_2_A_0_2 41 
+fullmeas_pwr_2_A_0_2 113 
+fullpdadc_read_3_A_0_2 26 
+fullmeas_pwr_3_A_0_2 98 
+fullpdadc_read_4_A_0_2 12 
+fullmeas_pwr_4_A_0_2 70 
+fullpdadc_read_0_A_0_3 192 
+fullmeas_pwr_0_A_0_3 164 
+fullpdadc_read_1_A_0_3 101 
+fullmeas_pwr_1_A_0_3 141 
+fullpdadc_read_2_A_0_3 61 
+fullmeas_pwr_2_A_0_3 123 
+fullpdadc_read_3_A_0_3 35 
+fullmeas_pwr_3_A_0_3 103 
+fullpdadc_read_4_A_0_3 23 
+fullmeas_pwr_4_A_0_3 89 
+fullpdadc_read_0_A_1_0 194 
+fullmeas_pwr_0_A_1_0 147 
+fullpdadc_read_1_A_1_0 120 
+fullmeas_pwr_1_A_1_0 90 
+fullpdadc_read_2_A_1_0 63 
+fullmeas_pwr_2_A_1_0 45 
+fullpdadc_read_3_A_1_0 38 
+fullmeas_pwr_3_A_1_0 21 
+fullpdadc_read_4_A_1_0 24 
+fullmeas_pwr_4_A_1_0 5 
+fullpdadc_read_0_A_1_1 179 
+fullmeas_pwr_0_A_1_1 149 
+fullpdadc_read_1_A_1_1 124 
+fullmeas_pwr_1_A_1_1 107 
+fullpdadc_read_2_A_1_1 74 
+fullmeas_pwr_2_A_1_1 66 
+fullpdadc_read_3_A_1_1 50 
+fullmeas_pwr_3_A_1_1 47 
+fullpdadc_read_4_A_1_1 27 
+fullmeas_pwr_4_A_1_1 24 
+fullpdadc_read_0_A_1_2 143 
+fullmeas_pwr_0_A_1_2 160 
+fullpdadc_read_1_A_1_2 86 
+fullmeas_pwr_1_A_1_2 142 
+fullpdadc_read_2_A_1_2 49 
+fullmeas_pwr_2_A_1_2 122 
+fullpdadc_read_3_A_1_2 32 
+fullmeas_pwr_3_A_1_2 106 
+fullpdadc_read_4_A_1_2 15 
+fullmeas_pwr_4_A_1_2 78 
+fullpdadc_read_0_A_1_3 198 
+fullmeas_pwr_0_A_1_3 169 
+fullpdadc_read_1_A_1_3 108 
+fullmeas_pwr_1_A_1_3 146 
+fullpdadc_read_2_A_1_3 64 
+fullmeas_pwr_2_A_1_3 128 
+fullpdadc_read_3_A_1_3 37 
+fullmeas_pwr_3_A_1_3 109 
+fullpdadc_read_4_A_1_3 25 
+fullmeas_pwr_4_A_1_3 94 
+fullpdadc_read_0_A_2_0 200 
+fullmeas_pwr_0_A_2_0 154 
+fullpdadc_read_1_A_2_0 105 
+fullmeas_pwr_1_A_2_0 80 
+fullpdadc_read_2_A_2_0 55 
+fullmeas_pwr_2_A_2_0 39 
+fullpdadc_read_3_A_2_0 38 
+fullmeas_pwr_3_A_2_0 23 
+fullpdadc_read_4_A_2_0 0 
+fullmeas_pwr_4_A_2_0 0 
+fullpdadc_read_0_A_2_1 190 
+fullmeas_pwr_0_A_2_1 159 
+fullpdadc_read_1_A_2_1 122 
+fullmeas_pwr_1_A_2_1 108 
+fullpdadc_read_2_A_2_1 72 
+fullmeas_pwr_2_A_2_1 67 
+fullpdadc_read_3_A_2_1 46 
+fullmeas_pwr_3_A_2_1 45 
+fullpdadc_read_4_A_2_1 29 
+fullmeas_pwr_4_A_2_1 29 
+fullpdadc_read_0_A_2_2 184 
+fullmeas_pwr_0_A_2_2 168 
+fullpdadc_read_1_A_2_2 113 
+fullmeas_pwr_1_A_2_2 150 
+fullpdadc_read_2_A_2_2 64 
+fullmeas_pwr_2_A_2_2 130 
+fullpdadc_read_3_A_2_2 41 
+fullmeas_pwr_3_A_2_2 114 
+fullpdadc_read_4_A_2_2 18 
+fullmeas_pwr_4_A_2_2 85 
+fullpdadc_read_0_A_2_3 195 
+fullmeas_pwr_0_A_2_3 170 
+fullpdadc_read_1_A_2_3 105 
+fullmeas_pwr_1_A_2_3 147 
+fullpdadc_read_2_A_2_3 63 
+fullmeas_pwr_2_A_2_3 128 
+fullpdadc_read_3_A_2_3 35 
+fullmeas_pwr_3_A_2_3 108 
+fullpdadc_read_4_A_2_3 24 
+fullmeas_pwr_4_A_2_3 94 
+fullpdadc_read_0_A_3_0 196 
+fullmeas_pwr_0_A_3_0 159 
+fullpdadc_read_1_A_3_0 115 
+fullmeas_pwr_1_A_3_0 96 
+fullpdadc_read_2_A_3_0 66 
+fullmeas_pwr_2_A_3_0 54 
+fullpdadc_read_3_A_3_0 37 
+fullmeas_pwr_3_A_3_0 28 
+fullpdadc_read_4_A_3_0 24 
+fullmeas_pwr_4_A_3_0 12 
+fullpdadc_read_0_A_3_1 188 
+fullmeas_pwr_0_A_3_1 165 
+fullpdadc_read_1_A_3_1 108 
+fullmeas_pwr_1_A_3_1 103 
+fullpdadc_read_2_A_3_1 72 
+fullmeas_pwr_2_A_3_1 72 
+fullpdadc_read_3_A_3_1 30 
+fullmeas_pwr_3_A_3_1 34 
+fullpdadc_read_4_A_3_1 16 
+fullmeas_pwr_4_A_3_1 19 
+fullpdadc_read_0_A_3_2 140 
+fullmeas_pwr_0_A_3_2 155 
+fullpdadc_read_1_A_3_2 78 
+fullmeas_pwr_1_A_3_2 133 
+fullpdadc_read_2_A_3_2 49 
+fullmeas_pwr_2_A_3_2 116 
+fullpdadc_read_3_A_3_2 21 
+fullmeas_pwr_3_A_3_2 87 
+fullpdadc_read_4_A_3_2 13 
+fullmeas_pwr_4_A_3_2 69 
+fullpdadc_read_0_A_3_3 185 
+fullmeas_pwr_0_A_3_3 169 
+fullpdadc_read_1_A_3_3 98 
+fullmeas_pwr_1_A_3_3 146 
+fullpdadc_read_2_A_3_3 58 
+fullmeas_pwr_2_A_3_3 127 
+fullpdadc_read_3_A_3_3 32 
+fullmeas_pwr_3_A_3_3 107 
+fullpdadc_read_4_A_3_3 21 
+fullmeas_pwr_4_A_3_3 91 
+fullpdadc_read_0_A_4_0 189 
+fullmeas_pwr_0_A_4_0 157 
+fullpdadc_read_1_A_4_0 108 
+fullmeas_pwr_1_A_4_0 92 
+fullpdadc_read_2_A_4_0 80 
+fullmeas_pwr_2_A_4_0 68 
+fullpdadc_read_3_A_4_0 44 
+fullmeas_pwr_3_A_4_0 36 
+fullpdadc_read_4_A_4_0 17 
+fullmeas_pwr_4_A_4_0 4 
+fullpdadc_read_0_A_4_1 180 
+fullmeas_pwr_0_A_4_1 162 
+fullpdadc_read_1_A_4_1 118 
+fullmeas_pwr_1_A_4_1 114 
+fullpdadc_read_2_A_4_1 69 
+fullmeas_pwr_2_A_4_1 72 
+fullpdadc_read_3_A_4_1 34 
+fullmeas_pwr_3_A_4_1 40 
+fullpdadc_read_4_A_4_1 21 
+fullmeas_pwr_4_A_4_1 26 
+fullpdadc_read_0_A_4_2 138 
+fullmeas_pwr_0_A_4_2 153 
+fullpdadc_read_1_A_4_2 79 
+fullmeas_pwr_1_A_4_2 134 
+fullpdadc_read_2_A_4_2 52 
+fullmeas_pwr_2_A_4_2 118 
+fullpdadc_read_3_A_4_2 24 
+fullmeas_pwr_3_A_4_2 89 
+fullpdadc_read_4_A_4_2 12 
+fullmeas_pwr_4_A_4_2 72 
+fullpdadc_read_0_A_4_3 179 
+fullmeas_pwr_0_A_4_3 171 
+fullpdadc_read_1_A_4_3 95 
+fullmeas_pwr_1_A_4_3 149 
+fullpdadc_read_2_A_4_3 56 
+fullmeas_pwr_2_A_4_3 130 
+fullpdadc_read_3_A_4_3 31 
+fullmeas_pwr_3_A_4_3 109 
+fullpdadc_read_4_A_4_3 21 
+fullmeas_pwr_4_A_4_3 94 
+fullpdadc_read_0_A_5_0 180 
+fullmeas_pwr_0_A_5_0 152 
+fullpdadc_read_1_A_5_0 116 
+fullmeas_pwr_1_A_5_0 99 
+fullpdadc_read_2_A_5_0 73 
+fullmeas_pwr_2_A_5_0 62 
+fullpdadc_read_3_A_5_0 44 
+fullmeas_pwr_3_A_5_0 35 
+fullpdadc_read_4_A_5_0 19 
+fullmeas_pwr_4_A_5_0 6 
+fullpdadc_read_0_A_5_1 170 
+fullmeas_pwr_0_A_5_1 157 
+fullpdadc_read_1_A_5_1 118 
+fullmeas_pwr_1_A_5_1 115 
+fullpdadc_read_2_A_5_1 73 
+fullmeas_pwr_2_A_5_1 76 
+fullpdadc_read_3_A_5_1 50 
+fullmeas_pwr_3_A_5_1 56 
+fullpdadc_read_4_A_5_1 21 
+fullmeas_pwr_4_A_5_1 27 
+fullpdadc_read_0_A_5_2 180 
+fullmeas_pwr_0_A_5_2 159 
+fullpdadc_read_1_A_5_2 114 
+fullmeas_pwr_1_A_5_2 142 
+fullpdadc_read_2_A_5_2 67 
+fullmeas_pwr_2_A_5_2 124 
+fullpdadc_read_3_A_5_2 44 
+fullmeas_pwr_3_A_5_2 109 
+fullpdadc_read_4_A_5_2 22 
+fullmeas_pwr_4_A_5_2 82 
+fullpdadc_read_0_A_5_3 200 
+fullmeas_pwr_0_A_5_3 175 
+fullpdadc_read_1_A_5_3 74 
+fullmeas_pwr_1_A_5_3 139 
+fullpdadc_read_2_A_5_3 44 
+fullmeas_pwr_2_A_5_3 121 
+fullpdadc_read_3_A_5_3 25 
+fullmeas_pwr_3_A_5_3 102 
+fullpdadc_read_4_A_5_3 16 
+fullmeas_pwr_4_A_5_3 87 
+fullpdadc_read_0_A_6_0 176 
+fullmeas_pwr_0_A_6_0 150 
+fullpdadc_read_1_A_6_0 122 
+fullmeas_pwr_1_A_6_0 106 
+fullpdadc_read_2_A_6_0 79 
+fullmeas_pwr_2_A_6_0 68 
+fullpdadc_read_3_A_6_0 41 
+fullmeas_pwr_3_A_6_0 34 
+fullpdadc_read_4_A_6_0 18 
+fullmeas_pwr_4_A_6_0 6 
+fullpdadc_read_0_A_6_1 164 
+fullmeas_pwr_0_A_6_1 153 
+fullpdadc_read_1_A_6_1 111 
+fullmeas_pwr_1_A_6_1 110 
+fullpdadc_read_2_A_6_1 80 
+fullmeas_pwr_2_A_6_1 84 
+fullpdadc_read_3_A_6_1 45 
+fullmeas_pwr_3_A_6_1 52 
+fullpdadc_read_4_A_6_1 27 
+fullmeas_pwr_4_A_6_1 34 
+fullpdadc_read_0_A_6_2 167 
+fullmeas_pwr_0_A_6_2 153 
+fullpdadc_read_1_A_6_2 105 
+fullmeas_pwr_1_A_6_2 136 
+fullpdadc_read_2_A_6_2 62 
+fullmeas_pwr_2_A_6_2 117 
+fullpdadc_read_3_A_6_2 42 
+fullmeas_pwr_3_A_6_2 103 
+fullpdadc_read_4_A_6_2 19 
+fullmeas_pwr_4_A_6_2 75 
+fullpdadc_read_0_A_6_3 166 
+fullmeas_pwr_0_A_6_3 168 
+fullpdadc_read_1_A_6_3 111 
+fullmeas_pwr_1_A_6_3 154 
+fullpdadc_read_2_A_6_3 59 
+fullmeas_pwr_2_A_6_3 132 
+fullpdadc_read_3_A_6_3 35 
+fullmeas_pwr_3_A_6_3 114 
+fullpdadc_read_4_A_6_3 20 
+fullmeas_pwr_4_A_6_3 94 
+fullpdadc_read_0_A_7_0 167 
+fullmeas_pwr_0_A_7_0 143 
+fullpdadc_read_1_A_7_0 112 
+fullmeas_pwr_1_A_7_0 98 
+fullpdadc_read_2_A_7_0 68 
+fullmeas_pwr_2_A_7_0 59 
+fullpdadc_read_3_A_7_0 35 
+fullmeas_pwr_3_A_7_0 28 
+fullpdadc_read_4_A_7_0 28 
+fullmeas_pwr_4_A_7_0 20 
+fullpdadc_read_0_A_7_1 154 
+fullmeas_pwr_0_A_7_1 145 
+fullpdadc_read_1_A_7_1 100 
+fullmeas_pwr_1_A_7_1 101 
+fullpdadc_read_2_A_7_1 69 
+fullmeas_pwr_2_A_7_1 74 
+fullpdadc_read_3_A_7_1 44 
+fullmeas_pwr_3_A_7_1 50 
+fullpdadc_read_4_A_7_1 21 
+fullmeas_pwr_4_A_7_1 26 
+fullpdadc_read_0_A_7_2 141 
+fullmeas_pwr_0_A_7_2 142 
+fullpdadc_read_1_A_7_2 87 
+fullmeas_pwr_1_A_7_2 125 
+fullpdadc_read_2_A_7_2 52 
+fullmeas_pwr_2_A_7_2 106 
+fullpdadc_read_3_A_7_2 34 
+fullmeas_pwr_3_A_7_2 91 
+fullpdadc_read_4_A_7_2 18 
+fullmeas_pwr_4_A_7_2 64 
+fullpdadc_read_0_A_7_3 178 
+fullmeas_pwr_0_A_7_3 170 
+fullpdadc_read_1_A_7_3 115 
+fullmeas_pwr_1_A_7_3 156 
+fullpdadc_read_2_A_7_3 78 
+fullmeas_pwr_2_A_7_3 141 
+fullpdadc_read_3_A_7_3 40 
+fullmeas_pwr_3_A_7_3 119 
+fullpdadc_read_4_A_7_3 24 
+fullmeas_pwr_4_A_7_3 101 
+fullpdadc_read_0_A_8_0 0 
+fullmeas_pwr_0_A_8_0 0 
+fullpdadc_read_1_A_8_0 0 
+fullmeas_pwr_1_A_8_0 0 
+fullpdadc_read_2_A_8_0 0 
+fullmeas_pwr_2_A_8_0 0 
+fullpdadc_read_3_A_8_0 0 
+fullmeas_pwr_3_A_8_0 0 
+fullpdadc_read_4_A_8_0 0 
+fullmeas_pwr_4_A_8_0 0 
+fullpdadc_read_0_A_8_1 0 
+fullmeas_pwr_0_A_8_1 0 
+fullpdadc_read_1_A_8_1 0 
+fullmeas_pwr_1_A_8_1 0 
+fullpdadc_read_2_A_8_1 0 
+fullmeas_pwr_2_A_8_1 0 
+fullpdadc_read_3_A_8_1 0 
+fullmeas_pwr_3_A_8_1 0 
+fullpdadc_read_4_A_8_1 0 
+fullmeas_pwr_4_A_8_1 0 
+fullpdadc_read_0_A_8_2 0 
+fullmeas_pwr_0_A_8_2 0 
+fullpdadc_read_1_A_8_2 0 
+fullmeas_pwr_1_A_8_2 0 
+fullpdadc_read_2_A_8_2 0 
+fullmeas_pwr_2_A_8_2 0 
+fullpdadc_read_3_A_8_2 0 
+fullmeas_pwr_3_A_8_2 0 
+fullpdadc_read_4_A_8_2 0 
+fullmeas_pwr_4_A_8_2 0 
+fullpdadc_read_0_A_8_3 0 
+fullmeas_pwr_0_A_8_3 0 
+fullpdadc_read_1_A_8_3 0 
+fullmeas_pwr_1_A_8_3 0 
+fullpdadc_read_2_A_8_3 0 
+fullmeas_pwr_2_A_8_3 0 
+fullpdadc_read_3_A_8_3 0 
+fullmeas_pwr_3_A_8_3 0 
+fullpdadc_read_4_A_8_3 0 
+fullmeas_pwr_4_A_8_3 0 
+fullpdadc_read_0_A_9_0 0 
+fullmeas_pwr_0_A_9_0 0 
+fullpdadc_read_1_A_9_0 0 
+fullmeas_pwr_1_A_9_0 0 
+fullpdadc_read_2_A_9_0 0 
+fullmeas_pwr_2_A_9_0 0 
+fullpdadc_read_3_A_9_0 0 
+fullmeas_pwr_3_A_9_0 0 
+fullpdadc_read_4_A_9_0 0 
+fullmeas_pwr_4_A_9_0 0 
+fullpdadc_read_0_A_9_1 0 
+fullmeas_pwr_0_A_9_1 0 
+fullpdadc_read_1_A_9_1 0 
+fullmeas_pwr_1_A_9_1 0 
+fullpdadc_read_2_A_9_1 0 
+fullmeas_pwr_2_A_9_1 0 
+fullpdadc_read_3_A_9_1 0 
+fullmeas_pwr_3_A_9_1 0 
+fullpdadc_read_4_A_9_1 0 
+fullmeas_pwr_4_A_9_1 0 
+fullpdadc_read_0_A_9_2 0 
+fullmeas_pwr_0_A_9_2 0 
+fullpdadc_read_1_A_9_2 0 
+fullmeas_pwr_1_A_9_2 0 
+fullpdadc_read_2_A_9_2 0 
+fullmeas_pwr_2_A_9_2 0 
+fullpdadc_read_3_A_9_2 0 
+fullmeas_pwr_3_A_9_2 0 
+fullpdadc_read_4_A_9_2 0 
+fullmeas_pwr_4_A_9_2 0 
+fullpdadc_read_0_A_9_3 0 
+fullmeas_pwr_0_A_9_3 0 
+fullpdadc_read_1_A_9_3 0 
+fullmeas_pwr_1_A_9_3 0 
+fullpdadc_read_2_A_9_3 0 
+fullmeas_pwr_2_A_9_3 0 
+fullpdadc_read_3_A_9_3 0 
+fullmeas_pwr_3_A_9_3 0 
+fullpdadc_read_4_A_9_3 0 
+fullmeas_pwr_4_A_9_3 0 
+fullpdadc_read_0_A_10_0 0 
+fullmeas_pwr_0_A_10_0 0 
+fullpdadc_read_1_A_10_0 0 
+fullmeas_pwr_1_A_10_0 0 
+fullpdadc_read_2_A_10_0 0 
+fullmeas_pwr_2_A_10_0 0 
+fullpdadc_read_3_A_10_0 0 
+fullmeas_pwr_3_A_10_0 0 
+fullpdadc_read_4_A_10_0 0 
+fullmeas_pwr_4_A_10_0 0 
+fullpdadc_read_0_A_10_1 0 
+fullmeas_pwr_0_A_10_1 0 
+fullpdadc_read_1_A_10_1 0 
+fullmeas_pwr_1_A_10_1 0 
+fullpdadc_read_2_A_10_1 0 
+fullmeas_pwr_2_A_10_1 0 
+fullpdadc_read_3_A_10_1 0 
+fullmeas_pwr_3_A_10_1 0 
+fullpdadc_read_4_A_10_1 0 
+fullmeas_pwr_4_A_10_1 0 
+fullpdadc_read_0_A_10_2 0 
+fullmeas_pwr_0_A_10_2 0 
+fullpdadc_read_1_A_10_2 0 
+fullmeas_pwr_1_A_10_2 0 
+fullpdadc_read_2_A_10_2 0 
+fullmeas_pwr_2_A_10_2 0 
+fullpdadc_read_3_A_10_2 0 
+fullmeas_pwr_3_A_10_2 0 
+fullpdadc_read_4_A_10_2 0 
+fullmeas_pwr_4_A_10_2 0 
+fullpdadc_read_0_A_10_3 0 
+fullmeas_pwr_0_A_10_3 0 
+fullpdadc_read_1_A_10_3 0 
+fullmeas_pwr_1_A_10_3 0 
+fullpdadc_read_2_A_10_3 0 
+fullmeas_pwr_2_A_10_3 0 
+fullpdadc_read_3_A_10_3 0 
+fullmeas_pwr_3_A_10_3 0 
+fullpdadc_read_4_A_10_3 0 
+fullmeas_pwr_4_A_10_3 0 
+fullpdadc_read_0_A_11_0 0 
+fullmeas_pwr_0_A_11_0 0 
+fullpdadc_read_1_A_11_0 0 
+fullmeas_pwr_1_A_11_0 0 
+fullpdadc_read_2_A_11_0 0 
+fullmeas_pwr_2_A_11_0 0 
+fullpdadc_read_3_A_11_0 0 
+fullmeas_pwr_3_A_11_0 0 
+fullpdadc_read_4_A_11_0 0 
+fullmeas_pwr_4_A_11_0 0 
+fullpdadc_read_0_A_11_1 0 
+fullmeas_pwr_0_A_11_1 0 
+fullpdadc_read_1_A_11_1 0 
+fullmeas_pwr_1_A_11_1 0 
+fullpdadc_read_2_A_11_1 0 
+fullmeas_pwr_2_A_11_1 0 
+fullpdadc_read_3_A_11_1 0 
+fullmeas_pwr_3_A_11_1 0 
+fullpdadc_read_4_A_11_1 0 
+fullmeas_pwr_4_A_11_1 0 
+fullpdadc_read_0_A_11_2 0 
+fullmeas_pwr_0_A_11_2 0 
+fullpdadc_read_1_A_11_2 0 
+fullmeas_pwr_1_A_11_2 0 
+fullpdadc_read_2_A_11_2 0 
+fullmeas_pwr_2_A_11_2 0 
+fullpdadc_read_3_A_11_2 0 
+fullmeas_pwr_3_A_11_2 0 
+fullpdadc_read_4_A_11_2 0 
+fullmeas_pwr_4_A_11_2 0 
+fullpdadc_read_0_A_11_3 0 
+fullmeas_pwr_0_A_11_3 0 
+fullpdadc_read_1_A_11_3 0 
+fullmeas_pwr_1_A_11_3 0 
+fullpdadc_read_2_A_11_3 0 
+fullmeas_pwr_2_A_11_3 0 
+fullpdadc_read_3_A_11_3 0 
+fullmeas_pwr_3_A_11_3 0 
+fullpdadc_read_4_A_11_3 0 
+fullmeas_pwr_4_A_11_3 0 
+fullpdadc_read_0_A_12_0 0 
+fullmeas_pwr_0_A_12_0 0 
+fullpdadc_read_1_A_12_0 0 
+fullmeas_pwr_1_A_12_0 0 
+fullpdadc_read_2_A_12_0 0 
+fullmeas_pwr_2_A_12_0 0 
+fullpdadc_read_3_A_12_0 0 
+fullmeas_pwr_3_A_12_0 0 
+fullpdadc_read_4_A_12_0 0 
+fullmeas_pwr_4_A_12_0 0 
+fullpdadc_read_0_A_12_1 0 
+fullmeas_pwr_0_A_12_1 0 
+fullpdadc_read_1_A_12_1 0 
+fullmeas_pwr_1_A_12_1 0 
+fullpdadc_read_2_A_12_1 0 
+fullmeas_pwr_2_A_12_1 0 
+fullpdadc_read_3_A_12_1 0 
+fullmeas_pwr_3_A_12_1 0 
+fullpdadc_read_4_A_12_1 0 
+fullmeas_pwr_4_A_12_1 0 
+fullpdadc_read_0_A_12_2 0 
+fullmeas_pwr_0_A_12_2 0 
+fullpdadc_read_1_A_12_2 0 
+fullmeas_pwr_1_A_12_2 0 
+fullpdadc_read_2_A_12_2 0 
+fullmeas_pwr_2_A_12_2 0 
+fullpdadc_read_3_A_12_2 0 
+fullmeas_pwr_3_A_12_2 0 
+fullpdadc_read_4_A_12_2 0 
+fullmeas_pwr_4_A_12_2 0 
+fullpdadc_read_0_A_12_3 0 
+fullmeas_pwr_0_A_12_3 0 
+fullpdadc_read_1_A_12_3 0 
+fullmeas_pwr_1_A_12_3 0 
+fullpdadc_read_2_A_12_3 0 
+fullmeas_pwr_2_A_12_3 0 
+fullpdadc_read_3_A_12_3 0 
+fullmeas_pwr_3_A_12_3 0 
+fullpdadc_read_4_A_12_3 0 
+fullmeas_pwr_4_A_12_3 0 
+fullpdadc_read_0_A_13_0 0 
+fullmeas_pwr_0_A_13_0 0 
+fullpdadc_read_1_A_13_0 0 
+fullmeas_pwr_1_A_13_0 0 
+fullpdadc_read_2_A_13_0 0 
+fullmeas_pwr_2_A_13_0 0 
+fullpdadc_read_3_A_13_0 0 
+fullmeas_pwr_3_A_13_0 0 
+fullpdadc_read_4_A_13_0 0 
+fullmeas_pwr_4_A_13_0 0 
+fullpdadc_read_0_A_13_1 0 
+fullmeas_pwr_0_A_13_1 0 
+fullpdadc_read_1_A_13_1 0 
+fullmeas_pwr_1_A_13_1 0 
+fullpdadc_read_2_A_13_1 0 
+fullmeas_pwr_2_A_13_1 0 
+fullpdadc_read_3_A_13_1 0 
+fullmeas_pwr_3_A_13_1 0 
+fullpdadc_read_4_A_13_1 0 
+fullmeas_pwr_4_A_13_1 0 
+fullpdadc_read_0_A_13_2 0 
+fullmeas_pwr_0_A_13_2 0 
+fullpdadc_read_1_A_13_2 0 
+fullmeas_pwr_1_A_13_2 0 
+fullpdadc_read_2_A_13_2 0 
+fullmeas_pwr_2_A_13_2 0 
+fullpdadc_read_3_A_13_2 0 
+fullmeas_pwr_3_A_13_2 0 
+fullpdadc_read_4_A_13_2 0 
+fullmeas_pwr_4_A_13_2 0 
+fullpdadc_read_0_A_13_3 0 
+fullmeas_pwr_0_A_13_3 0 
+fullpdadc_read_1_A_13_3 0 
+fullmeas_pwr_1_A_13_3 0 
+fullpdadc_read_2_A_13_3 0 
+fullmeas_pwr_2_A_13_3 0 
+fullpdadc_read_3_A_13_3 0 
+fullmeas_pwr_3_A_13_3 0 
+fullpdadc_read_4_A_13_3 0 
+fullmeas_pwr_4_A_13_3 0 
+fullpdadc_read_0_A_14_0 0 
+fullmeas_pwr_0_A_14_0 0 
+fullpdadc_read_1_A_14_0 0 
+fullmeas_pwr_1_A_14_0 0 
+fullpdadc_read_2_A_14_0 0 
+fullmeas_pwr_2_A_14_0 0 
+fullpdadc_read_3_A_14_0 0 
+fullmeas_pwr_3_A_14_0 0 
+fullpdadc_read_4_A_14_0 0 
+fullmeas_pwr_4_A_14_0 0 
+fullpdadc_read_0_A_14_1 0 
+fullmeas_pwr_0_A_14_1 0 
+fullpdadc_read_1_A_14_1 0 
+fullmeas_pwr_1_A_14_1 0 
+fullpdadc_read_2_A_14_1 0 
+fullmeas_pwr_2_A_14_1 0 
+fullpdadc_read_3_A_14_1 0 
+fullmeas_pwr_3_A_14_1 0 
+fullpdadc_read_4_A_14_1 0 
+fullmeas_pwr_4_A_14_1 0 
+fullpdadc_read_0_A_14_2 0 
+fullmeas_pwr_0_A_14_2 0 
+fullpdadc_read_1_A_14_2 0 
+fullmeas_pwr_1_A_14_2 0 
+fullpdadc_read_2_A_14_2 0 
+fullmeas_pwr_2_A_14_2 0 
+fullpdadc_read_3_A_14_2 0 
+fullmeas_pwr_3_A_14_2 0 
+fullpdadc_read_4_A_14_2 0 
+fullmeas_pwr_4_A_14_2 0 
+fullpdadc_read_0_A_14_3 0 
+fullmeas_pwr_0_A_14_3 0 
+fullpdadc_read_1_A_14_3 0 
+fullmeas_pwr_1_A_14_3 0 
+fullpdadc_read_2_A_14_3 0 
+fullmeas_pwr_2_A_14_3 0 
+fullpdadc_read_3_A_14_3 0 
+fullmeas_pwr_3_A_14_3 0 
+fullpdadc_read_4_A_14_3 0 
+fullmeas_pwr_4_A_14_3 0 
+fullpdadc_read_0_A_15_0 0 
+fullmeas_pwr_0_A_15_0 0 
+fullpdadc_read_1_A_15_0 0 
+fullmeas_pwr_1_A_15_0 0 
+fullpdadc_read_2_A_15_0 0 
+fullmeas_pwr_2_A_15_0 0 
+fullpdadc_read_3_A_15_0 0 
+fullmeas_pwr_3_A_15_0 0 
+fullpdadc_read_4_A_15_0 0 
+fullmeas_pwr_4_A_15_0 0 
+fullpdadc_read_0_A_15_1 0 
+fullmeas_pwr_0_A_15_1 0 
+fullpdadc_read_1_A_15_1 0 
+fullmeas_pwr_1_A_15_1 0 
+fullpdadc_read_2_A_15_1 0 
+fullmeas_pwr_2_A_15_1 0 
+fullpdadc_read_3_A_15_1 0 
+fullmeas_pwr_3_A_15_1 0 
+fullpdadc_read_4_A_15_1 0 
+fullmeas_pwr_4_A_15_1 0 
+fullpdadc_read_0_A_15_2 0 
+fullmeas_pwr_0_A_15_2 0 
+fullpdadc_read_1_A_15_2 0 
+fullmeas_pwr_1_A_15_2 0 
+fullpdadc_read_2_A_15_2 0 
+fullmeas_pwr_2_A_15_2 0 
+fullpdadc_read_3_A_15_2 0 
+fullmeas_pwr_3_A_15_2 0 
+fullpdadc_read_4_A_15_2 0 
+fullmeas_pwr_4_A_15_2 0 
+fullpdadc_read_0_A_15_3 0 
+fullmeas_pwr_0_A_15_3 0 
+fullpdadc_read_1_A_15_3 0 
+fullmeas_pwr_1_A_15_3 0 
+fullpdadc_read_2_A_15_3 0 
+fullmeas_pwr_2_A_15_3 0 
+fullpdadc_read_3_A_15_3 0 
+fullmeas_pwr_3_A_15_3 0 
+fullpdadc_read_4_A_15_3 0 
+fullmeas_pwr_4_A_15_3 0 
+fullpdadc_read_0_A_16_0 0 
+fullmeas_pwr_0_A_16_0 0 
+fullpdadc_read_1_A_16_0 0 
+fullmeas_pwr_1_A_16_0 0 
+fullpdadc_read_2_A_16_0 0 
+fullmeas_pwr_2_A_16_0 0 
+fullpdadc_read_3_A_16_0 0 
+fullmeas_pwr_3_A_16_0 0 
+fullpdadc_read_4_A_16_0 0 
+fullmeas_pwr_4_A_16_0 0 
+fullpdadc_read_0_A_16_1 0 
+fullmeas_pwr_0_A_16_1 0 
+fullpdadc_read_1_A_16_1 0 
+fullmeas_pwr_1_A_16_1 0 
+fullpdadc_read_2_A_16_1 0 
+fullmeas_pwr_2_A_16_1 0 
+fullpdadc_read_3_A_16_1 0 
+fullmeas_pwr_3_A_16_1 0 
+fullpdadc_read_4_A_16_1 0 
+fullmeas_pwr_4_A_16_1 0 
+fullpdadc_read_0_A_16_2 0 
+fullmeas_pwr_0_A_16_2 0 
+fullpdadc_read_1_A_16_2 0 
+fullmeas_pwr_1_A_16_2 0 
+fullpdadc_read_2_A_16_2 0 
+fullmeas_pwr_2_A_16_2 0 
+fullpdadc_read_3_A_16_2 0 
+fullmeas_pwr_3_A_16_2 0 
+fullpdadc_read_4_A_16_2 0 
+fullmeas_pwr_4_A_16_2 0 
+fullpdadc_read_0_A_16_3 0 
+fullmeas_pwr_0_A_16_3 0 
+fullpdadc_read_1_A_16_3 0 
+fullmeas_pwr_1_A_16_3 0 
+fullpdadc_read_2_A_16_3 0 
+fullmeas_pwr_2_A_16_3 0 
+fullpdadc_read_3_A_16_3 0 
+fullmeas_pwr_3_A_16_3 0 
+fullpdadc_read_4_A_16_3 0 
+fullmeas_pwr_4_A_16_3 0 
+fullpdadc_read_0_A_17_0 0 
+fullmeas_pwr_0_A_17_0 0 
+fullpdadc_read_1_A_17_0 0 
+fullmeas_pwr_1_A_17_0 0 
+fullpdadc_read_2_A_17_0 0 
+fullmeas_pwr_2_A_17_0 0 
+fullpdadc_read_3_A_17_0 0 
+fullmeas_pwr_3_A_17_0 0 
+fullpdadc_read_4_A_17_0 0 
+fullmeas_pwr_4_A_17_0 0 
+fullpdadc_read_0_A_17_1 0 
+fullmeas_pwr_0_A_17_1 0 
+fullpdadc_read_1_A_17_1 0 
+fullmeas_pwr_1_A_17_1 0 
+fullpdadc_read_2_A_17_1 0 
+fullmeas_pwr_2_A_17_1 0 
+fullpdadc_read_3_A_17_1 0 
+fullmeas_pwr_3_A_17_1 0 
+fullpdadc_read_4_A_17_1 0 
+fullmeas_pwr_4_A_17_1 0 
+fullpdadc_read_0_A_17_2 0 
+fullmeas_pwr_0_A_17_2 0 
+fullpdadc_read_1_A_17_2 0 
+fullmeas_pwr_1_A_17_2 0 
+fullpdadc_read_2_A_17_2 0 
+fullmeas_pwr_2_A_17_2 0 
+fullpdadc_read_3_A_17_2 0 
+fullmeas_pwr_3_A_17_2 0 
+fullpdadc_read_4_A_17_2 0 
+fullmeas_pwr_4_A_17_2 0 
+fullpdadc_read_0_A_17_3 0 
+fullmeas_pwr_0_A_17_3 0 
+fullpdadc_read_1_A_17_3 0 
+fullmeas_pwr_1_A_17_3 0 
+fullpdadc_read_2_A_17_3 0 
+fullmeas_pwr_2_A_17_3 0 
+fullpdadc_read_3_A_17_3 0 
+fullmeas_pwr_3_A_17_3 0 
+fullpdadc_read_4_A_17_3 0 
+fullmeas_pwr_4_A_17_3 0 
+fullpdadc_read_0_A_18_0 0 
+fullmeas_pwr_0_A_18_0 0 
+fullpdadc_read_1_A_18_0 0 
+fullmeas_pwr_1_A_18_0 0 
+fullpdadc_read_2_A_18_0 0 
+fullmeas_pwr_2_A_18_0 0 
+fullpdadc_read_3_A_18_0 0 
+fullmeas_pwr_3_A_18_0 0 
+fullpdadc_read_4_A_18_0 0 
+fullmeas_pwr_4_A_18_0 0 
+fullpdadc_read_0_A_18_1 0 
+fullmeas_pwr_0_A_18_1 0 
+fullpdadc_read_1_A_18_1 0 
+fullmeas_pwr_1_A_18_1 0 
+fullpdadc_read_2_A_18_1 0 
+fullmeas_pwr_2_A_18_1 0 
+fullpdadc_read_3_A_18_1 0 
+fullmeas_pwr_3_A_18_1 0 
+fullpdadc_read_4_A_18_1 0 
+fullmeas_pwr_4_A_18_1 0 
+fullpdadc_read_0_A_18_2 0 
+fullmeas_pwr_0_A_18_2 0 
+fullpdadc_read_1_A_18_2 0 
+fullmeas_pwr_1_A_18_2 0 
+fullpdadc_read_2_A_18_2 0 
+fullmeas_pwr_2_A_18_2 0 
+fullpdadc_read_3_A_18_2 0 
+fullmeas_pwr_3_A_18_2 0 
+fullpdadc_read_4_A_18_2 0 
+fullmeas_pwr_4_A_18_2 0 
+fullpdadc_read_0_A_18_3 0 
+fullmeas_pwr_0_A_18_3 0 
+fullpdadc_read_1_A_18_3 0 
+fullmeas_pwr_1_A_18_3 0 
+fullpdadc_read_2_A_18_3 0 
+fullmeas_pwr_2_A_18_3 0 
+fullpdadc_read_3_A_18_3 0 
+fullmeas_pwr_3_A_18_3 0 
+fullpdadc_read_4_A_18_3 0 
+fullmeas_pwr_4_A_18_3 0 
+fullpdadc_read_0_A_19_0 0 
+fullmeas_pwr_0_A_19_0 0 
+fullpdadc_read_1_A_19_0 0 
+fullmeas_pwr_1_A_19_0 0 
+fullpdadc_read_2_A_19_0 0 
+fullmeas_pwr_2_A_19_0 0 
+fullpdadc_read_3_A_19_0 0 
+fullmeas_pwr_3_A_19_0 0 
+fullpdadc_read_4_A_19_0 0 
+fullmeas_pwr_4_A_19_0 0 
+fullpdadc_read_0_A_19_1 0 
+fullmeas_pwr_0_A_19_1 0 
+fullpdadc_read_1_A_19_1 0 
+fullmeas_pwr_1_A_19_1 0 
+fullpdadc_read_2_A_19_1 0 
+fullmeas_pwr_2_A_19_1 0 
+fullpdadc_read_3_A_19_1 0 
+fullmeas_pwr_3_A_19_1 0 
+fullpdadc_read_4_A_19_1 0 
+fullmeas_pwr_4_A_19_1 0 
+fullpdadc_read_0_A_19_2 0 
+fullmeas_pwr_0_A_19_2 0 
+fullpdadc_read_1_A_19_2 0 
+fullmeas_pwr_1_A_19_2 0 
+fullpdadc_read_2_A_19_2 0 
+fullmeas_pwr_2_A_19_2 0 
+fullpdadc_read_3_A_19_2 0 
+fullmeas_pwr_3_A_19_2 0 
+fullpdadc_read_4_A_19_2 0 
+fullmeas_pwr_4_A_19_2 0 
+fullpdadc_read_0_A_19_3 0 
+fullmeas_pwr_0_A_19_3 0 
+fullpdadc_read_1_A_19_3 0 
+fullmeas_pwr_1_A_19_3 0 
+fullpdadc_read_2_A_19_3 0 
+fullmeas_pwr_2_A_19_3 0 
+fullpdadc_read_3_A_19_3 0 
+fullmeas_pwr_3_A_19_3 0 
+fullpdadc_read_4_A_19_3 0 
+fullmeas_pwr_4_A_19_3 0 
+fullpdadc_read_0_A_20_0 0 
+fullmeas_pwr_0_A_20_0 0 
+fullpdadc_read_1_A_20_0 0 
+fullmeas_pwr_1_A_20_0 0 
+fullpdadc_read_2_A_20_0 0 
+fullmeas_pwr_2_A_20_0 0 
+fullpdadc_read_3_A_20_0 0 
+fullmeas_pwr_3_A_20_0 0 
+fullpdadc_read_4_A_20_0 0 
+fullmeas_pwr_4_A_20_0 0 
+fullpdadc_read_0_A_20_1 0 
+fullmeas_pwr_0_A_20_1 0 
+fullpdadc_read_1_A_20_1 0 
+fullmeas_pwr_1_A_20_1 0 
+fullpdadc_read_2_A_20_1 0 
+fullmeas_pwr_2_A_20_1 0 
+fullpdadc_read_3_A_20_1 0 
+fullmeas_pwr_3_A_20_1 0 
+fullpdadc_read_4_A_20_1 0 
+fullmeas_pwr_4_A_20_1 0 
+fullpdadc_read_0_A_20_2 0 
+fullmeas_pwr_0_A_20_2 0 
+fullpdadc_read_1_A_20_2 0 
+fullmeas_pwr_1_A_20_2 0 
+fullpdadc_read_2_A_20_2 0 
+fullmeas_pwr_2_A_20_2 0 
+fullpdadc_read_3_A_20_2 0 
+fullmeas_pwr_3_A_20_2 0 
+fullpdadc_read_4_A_20_2 0 
+fullmeas_pwr_4_A_20_2 0 
+fullpdadc_read_0_A_20_3 0 
+fullmeas_pwr_0_A_20_3 0 
+fullpdadc_read_1_A_20_3 0 
+fullmeas_pwr_1_A_20_3 0 
+fullpdadc_read_2_A_20_3 0 
+fullmeas_pwr_2_A_20_3 0 
+fullpdadc_read_3_A_20_3 0 
+fullmeas_pwr_3_A_20_3 0 
+fullpdadc_read_4_A_20_3 0 
+fullmeas_pwr_4_A_20_3 0 
+fullpdadc_read_0_A_21_0 0 
+fullmeas_pwr_0_A_21_0 0 
+fullpdadc_read_1_A_21_0 0 
+fullmeas_pwr_1_A_21_0 0 
+fullpdadc_read_2_A_21_0 0 
+fullmeas_pwr_2_A_21_0 0 
+fullpdadc_read_3_A_21_0 0 
+fullmeas_pwr_3_A_21_0 0 
+fullpdadc_read_4_A_21_0 0 
+fullmeas_pwr_4_A_21_0 0 
+fullpdadc_read_0_A_21_1 0 
+fullmeas_pwr_0_A_21_1 0 
+fullpdadc_read_1_A_21_1 0 
+fullmeas_pwr_1_A_21_1 0 
+fullpdadc_read_2_A_21_1 0 
+fullmeas_pwr_2_A_21_1 0 
+fullpdadc_read_3_A_21_1 0 
+fullmeas_pwr_3_A_21_1 0 
+fullpdadc_read_4_A_21_1 0 
+fullmeas_pwr_4_A_21_1 0 
+fullpdadc_read_0_A_21_2 0 
+fullmeas_pwr_0_A_21_2 0 
+fullpdadc_read_1_A_21_2 0 
+fullmeas_pwr_1_A_21_2 0 
+fullpdadc_read_2_A_21_2 0 
+fullmeas_pwr_2_A_21_2 0 
+fullpdadc_read_3_A_21_2 0 
+fullmeas_pwr_3_A_21_2 0 
+fullpdadc_read_4_A_21_2 0 
+fullmeas_pwr_4_A_21_2 0 
+fullpdadc_read_0_A_21_3 0 
+fullmeas_pwr_0_A_21_3 0 
+fullpdadc_read_1_A_21_3 0 
+fullmeas_pwr_1_A_21_3 0 
+fullpdadc_read_2_A_21_3 0 
+fullmeas_pwr_2_A_21_3 0 
+fullpdadc_read_3_A_21_3 0 
+fullmeas_pwr_3_A_21_3 0 
+fullpdadc_read_4_A_21_3 0 
+fullmeas_pwr_4_A_21_3 0 
+fullpdadc_read_0_A_22_0 0 
+fullmeas_pwr_0_A_22_0 0 
+fullpdadc_read_1_A_22_0 0 
+fullmeas_pwr_1_A_22_0 0 
+fullpdadc_read_2_A_22_0 0 
+fullmeas_pwr_2_A_22_0 0 
+fullpdadc_read_3_A_22_0 0 
+fullmeas_pwr_3_A_22_0 0 
+fullpdadc_read_4_A_22_0 0 
+fullmeas_pwr_4_A_22_0 0 
+fullpdadc_read_0_A_22_1 0 
+fullmeas_pwr_0_A_22_1 0 
+fullpdadc_read_1_A_22_1 0 
+fullmeas_pwr_1_A_22_1 0 
+fullpdadc_read_2_A_22_1 0 
+fullmeas_pwr_2_A_22_1 0 
+fullpdadc_read_3_A_22_1 0 
+fullmeas_pwr_3_A_22_1 0 
+fullpdadc_read_4_A_22_1 0 
+fullmeas_pwr_4_A_22_1 0 
+fullpdadc_read_0_A_22_2 0 
+fullmeas_pwr_0_A_22_2 0 
+fullpdadc_read_1_A_22_2 0 
+fullmeas_pwr_1_A_22_2 0 
+fullpdadc_read_2_A_22_2 0 
+fullmeas_pwr_2_A_22_2 0 
+fullpdadc_read_3_A_22_2 0 
+fullmeas_pwr_3_A_22_2 0 
+fullpdadc_read_4_A_22_2 0 
+fullmeas_pwr_4_A_22_2 0 
+fullpdadc_read_0_A_22_3 0 
+fullmeas_pwr_0_A_22_3 0 
+fullpdadc_read_1_A_22_3 0 
+fullmeas_pwr_1_A_22_3 0 
+fullpdadc_read_2_A_22_3 0 
+fullmeas_pwr_2_A_22_3 0 
+fullpdadc_read_3_A_22_3 0 
+fullmeas_pwr_3_A_22_3 0 
+fullpdadc_read_4_A_22_3 0 
+fullmeas_pwr_4_A_22_3 0 
+fullpdadc_read_0_A_23_0 0 
+fullmeas_pwr_0_A_23_0 0 
+fullpdadc_read_1_A_23_0 0 
+fullmeas_pwr_1_A_23_0 0 
+fullpdadc_read_2_A_23_0 0 
+fullmeas_pwr_2_A_23_0 0 
+fullpdadc_read_3_A_23_0 0 
+fullmeas_pwr_3_A_23_0 0 
+fullpdadc_read_4_A_23_0 0 
+fullmeas_pwr_4_A_23_0 0 
+fullpdadc_read_0_A_23_1 0 
+fullmeas_pwr_0_A_23_1 0 
+fullpdadc_read_1_A_23_1 0 
+fullmeas_pwr_1_A_23_1 0 
+fullpdadc_read_2_A_23_1 0 
+fullmeas_pwr_2_A_23_1 0 
+fullpdadc_read_3_A_23_1 0 
+fullmeas_pwr_3_A_23_1 0 
+fullpdadc_read_4_A_23_1 0 
+fullmeas_pwr_4_A_23_1 0 
+fullpdadc_read_0_A_23_2 0 
+fullmeas_pwr_0_A_23_2 0 
+fullpdadc_read_1_A_23_2 0 
+fullmeas_pwr_1_A_23_2 0 
+fullpdadc_read_2_A_23_2 0 
+fullmeas_pwr_2_A_23_2 0 
+fullpdadc_read_3_A_23_2 0 
+fullmeas_pwr_3_A_23_2 0 
+fullpdadc_read_4_A_23_2 0 
+fullmeas_pwr_4_A_23_2 0 
+fullpdadc_read_0_A_23_3 0 
+fullmeas_pwr_0_A_23_3 0 
+fullpdadc_read_1_A_23_3 0 
+fullmeas_pwr_1_A_23_3 0 
+fullpdadc_read_2_A_23_3 0 
+fullmeas_pwr_2_A_23_3 0 
+fullpdadc_read_3_A_23_3 0 
+fullmeas_pwr_3_A_23_3 0 
+fullpdadc_read_4_A_23_3 0 
+fullmeas_pwr_4_A_23_3 0 
+fullpdadc_read_0_A_24_0 0 
+fullmeas_pwr_0_A_24_0 0 
+fullpdadc_read_1_A_24_0 0 
+fullmeas_pwr_1_A_24_0 0 
+fullpdadc_read_2_A_24_0 0 
+fullmeas_pwr_2_A_24_0 0 
+fullpdadc_read_3_A_24_0 0 
+fullmeas_pwr_3_A_24_0 0 
+fullpdadc_read_4_A_24_0 0 
+fullmeas_pwr_4_A_24_0 0 
+fullpdadc_read_0_A_24_1 0 
+fullmeas_pwr_0_A_24_1 0 
+fullpdadc_read_1_A_24_1 0 
+fullmeas_pwr_1_A_24_1 0 
+fullpdadc_read_2_A_24_1 0 
+fullmeas_pwr_2_A_24_1 0 
+fullpdadc_read_3_A_24_1 0 
+fullmeas_pwr_3_A_24_1 0 
+fullpdadc_read_4_A_24_1 0 
+fullmeas_pwr_4_A_24_1 0 
+fullpdadc_read_0_A_24_2 0 
+fullmeas_pwr_0_A_24_2 0 
+fullpdadc_read_1_A_24_2 0 
+fullmeas_pwr_1_A_24_2 0 
+fullpdadc_read_2_A_24_2 0 
+fullmeas_pwr_2_A_24_2 0 
+fullpdadc_read_3_A_24_2 0 
+fullmeas_pwr_3_A_24_2 0 
+fullpdadc_read_4_A_24_2 0 
+fullmeas_pwr_4_A_24_2 0 
+fullpdadc_read_0_A_24_3 0 
+fullmeas_pwr_0_A_24_3 0 
+fullpdadc_read_1_A_24_3 0 
+fullmeas_pwr_1_A_24_3 0 
+fullpdadc_read_2_A_24_3 0 
+fullmeas_pwr_2_A_24_3 0 
+fullpdadc_read_3_A_24_3 0 
+fullmeas_pwr_3_A_24_3 0 
+fullpdadc_read_4_A_24_3 0 
+fullmeas_pwr_4_A_24_3 0 
+fullpdadc_read_0_A_25_0 0 
+fullmeas_pwr_0_A_25_0 0 
+fullpdadc_read_1_A_25_0 0 
+fullmeas_pwr_1_A_25_0 0 
+fullpdadc_read_2_A_25_0 0 
+fullmeas_pwr_2_A_25_0 0 
+fullpdadc_read_3_A_25_0 0 
+fullmeas_pwr_3_A_25_0 0 
+fullpdadc_read_4_A_25_0 0 
+fullmeas_pwr_4_A_25_0 0 
+fullpdadc_read_0_A_25_1 0 
+fullmeas_pwr_0_A_25_1 0 
+fullpdadc_read_1_A_25_1 0 
+fullmeas_pwr_1_A_25_1 0 
+fullpdadc_read_2_A_25_1 0 
+fullmeas_pwr_2_A_25_1 0 
+fullpdadc_read_3_A_25_1 0 
+fullmeas_pwr_3_A_25_1 0 
+fullpdadc_read_4_A_25_1 0 
+fullmeas_pwr_4_A_25_1 0 
+fullpdadc_read_0_A_25_2 0 
+fullmeas_pwr_0_A_25_2 0 
+fullpdadc_read_1_A_25_2 0 
+fullmeas_pwr_1_A_25_2 0 
+fullpdadc_read_2_A_25_2 0 
+fullmeas_pwr_2_A_25_2 0 
+fullpdadc_read_3_A_25_2 0 
+fullmeas_pwr_3_A_25_2 0 
+fullpdadc_read_4_A_25_2 0 
+fullmeas_pwr_4_A_25_2 0 
+fullpdadc_read_0_A_25_3 0 
+fullmeas_pwr_0_A_25_3 0 
+fullpdadc_read_1_A_25_3 0 
+fullmeas_pwr_1_A_25_3 0 
+fullpdadc_read_2_A_25_3 0 
+fullmeas_pwr_2_A_25_3 0 
+fullpdadc_read_3_A_25_3 0 
+fullmeas_pwr_3_A_25_3 0 
+fullpdadc_read_4_A_25_3 0 
+fullmeas_pwr_4_A_25_3 0 
+fullpdadc_read_0_A_26_0 0 
+fullmeas_pwr_0_A_26_0 0 
+fullpdadc_read_1_A_26_0 0 
+fullmeas_pwr_1_A_26_0 0 
+fullpdadc_read_2_A_26_0 0 
+fullmeas_pwr_2_A_26_0 0 
+fullpdadc_read_3_A_26_0 0 
+fullmeas_pwr_3_A_26_0 0 
+fullpdadc_read_4_A_26_0 0 
+fullmeas_pwr_4_A_26_0 0 
+fullpdadc_read_0_A_26_1 0 
+fullmeas_pwr_0_A_26_1 0 
+fullpdadc_read_1_A_26_1 0 
+fullmeas_pwr_1_A_26_1 0 
+fullpdadc_read_2_A_26_1 0 
+fullmeas_pwr_2_A_26_1 0 
+fullpdadc_read_3_A_26_1 0 
+fullmeas_pwr_3_A_26_1 0 
+fullpdadc_read_4_A_26_1 0 
+fullmeas_pwr_4_A_26_1 0 
+fullpdadc_read_0_A_26_2 0 
+fullmeas_pwr_0_A_26_2 0 
+fullpdadc_read_1_A_26_2 0 
+fullmeas_pwr_1_A_26_2 0 
+fullpdadc_read_2_A_26_2 0 
+fullmeas_pwr_2_A_26_2 0 
+fullpdadc_read_3_A_26_2 0 
+fullmeas_pwr_3_A_26_2 0 
+fullpdadc_read_4_A_26_2 0 
+fullmeas_pwr_4_A_26_2 0 
+fullpdadc_read_0_A_26_3 0 
+fullmeas_pwr_0_A_26_3 0 
+fullpdadc_read_1_A_26_3 0 
+fullmeas_pwr_1_A_26_3 0 
+fullpdadc_read_2_A_26_3 0 
+fullmeas_pwr_2_A_26_3 0 
+fullpdadc_read_3_A_26_3 0 
+fullmeas_pwr_3_A_26_3 0 
+fullpdadc_read_4_A_26_3 0 
+fullmeas_pwr_4_A_26_3 0 
+fullpdadc_read_0_A_27_0 0 
+fullmeas_pwr_0_A_27_0 0 
+fullpdadc_read_1_A_27_0 0 
+fullmeas_pwr_1_A_27_0 0 
+fullpdadc_read_2_A_27_0 0 
+fullmeas_pwr_2_A_27_0 0 
+fullpdadc_read_3_A_27_0 0 
+fullmeas_pwr_3_A_27_0 0 
+fullpdadc_read_4_A_27_0 0 
+fullmeas_pwr_4_A_27_0 0 
+fullpdadc_read_0_A_27_1 0 
+fullmeas_pwr_0_A_27_1 0 
+fullpdadc_read_1_A_27_1 0 
+fullmeas_pwr_1_A_27_1 0 
+fullpdadc_read_2_A_27_1 0 
+fullmeas_pwr_2_A_27_1 0 
+fullpdadc_read_3_A_27_1 0 
+fullmeas_pwr_3_A_27_1 0 
+fullpdadc_read_4_A_27_1 0 
+fullmeas_pwr_4_A_27_1 0 
+fullpdadc_read_0_A_27_2 0 
+fullmeas_pwr_0_A_27_2 0 
+fullpdadc_read_1_A_27_2 0 
+fullmeas_pwr_1_A_27_2 0 
+fullpdadc_read_2_A_27_2 0 
+fullmeas_pwr_2_A_27_2 0 
+fullpdadc_read_3_A_27_2 0 
+fullmeas_pwr_3_A_27_2 0 
+fullpdadc_read_4_A_27_2 0 
+fullmeas_pwr_4_A_27_2 0 
+fullpdadc_read_0_A_27_3 0 
+fullmeas_pwr_0_A_27_3 0 
+fullpdadc_read_1_A_27_3 0 
+fullmeas_pwr_1_A_27_3 0 
+fullpdadc_read_2_A_27_3 0 
+fullmeas_pwr_2_A_27_3 0 
+fullpdadc_read_3_A_27_3 0 
+fullmeas_pwr_3_A_27_3 0 
+fullpdadc_read_4_A_27_3 0 
+fullmeas_pwr_4_A_27_3 0 
+fullpdadc_read_0_A_28_0 0 
+fullmeas_pwr_0_A_28_0 0 
+fullpdadc_read_1_A_28_0 0 
+fullmeas_pwr_1_A_28_0 0 
+fullpdadc_read_2_A_28_0 0 
+fullmeas_pwr_2_A_28_0 0 
+fullpdadc_read_3_A_28_0 0 
+fullmeas_pwr_3_A_28_0 0 
+fullpdadc_read_4_A_28_0 0 
+fullmeas_pwr_4_A_28_0 0 
+fullpdadc_read_0_A_28_1 0 
+fullmeas_pwr_0_A_28_1 0 
+fullpdadc_read_1_A_28_1 0 
+fullmeas_pwr_1_A_28_1 0 
+fullpdadc_read_2_A_28_1 0 
+fullmeas_pwr_2_A_28_1 0 
+fullpdadc_read_3_A_28_1 0 
+fullmeas_pwr_3_A_28_1 0 
+fullpdadc_read_4_A_28_1 0 
+fullmeas_pwr_4_A_28_1 0 
+fullpdadc_read_0_A_28_2 0 
+fullmeas_pwr_0_A_28_2 0 
+fullpdadc_read_1_A_28_2 0 
+fullmeas_pwr_1_A_28_2 0 
+fullpdadc_read_2_A_28_2 0 
+fullmeas_pwr_2_A_28_2 0 
+fullpdadc_read_3_A_28_2 0 
+fullmeas_pwr_3_A_28_2 0 
+fullpdadc_read_4_A_28_2 0 
+fullmeas_pwr_4_A_28_2 0 
+fullpdadc_read_0_A_28_3 0 
+fullmeas_pwr_0_A_28_3 0 
+fullpdadc_read_1_A_28_3 0 
+fullmeas_pwr_1_A_28_3 0 
+fullpdadc_read_2_A_28_3 0 
+fullmeas_pwr_2_A_28_3 0 
+fullpdadc_read_3_A_28_3 0 
+fullmeas_pwr_3_A_28_3 0 
+fullpdadc_read_4_A_28_3 0 
+fullmeas_pwr_4_A_28_3 0 
+fullpdadc_read_0_A_29_0 0 
+fullmeas_pwr_0_A_29_0 0 
+fullpdadc_read_1_A_29_0 0 
+fullmeas_pwr_1_A_29_0 0 
+fullpdadc_read_2_A_29_0 0 
+fullmeas_pwr_2_A_29_0 0 
+fullpdadc_read_3_A_29_0 0 
+fullmeas_pwr_3_A_29_0 0 
+fullpdadc_read_4_A_29_0 0 
+fullmeas_pwr_4_A_29_0 0 
+fullpdadc_read_0_A_29_1 0 
+fullmeas_pwr_0_A_29_1 0 
+fullpdadc_read_1_A_29_1 0 
+fullmeas_pwr_1_A_29_1 0 
+fullpdadc_read_2_A_29_1 0 
+fullmeas_pwr_2_A_29_1 0 
+fullpdadc_read_3_A_29_1 0 
+fullmeas_pwr_3_A_29_1 0 
+fullpdadc_read_4_A_29_1 0 
+fullmeas_pwr_4_A_29_1 0 
+fullpdadc_read_0_A_29_2 0 
+fullmeas_pwr_0_A_29_2 0 
+fullpdadc_read_1_A_29_2 0 
+fullmeas_pwr_1_A_29_2 0 
+fullpdadc_read_2_A_29_2 0 
+fullmeas_pwr_2_A_29_2 0 
+fullpdadc_read_3_A_29_2 0 
+fullmeas_pwr_3_A_29_2 0 
+fullpdadc_read_4_A_29_2 0 
+fullmeas_pwr_4_A_29_2 0 
+fullpdadc_read_0_A_29_3 0 
+fullmeas_pwr_0_A_29_3 0 
+fullpdadc_read_1_A_29_3 0 
+fullmeas_pwr_1_A_29_3 0 
+fullpdadc_read_2_A_29_3 0 
+fullmeas_pwr_2_A_29_3 0 
+fullpdadc_read_3_A_29_3 0 
+fullmeas_pwr_3_A_29_3 0 
+fullpdadc_read_4_A_29_3 0 
+fullmeas_pwr_4_A_29_3 0 
+fullpdadc_read_0_A_30_0 0 
+fullmeas_pwr_0_A_30_0 0 
+fullpdadc_read_1_A_30_0 0 
+fullmeas_pwr_1_A_30_0 0 
+fullpdadc_read_2_A_30_0 0 
+fullmeas_pwr_2_A_30_0 0 
+fullpdadc_read_3_A_30_0 0 
+fullmeas_pwr_3_A_30_0 0 
+fullpdadc_read_4_A_30_0 0 
+fullmeas_pwr_4_A_30_0 0 
+fullpdadc_read_0_A_30_1 0 
+fullmeas_pwr_0_A_30_1 0 
+fullpdadc_read_1_A_30_1 0 
+fullmeas_pwr_1_A_30_1 0 
+fullpdadc_read_2_A_30_1 0 
+fullmeas_pwr_2_A_30_1 0 
+fullpdadc_read_3_A_30_1 0 
+fullmeas_pwr_3_A_30_1 0 
+fullpdadc_read_4_A_30_1 0 
+fullmeas_pwr_4_A_30_1 0 
+fullpdadc_read_0_A_30_2 0 
+fullmeas_pwr_0_A_30_2 0 
+fullpdadc_read_1_A_30_2 0 
+fullmeas_pwr_1_A_30_2 0 
+fullpdadc_read_2_A_30_2 0 
+fullmeas_pwr_2_A_30_2 0 
+fullpdadc_read_3_A_30_2 0 
+fullmeas_pwr_3_A_30_2 0 
+fullpdadc_read_4_A_30_2 0 
+fullmeas_pwr_4_A_30_2 0 
+fullpdadc_read_0_A_30_3 0 
+fullmeas_pwr_0_A_30_3 0 
+fullpdadc_read_1_A_30_3 0 
+fullmeas_pwr_1_A_30_3 0 
+fullpdadc_read_2_A_30_3 0 
+fullmeas_pwr_2_A_30_3 0 
+fullpdadc_read_3_A_30_3 0 
+fullmeas_pwr_3_A_30_3 0 
+fullpdadc_read_4_A_30_3 0 
+fullmeas_pwr_4_A_30_3 0 
+fullpdadc_read_0_A_31_0 0 
+fullmeas_pwr_0_A_31_0 0 
+fullpdadc_read_1_A_31_0 0 
+fullmeas_pwr_1_A_31_0 0 
+fullpdadc_read_2_A_31_0 0 
+fullmeas_pwr_2_A_31_0 0 
+fullpdadc_read_3_A_31_0 0 
+fullmeas_pwr_3_A_31_0 0 
+fullpdadc_read_4_A_31_0 0 
+fullmeas_pwr_4_A_31_0 0 
+fullpdadc_read_0_A_31_1 0 
+fullmeas_pwr_0_A_31_1 0 
+fullpdadc_read_1_A_31_1 0 
+fullmeas_pwr_1_A_31_1 0 
+fullpdadc_read_2_A_31_1 0 
+fullmeas_pwr_2_A_31_1 0 
+fullpdadc_read_3_A_31_1 0 
+fullmeas_pwr_3_A_31_1 0 
+fullpdadc_read_4_A_31_1 0 
+fullmeas_pwr_4_A_31_1 0 
+fullpdadc_read_0_A_31_2 0 
+fullmeas_pwr_0_A_31_2 0 
+fullpdadc_read_1_A_31_2 0 
+fullmeas_pwr_1_A_31_2 0 
+fullpdadc_read_2_A_31_2 0 
+fullmeas_pwr_2_A_31_2 0 
+fullpdadc_read_3_A_31_2 0 
+fullmeas_pwr_3_A_31_2 0 
+fullpdadc_read_4_A_31_2 0 
+fullmeas_pwr_4_A_31_2 0 
+fullpdadc_read_0_A_31_3 0 
+fullmeas_pwr_0_A_31_3 0 
+fullpdadc_read_1_A_31_3 0 
+fullmeas_pwr_1_A_31_3 0 
+fullpdadc_read_2_A_31_3 0 
+fullmeas_pwr_2_A_31_3 0 
+fullpdadc_read_3_A_31_3 0 
+fullmeas_pwr_3_A_31_3 0 
+fullpdadc_read_4_A_31_3 0 
+fullmeas_pwr_4_A_31_3 0 
+gainIdxForCal_A_0_0 5 7 9 11 13 15 17 19 21 23 25 27 29 31 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 
+dacGainForCal_A_0_0 -8 -8 -8 -8 -8 -8 -8 -8 -8 -8 -8 -8 -8 -8 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+paConfigForCal_A_0_0 7 7 7 7 7 7 7 7 7 7 7 7 7 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+calPwrTargets_A_0_0 160 136 112 72 56 
+calPdadcTargets_A_0_0 120 90 60 50 40 
+pdetAttenProfile_32nddb_A_0_0 37 37 36 37 37 36 35 34 33 32 35 33 33 34 33 
+pdetTiaGainProfile_8thdb_A_0_0 86 
+alutOffset_A_0_0 5 
+pdetRange_8thdb_A_0_0 8 
+txPwrOffset_A_0_0 0 
+valid_A_0_0 1 
+unused_A_0_0 0 0 
+calDataTgtPwr_A_0_0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+reservedPreCal 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+secondChannelGLUTOffset_0_A_0_0 0 0 0 0 0 0 
+secondChannelGLUTOffset_1_A_0_0 0 0 0 0 0 0 
+secondChannelGLUTOffset_2_A_0_0 0 0 0 0 0 0 
+secondChannelGLUTOffset_3_A_0_0 0 0 0 0 0 0 
+secondChannelGLUTOffset_4_A_0_0 0 0 0 0 0 0 
+secondChannelGLUTOffset_5_A_0_0 0 0 0 0 0 0 
+secondChannelGLUTOffset_0_A_0_1 0 0 0 0 0 0 
+secondChannelGLUTOffset_1_A_0_1 0 0 0 0 0 0 
+secondChannelGLUTOffset_2_A_0_1 0 0 0 0 0 0 
+secondChannelGLUTOffset_3_A_0_1 0 0 0 0 0 0 
+secondChannelGLUTOffset_4_A_0_1 0 0 0 0 0 0 
+secondChannelGLUTOffset_5_A_0_1 0 0 0 0 0 0 
+ctlIndex5G_80plus80Mhz_Primary_lower_freq_0_A_0_0 mode:0x7 beamforming:0x0 regDmn:0x1 numChMask:0x2 numSSMask:0x3 
+ctlIndex5G_80plus80Mhz_Primary_lower_freq_1_A_0_0 mode:0x7 beamforming:0x0 regDmn:0x1 numChMask:0x1 numSSMask:0x1 
+ctlIndex5G_80plus80Mhz_Primary_lower_freq_2_A_0_0 mode:0x7 beamforming:0x1 regDmn:0x1 numChMask:0x2 numSSMask:0x1 
+ctlIndex5G_80plus80Mhz_Primary_lower_freq_3_A_0_0 mode:0x7 beamforming:0x0 regDmn:0x4 numChMask:0x2 numSSMask:0x3 
+ctlIndex5G_80plus80Mhz_Primary_lower_freq_4_A_0_0 mode:0x7 beamforming:0x0 regDmn:0x4 numChMask:0x1 numSSMask:0x1 
+ctlIndex5G_80plus80Mhz_Primary_lower_freq_5_A_0_0 mode:0x7 beamforming:0x1 regDmn:0x4 numChMask:0x2 numSSMask:0x1 
+ctlIndex5G_80plus80Mhz_Primary_lower_freq_6_A_0_0 mode:0x7 beamforming:0x0 regDmn:0x3 numChMask:0x2 numSSMask:0x3 
+ctlIndex5G_80plus80Mhz_Primary_lower_freq_7_A_0_0 mode:0x7 beamforming:0x0 regDmn:0x3 numChMask:0x1 numSSMask:0x1 
+ctlIndex5G_80plus80Mhz_Primary_lower_freq_8_A_0_0 mode:0x7 beamforming:0x1 regDmn:0x3 numChMask:0x2 numSSMask:0x1 
+ctlModeExt_HT80p80_Primary_lower_freq_A_0_0 8 8 8 8 8 8 8 8 8 
+alignpad12 0 
+ctlFreqbin5G_80plus80Mhz_Primary_lower_freq_0_A_0_0 82 98 146 162 178 195 
+ctlFreqbin5G_80plus80Mhz_Primary_lower_freq_1_A_0_0 82 98 146 162 178 195 
+ctlFreqbin5G_80plus80Mhz_Primary_lower_freq_2_A_0_0 82 98 146 162 178 195 
+ctlData5G_80plus80Mhz_Primary_lower_freq_0_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80plus80Mhz_Primary_lower_freq_1_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80plus80Mhz_Primary_lower_freq_2_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80plus80Mhz_Primary_lower_freq_3_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80plus80Mhz_Primary_lower_freq_4_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80plus80Mhz_Primary_lower_freq_5_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80plus80Mhz_Primary_lower_freq_6_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80plus80Mhz_Primary_lower_freq_7_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80plus80Mhz_Primary_lower_freq_8_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlIndex5G_80plus80Mhz_Primary_higher_freq_0_A_0_0 mode:0x7 beamforming:0x0 regDmn:0x1 numChMask:0x2 numSSMask:0x3 
+ctlIndex5G_80plus80Mhz_Primary_higher_freq_1_A_0_0 mode:0x7 beamforming:0x0 regDmn:0x1 numChMask:0x1 numSSMask:0x1 
+ctlIndex5G_80plus80Mhz_Primary_higher_freq_2_A_0_0 mode:0x7 beamforming:0x1 regDmn:0x1 numChMask:0x2 numSSMask:0x1 
+ctlIndex5G_80plus80Mhz_Primary_higher_freq_3_A_0_0 mode:0x7 beamforming:0x0 regDmn:0x4 numChMask:0x2 numSSMask:0x3 
+ctlIndex5G_80plus80Mhz_Primary_higher_freq_4_A_0_0 mode:0x7 beamforming:0x0 regDmn:0x4 numChMask:0x1 numSSMask:0x1 
+ctlIndex5G_80plus80Mhz_Primary_higher_freq_5_A_0_0 mode:0x7 beamforming:0x1 regDmn:0x4 numChMask:0x2 numSSMask:0x1 
+ctlIndex5G_80plus80Mhz_Primary_higher_freq_6_A_0_0 mode:0x7 beamforming:0x0 regDmn:0x3 numChMask:0x2 numSSMask:0x3 
+ctlIndex5G_80plus80Mhz_Primary_higher_freq_7_A_0_0 mode:0x7 beamforming:0x0 regDmn:0x3 numChMask:0x1 numSSMask:0x1 
+ctlIndex5G_80plus80Mhz_Primary_higher_freq_8_A_0_0 mode:0x7 beamforming:0x1 regDmn:0x3 numChMask:0x2 numSSMask:0x1 
+ctlModeExt_HT80p80_Primary_higher_freq_A_0_0 9 9 9 9 9 9 9 9 9 
+alignpad13 0 
+ctlFreqbin5G_80plus80Mhz_Primary_higher_freq_0_A_0_0 82 98 146 162 178 195 
+ctlFreqbin5G_80plus80Mhz_Primary_higher_freq_1_A_0_0 82 98 146 162 178 195 
+ctlFreqbin5G_80plus80Mhz_Primary_higher_freq_2_A_0_0 82 98 146 162 178 195 
+ctlData5G_80plus80Mhz_Primary_higher_freq_0_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80plus80Mhz_Primary_higher_freq_1_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80plus80Mhz_Primary_higher_freq_2_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80plus80Mhz_Primary_higher_freq_3_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80plus80Mhz_Primary_higher_freq_4_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80plus80Mhz_Primary_higher_freq_5_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80plus80Mhz_Primary_higher_freq_6_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80plus80Mhz_Primary_higher_freq_7_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80plus80Mhz_Primary_higher_freq_8_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+calData5GFuture 0 0 0 0 0 0 0 0 
+rttBase_txDelay_dyn160_0_0 0 0 0 
+rttBase_rxDelay_dyn160_0_0 0 0 0 
+rttBase_sifsDelay_dyn160_0_0 0 0 0 
+rttBase_txDelay_dyn160_1_0 0 0 0 
+rttBase_rxDelay_dyn160_1_0 0 0 0 
+rttBase_sifsDelay_dyn160_1_0 0 0 0 
+rttBase_txDelay_dyn160_2_0 0 0 0 
+rttBase_rxDelay_dyn160_2_0 0 0 0 
+rttBase_sifsDelay_dyn160_2_0 0 0 0 
+rttBase_txDelay_dyn160_3_0 0 0 0 
+rttBase_rxDelay_dyn160_3_0 0 0 0 
+rttBase_sifsDelay_dyn160_3_0 0 0 0 
+rttBase_txDelay_dyn80_0_0 0 0 0 
+rttBase_rxDelay_dyn80_0_0 0 0 0 
+rttBase_sifsDelay_dyn80_0_0 0 0 0 
+rttBase_txDelay_dyn80_1_0 0 0 0 
+rttBase_rxDelay_dyn80_1_0 0 0 0 
+rttBase_sifsDelay_dyn80_1_0 0 0 0 
+rttBase_txDelay_dyn80_2_0 0 0 0 
+rttBase_rxDelay_dyn80_2_0 0 0 0 
+rttBase_sifsDelay_dyn80_2_0 0 0 0 
+rttBase_txDelay_dyn40_0_0 0 0 0 
+rttBase_rxDelay_dyn40_0_0 0 0 0 
+rttBase_sifsDelay_dyn40_0_0 0 0 0 
+rttBase_txDelay_dyn40_1_0 0 0 0 
+rttBase_rxDelay_dyn40_1_0 0 0 0 
+rttBase_sifsDelay_dyn40_1_0 0 0 0 
+rttBase_txDelay_dyn20_0_0 0 0 0 
+rttBase_rxDelay_dyn20_0_0 0 0 0 
+rttBase_sifsDelay_dyn20_0_0 0 0 0 
+rttHC_txDelay_dyn160_0_0 0 0 0 
+reserved_dyn160_0_0 0 
+rttHC_sifsDelay_dyn160_0_0 0 0 0 
+rttHC_txDelay_dyn160_1_0 0 0 0 
+reserved_dyn160_1_0 0 
+rttHC_sifsDelay_dyn160_1_0 0 0 0 
+rttHC_txDelay_dyn160_2_0 0 0 0 
+reserved_dyn160_2_0 0 
+rttHC_sifsDelay_dyn160_2_0 0 0 0 
+rttHC_txDelay_dyn160_3_0 0 0 0 
+reserved_dyn160_3_0 0 
+rttHC_sifsDelay_dyn160_3_0 0 0 0 
+rttHC_txDelay_dyn80_0_0 0 0 0 
+reserved_dyn80_0_0 0 
+rttHC_sifsDelay_dyn80_0_0 0 0 0 
+rttHC_txDelay_dyn80_1_0 0 0 0 
+reserved_dyn80_1_0 0 
+rttHC_sifsDelay_dyn80_1_0 0 0 0 
+rttHC_txDelay_dyn80_2_0 0 0 0 
+reserved_dyn80_2_0 0 
+rttHC_sifsDelay_dyn80_2_0 0 0 0 
+rttHC_txDelay_dyn40_0_0 0 0 0 
+reserved_dyn40_0_0 0 
+rttHC_sifsDelay_dyn40_0_0 0 0 0 
+rttHC_txDelay_dyn40_1_0 0 0 0 
+reserved_dyn40_1_0 0 
+rttHC_sifsDelay_dyn40_1_0 0 0 0 
+rttHC_txDelay_dyn20_0_0 0 0 0 
+reserved_dyn20_0_0 0 
+rttHC_sifsDelay_dyn20_0_0 0 0 0 
+rttMisc_txDelayDPD_dyn160_0_0 0 0 0 
+rttMisc_rxDelayNotch_dyn160_0_0 0 0 0 
+rttMisc_txDelayDPD_dyn160_1_0 0 0 0 
+rttMisc_rxDelayNotch_dyn160_1_0 0 0 0 
+rttMisc_txDelayDPD_dyn160_2_0 0 0 0 
+rttMisc_rxDelayNotch_dyn160_2_0 0 0 0 
+rttMisc_txDelayDPD_dyn160_3_0 0 0 0 
+rttMisc_rxDelayNotch_dyn160_3_0 0 0 0 
+rttMisc_txDelayDPD_dyn80_0_0 0 0 0 
+rttMisc_rxDelayNotch_dyn80_0_0 0 0 0 
+rttMisc_txDelayDPD_dyn80_1_0 0 0 0 
+rttMisc_rxDelayNotch_dyn80_1_0 0 0 0 
+rttMisc_txDelayDPD_dyn80_2_0 0 0 0 
+rttMisc_rxDelayNotch_dyn80_2_0 0 0 0 
+rttMisc_txDelayDPD_dyn40_0_0 0 0 0 
+rttMisc_rxDelayNotch_dyn40_0_0 0 0 0 
+rttMisc_txDelayDPD_dyn40_1_0 0 0 0 
+rttMisc_rxDelayNotch_dyn40_1_0 0 0 0 
+dpdTargetAgc2LUT__0_0 0 0 0 
+dpdTargetAgc2LUT__1_0 0 0 0 
+dpdTargetAgc2LUT__2_0 0 0 0 
+dpdTargetAgc2LUT__3_0 0 0 0 
+dpdTargetAgc2LUT__4_0 0 0 0 
+dpdTargetAgc2LUT__5_0 0 0 0 
+dpdTargetAgc2LUT__6_0 0 0 0 
+dpdTargetAgc2LUT__7_0 0 0 0 
+PefCoefI_A_0_0 0 0 0 0 256 0 0 0 0 0 
+PefCoefQ_A_0_0 0 0 0 0 0 0 0 0 0 0 
+PefCoefI_HT40_A_0_0 0 0 0 0 256 0 0 0 0 0 
+PefCoefQ_HT40_A_0_0 0 0 0 0 0 0 0 0 0 0 
+PefCoefI_HT80_A_0_0 0 0 0 0 256 0 0 0 0 0 
+PefCoefQ_HT80_A_0_0 0 0 0 0 0 0 0 0 0 0 
+PefCoefI_G_0_0 0 0 0 0 0 0 0 0 0 0 
+PefCoefQ_G_0_0 0 0 0 0 0 0 0 0 0 0 
+PefCoefI_HT40_G_0_0 0 0 0 0 0 0 0 0 0 0 
+PefCoefQ_HT40_G_0_0 0 0 0 0 0 0 0 0 0 0 
+PefCoefI_HT80_G_0_0 0 0 0 0 0 0 0 0 0 0 
+PefCoefQ_HT80_G_0_0 0 0 0 0 0 0 0 0 0 0 
+rttMisc_txDelayDPD_dyn20_0_0 0 0 0 
+rttMisc_rxDelayNotch_dyn20_0_0 0 0 0 
+alutFuture5G 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+extTPow2xDelta5G 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+targetFreqbin5G_A_0_0 76 92 104 140 180 205 0 0 
+targetFreqbin5GVHT20_A_0_0 76 92 104 120 140 160 180 205 
+targetFreqbin5GVHT40_A_0_0 76 92 104 120 140 160 180 205 
+targetFreqbin5GVHT80_A_0_0 76 92 104 120 140 160 180 205 
+tgtPow2xNss_SU_VHT20_A_0_0 35 35 34 34 32 30 30 28 25 20 
+tgtPow2xNss_MU_VHT20_A_0_0 35 35 32 32 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT20_A_1_0 35 35 34 34 32 30 30 28 25 20 
+tgtPow2xNss_MU_VHT20_A_1_0 35 35 32 32 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT20_A_2_0 35 35 34 34 32 30 30 28 25 20 
+tgtPow2xNss_MU_VHT20_A_2_0 35 35 32 32 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT20_A_3_0 35 35 34 34 32 30 30 28 25 20 
+tgtPow2xNss_MU_VHT20_A_3_0 35 35 32 32 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT20_A_4_0 35 35 34 34 32 30 30 28 25 20 
+tgtPow2xNss_MU_VHT20_A_4_0 35 35 32 32 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT20_A_5_0 35 35 34 34 32 30 30 28 25 20 
+tgtPow2xNss_MU_VHT20_A_5_0 35 35 32 32 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT20_A_6_0 35 35 34 34 32 30 30 28 25 20 
+tgtPow2xNss_MU_VHT20_A_6_0 35 35 32 32 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT20_A_7_0 35 35 34 34 32 30 30 28 25 20 
+tgtPow2xNss_MU_VHT20_A_7_0 35 35 32 32 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT40_A_0_0 34 34 34 34 32 30 30 28 25 24 
+tgtPow2xNss_MU_VHT40_A_0_0 34 34 34 32 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT40_A_1_0 34 34 34 34 32 30 30 28 25 24 
+tgtPow2xNss_MU_VHT40_A_1_0 34 34 34 32 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT40_A_2_0 34 34 34 34 32 30 30 28 25 24 
+tgtPow2xNss_MU_VHT40_A_2_0 34 34 34 32 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT40_A_3_0 34 34 34 34 32 30 30 28 25 24 
+tgtPow2xNss_MU_VHT40_A_3_0 34 34 34 32 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT40_A_4_0 34 34 34 34 32 30 30 28 25 24 
+tgtPow2xNss_MU_VHT40_A_4_0 34 34 34 32 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT40_A_5_0 34 34 34 34 32 30 30 28 25 24 
+tgtPow2xNss_MU_VHT40_A_5_0 34 34 34 32 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT40_A_6_0 34 34 34 34 32 30 30 28 25 24 
+tgtPow2xNss_MU_VHT40_A_6_0 34 34 34 32 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT40_A_7_0 34 34 34 34 32 30 30 28 25 24 
+tgtPow2xNss_MU_VHT40_A_7_0 34 34 34 32 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT80_A_0_0 33 33 33 33 32 31 30 28 25 23 
+tgtPow2xNss_MU_VHT80_A_0_0 33 33 33 31 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT80_A_1_0 33 33 33 33 32 31 30 28 25 23 
+tgtPow2xNss_MU_VHT80_A_1_0 33 33 33 31 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT80_A_2_0 33 33 33 33 32 31 30 28 25 23 
+tgtPow2xNss_MU_VHT80_A_2_0 33 33 33 31 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT80_A_3_0 33 33 33 33 32 31 30 28 25 23 
+tgtPow2xNss_MU_VHT80_A_3_0 33 33 33 31 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT80_A_4_0 33 33 33 33 32 31 30 28 25 23 
+tgtPow2xNss_MU_VHT80_A_4_0 33 33 33 31 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT80_A_5_0 33 33 33 33 32 31 30 28 25 23 
+tgtPow2xNss_MU_VHT80_A_5_0 33 33 33 31 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT80_A_6_0 33 33 33 33 32 31 30 28 25 23 
+tgtPow2xNss_MU_VHT80_A_6_0 33 33 33 31 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT80_A_7_0 33 33 33 33 32 31 30 28 25 23 
+tgtPow2xNss_MU_VHT80_A_7_0 33 33 33 31 30 28 26 24 22 20 
+tgtPow2xNss_SU_VHT160_A_0_0 0 0 0 0 0 0 0 0 0 0 
+tgtPow2xNss_MU_VHT160_A_0_0 0 0 0 0 0 0 0 0 0 0 
+tgtPow2xNss_SU_VHT160_A_1_0 0 0 0 0 0 0 0 0 0 0 
+tgtPow2xNss_MU_VHT160_A_1_0 0 0 0 0 0 0 0 0 0 0 
+tgtPow2xNss_SU_VHT160_A_2_0 0 0 0 0 0 0 0 0 0 0 
+tgtPow2xNss_MU_VHT160_A_2_0 0 0 0 0 0 0 0 0 0 0 
+tgtPow2xNss_SU_VHT160_A_3_0 0 0 0 0 0 0 0 0 0 0 
+tgtPow2xNss_MU_VHT160_A_3_0 0 0 0 0 0 0 0 0 0 0 
+tgtPow2xNss_SU_VHT160_A_4_0 0 0 0 0 0 0 0 0 0 0 
+tgtPow2xNss_MU_VHT160_A_4_0 0 0 0 0 0 0 0 0 0 0 
+tgtPow2xNss_SU_VHT160_A_5_0 0 0 0 0 0 0 0 0 0 0 
+tgtPow2xNss_MU_VHT160_A_5_0 0 0 0 0 0 0 0 0 0 0 
+tgtPow2xNss_SU_VHT160_A_6_0 0 0 0 0 0 0 0 0 0 0 
+tgtPow2xNss_MU_VHT160_A_6_0 0 0 0 0 0 0 0 0 0 0 
+tgtPow2xNss_SU_VHT160_A_7_0 0 0 0 0 0 0 0 0 0 0 
+tgtPow2xNss_MU_VHT160_A_7_0 0 0 0 0 0 0 0 0 0 0 
+configAddr__0_0 0x1100a8 0xead0de 0x110000 0x1222 0x110040 0x8029840a 0x310044 0x4122392a 0x4122392a 0x711f392a 0x711f392a 0xa11f392a 0x310410 0x20058007 0x20058007 0x200a8007 0x20058007 0x20058007 0x31003c 0xd0290742 0xd2290542 0xd0290542 0xd0290542 0xd0290742 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 
+bandMask_A_0_0 255 
+refISS_A_0_0 -80 
+rate_A_0_0 12 
+bandWidth_A_0_0 20 
+numChan_A_0_0 4 
+numChain_A_0_0 2 
+numPkts_A_0_0 100 
+chans_A_0_0 88 152 168 197 
+chainMasks_A_0_0 1 2 4 8 
+rxNFCalPowerDBr_A_0_0 -105 -105 -105 -105 
+rxNFCalPowerDBm_A_0_0 -95 -95 -95 -95 
+rxTempMeas_A_0_0 0 0 0 0 
+rxNFThermCalSlope_A_0_0 0 0 0 0 
+minCcaThreshold_A_0_0 -72 -72 -72 -72 
+rxNFCalPowerDBr_A_1_0 -105 -105 -105 -105 
+rxNFCalPowerDBm_A_1_0 -95 -95 -95 -95 
+rxTempMeas_A_1_0 0 0 0 0 
+rxNFThermCalSlope_A_1_0 0 0 0 0 
+minCcaThreshold_A_1_0 -72 -72 -72 -72 
+rxNFCalPowerDBr_A_2_0 -105 -105 -105 -105 
+rxNFCalPowerDBm_A_2_0 -95 -95 -95 -95 
+rxTempMeas_A_2_0 0 0 0 0 
+rxNFThermCalSlope_A_2_0 0 0 0 0 
+minCcaThreshold_A_2_0 -72 -72 -72 -72 
+rxNFCalPowerDBr_A_3_0 -105 -105 -105 -105 
+rxNFCalPowerDBm_A_3_0 -95 -95 -95 -95 
+rxTempMeas_A_3_0 0 0 0 0 
+rxNFThermCalSlope_A_3_0 0 0 0 0 
+minCcaThreshold_A_3_0 -72 -72 -72 -72 
+bandMask_G_0_0 0 
+refISS_G_0_0 0 
+rate_G_0_0 0 
+bandWidth_G_0_0 0 
+numChan_G_0_0 0 
+numChain_G_0_0 0 
+numPkts_G_0_0 0 
+chans_G_0_0 0 0 0 0 
+chainMasks_G_0_0 0 0 0 0 
+rxNFCalPowerDBr_G_0_0 0 0 0 0 
+rxNFCalPowerDBm_G_0_0 0 0 0 0 
+rxTempMeas_G_0_0 0 0 0 0 
+rxNFThermCalSlope_G_0_0 0 0 0 0 
+minCcaThreshold_G_0_0 0 0 0 0 
+rxNFCalPowerDBr_G_1_0 0 0 0 0 
+rxNFCalPowerDBm_G_1_0 0 0 0 0 
+rxTempMeas_G_1_0 0 0 0 0 
+rxNFThermCalSlope_G_1_0 0 0 0 0 
+minCcaThreshold_G_1_0 0 0 0 0 
+rxNFCalPowerDBr_G_2_0 0 0 0 0 
+rxNFCalPowerDBm_G_2_0 0 0 0 0 
+rxTempMeas_G_2_0 0 0 0 0 
+rxNFThermCalSlope_G_2_0 0 0 0 0 
+minCcaThreshold_G_2_0 0 0 0 0 
+rxNFCalPowerDBr_G_3_0 0 0 0 0 
+rxNFCalPowerDBm_G_3_0 0 0 0 0 
+rxTempMeas_G_3_0 0 0 0 0 
+rxNFThermCalSlope_G_3_0 0 0 0 0 
+minCcaThreshold_G_3_0 0 0 0 0 
+alphaThermChans_5G_A_0_0 76 88 92 104 140 160 180 201 
+alphaThermChans_5G_A_1_0 76 88 92 104 140 160 180 201 
+alphaThermChans_5G_A_2_0 76 88 92 104 140 160 180 201 
+alphaThermChans_5G_A_3_0 76 88 92 104 140 160 180 201 
+alphaThermTbl_5G_A_0_0 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_0_1 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_0_2 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_0_3 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_0_4 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_0_5 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_0_6 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_0_7 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_1_0 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_1_1 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_1_2 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_1_3 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_1_4 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_1_5 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_1_6 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_1_7 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_2_0 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_2_1 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_2_2 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_2_3 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_2_4 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_2_5 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_2_6 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_2_7 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_3_0 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_3_1 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_3_2 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_3_3 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_3_4 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_3_5 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_3_6 0x27 0x26 0x25 0x24 
+alphaThermTbl_5G_A_3_7 0x27 0x26 0x25 0x24 
+_eepromCtlIndex5G_legacy_0_A_0_0 mode:0x0 beamforming:0x0 regDmn:0x1 numChMask:0xe numSSMask:0x1 
+_eepromCtlIndex5G_legacy_1_A_0_0 mode:0x0 beamforming:0x0 regDmn:0x1 numChMask:0x1 numSSMask:0x1 
+_eepromCtlIndex5G_legacy_2_A_0_0 mode:0x0 beamforming:0x1 regDmn:0x1 numChMask:0xe numSSMask:0x1 
+_eepromCtlIndex5G_legacy_3_A_0_0 mode:0x0 beamforming:0x0 regDmn:0x4 numChMask:0xe numSSMask:0x1 
+_eepromCtlIndex5G_legacy_4_A_0_0 mode:0x0 beamforming:0x0 regDmn:0x4 numChMask:0x1 numSSMask:0x1 
+_eepromCtlIndex5G_legacy_5_A_0_0 mode:0x0 beamforming:0x1 regDmn:0x4 numChMask:0xe numSSMask:0x1 
+_eepromCtlIndex5G_legacy_6_A_0_0 mode:0x0 beamforming:0x0 regDmn:0x3 numChMask:0xe numSSMask:0x1 
+_eepromCtlIndex5G_legacy_7_A_0_0 mode:0x0 beamforming:0x0 regDmn:0x3 numChMask:0x1 numSSMask:0x1 
+_eepromCtlIndex5G_legacy_8_A_0_0 mode:0x0 beamforming:0x1 regDmn:0x3 numChMask:0xe numSSMask:0x1 
+ctlFreqbin5G_legacy_0_A_0_0 76 80 84 88 92 96 100 104 140 144 148 152 156 160 164 168 172 176 180 184 189 193 197 201 205 
+ctlFreqbin5G_legacy_1_A_0_0 76 80 84 88 92 96 100 104 140 144 148 152 156 160 164 168 172 176 180 184 189 193 197 201 205 
+ctlFreqbin5G_legacy_2_A_0_0 76 80 84 88 92 96 100 104 140 144 148 152 156 160 164 168 172 176 180 184 189 193 197 201 205 
+alignpad9 0 
+ctlData5G_legacy_0_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_legacy_1_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_legacy_2_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_legacy_3_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_legacy_4_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_legacy_5_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_legacy_6_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_legacy_7_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_legacy_8_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+alignpad10 0 
+_eepromCtlIndex5G_20Mhz_0_A_0_0 mode:0x2 beamforming:0x0 regDmn:0x1 numChMask:0xe numSSMask:0x1 
+_eepromCtlIndex5G_20Mhz_1_A_0_0 mode:0x2 beamforming:0x0 regDmn:0x1 numChMask:0xe numSSMask:0x2 
+_eepromCtlIndex5G_20Mhz_2_A_0_0 mode:0x2 beamforming:0x0 regDmn:0x1 numChMask:0xc numSSMask:0x4 
+_eepromCtlIndex5G_20Mhz_3_A_0_0 mode:0x2 beamforming:0x0 regDmn:0x1 numChMask:0x8 numSSMask:0x8 
+_eepromCtlIndex5G_20Mhz_4_A_0_0 mode:0x2 beamforming:0x0 regDmn:0x1 numChMask:0x1 numSSMask:0x1 
+_eepromCtlIndex5G_20Mhz_5_A_0_0 mode:0x2 beamforming:0x1 regDmn:0x1 numChMask:0xe numSSMask:0x1 
+_eepromCtlIndex5G_20Mhz_6_A_0_0 mode:0x2 beamforming:0x1 regDmn:0x1 numChMask:0xe numSSMask:0x2 
+_eepromCtlIndex5G_20Mhz_7_A_0_0 mode:0x2 beamforming:0x1 regDmn:0x1 numChMask:0xc numSSMask:0x4 
+_eepromCtlIndex5G_20Mhz_8_A_0_0 mode:0x2 beamforming:0x0 regDmn:0x4 numChMask:0xe numSSMask:0x1 
+_eepromCtlIndex5G_20Mhz_9_A_0_0 mode:0x2 beamforming:0x0 regDmn:0x4 numChMask:0xe numSSMask:0x2 
+_eepromCtlIndex5G_20Mhz_10_A_0_0 mode:0x2 beamforming:0x0 regDmn:0x4 numChMask:0xc numSSMask:0x4 
+_eepromCtlIndex5G_20Mhz_11_A_0_0 mode:0x2 beamforming:0x0 regDmn:0x4 numChMask:0x8 numSSMask:0x8 
+_eepromCtlIndex5G_20Mhz_12_A_0_0 mode:0x2 beamforming:0x0 regDmn:0x4 numChMask:0x1 numSSMask:0x1 
+_eepromCtlIndex5G_20Mhz_13_A_0_0 mode:0x2 beamforming:0x1 regDmn:0x4 numChMask:0xe numSSMask:0x1 
+_eepromCtlIndex5G_20Mhz_14_A_0_0 mode:0x2 beamforming:0x1 regDmn:0x4 numChMask:0xe numSSMask:0x2 
+_eepromCtlIndex5G_20Mhz_15_A_0_0 mode:0x2 beamforming:0x1 regDmn:0x4 numChMask:0xc numSSMask:0x4 
+_eepromCtlIndex5G_20Mhz_16_A_0_0 mode:0x2 beamforming:0x0 regDmn:0x3 numChMask:0xe numSSMask:0x1 
+_eepromCtlIndex5G_20Mhz_17_A_0_0 mode:0x2 beamforming:0x0 regDmn:0x3 numChMask:0xe numSSMask:0x2 
+_eepromCtlIndex5G_20Mhz_18_A_0_0 mode:0x2 beamforming:0x0 regDmn:0x3 numChMask:0xc numSSMask:0x4 
+_eepromCtlIndex5G_20Mhz_19_A_0_0 mode:0x2 beamforming:0x0 regDmn:0x3 numChMask:0x8 numSSMask:0x8 
+_eepromCtlIndex5G_20Mhz_20_A_0_0 mode:0x2 beamforming:0x0 regDmn:0x3 numChMask:0x1 numSSMask:0x1 
+_eepromCtlIndex5G_20Mhz_21_A_0_0 mode:0x2 beamforming:0x1 regDmn:0x3 numChMask:0xe numSSMask:0x1 
+_eepromCtlIndex5G_20Mhz_22_A_0_0 mode:0x2 beamforming:0x1 regDmn:0x3 numChMask:0xe numSSMask:0x2 
+_eepromCtlIndex5G_20Mhz_23_A_0_0 mode:0x2 beamforming:0x1 regDmn:0x3 numChMask:0xc numSSMask:0x4 
+ctlFreqbin5G_20MHz_0_A_0_0 76 80 84 88 92 96 100 104 140 144 148 152 156 160 164 168 172 176 180 184 189 193 197 201 205 
+ctlFreqbin5G_20MHz_1_A_0_0 76 80 84 88 92 96 100 104 140 144 148 152 156 160 164 168 172 176 180 184 189 193 197 201 205 
+ctlFreqbin5G_20MHz_2_A_0_0 76 80 84 88 92 96 100 104 140 144 148 152 156 160 164 168 172 176 180 184 189 193 197 201 205 
+alignpad11 0 
+ctlData5G_20Mhz_0_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_20Mhz_1_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_20Mhz_2_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_20Mhz_3_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_20Mhz_4_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_20Mhz_5_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_20Mhz_6_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_20Mhz_7_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_20Mhz_8_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_20Mhz_9_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_20Mhz_10_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_20Mhz_11_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_20Mhz_12_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_20Mhz_13_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_20Mhz_14_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_20Mhz_15_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_20Mhz_16_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_20Mhz_17_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_20Mhz_18_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_20Mhz_19_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_20Mhz_20_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_20Mhz_21_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_20Mhz_22_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_20Mhz_23_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+_eepromCtlIndex5G_40Mhz_0_A_0_0 mode:0x3 beamforming:0x0 regDmn:0x1 numChMask:0xe numSSMask:0x1 
+_eepromCtlIndex5G_40Mhz_1_A_0_0 mode:0x3 beamforming:0x0 regDmn:0x1 numChMask:0xe numSSMask:0xe 
+_eepromCtlIndex5G_40Mhz_2_A_0_0 mode:0x3 beamforming:0x0 regDmn:0x1 numChMask:0x1 numSSMask:0x1 
+_eepromCtlIndex5G_40Mhz_3_A_0_0 mode:0x3 beamforming:0x1 regDmn:0x1 numChMask:0xe numSSMask:0x1 
+_eepromCtlIndex5G_40Mhz_4_A_0_0 mode:0x3 beamforming:0x1 regDmn:0x1 numChMask:0xe numSSMask:0x2 
+_eepromCtlIndex5G_40Mhz_5_A_0_0 mode:0x3 beamforming:0x1 regDmn:0x1 numChMask:0xc numSSMask:0x4 
+_eepromCtlIndex5G_40Mhz_6_A_0_0 mode:0x3 beamforming:0x0 regDmn:0x4 numChMask:0xe numSSMask:0x1 
+_eepromCtlIndex5G_40Mhz_7_A_0_0 mode:0x3 beamforming:0x0 regDmn:0x4 numChMask:0xe numSSMask:0xe 
+_eepromCtlIndex5G_40Mhz_8_A_0_0 mode:0x3 beamforming:0x0 regDmn:0x4 numChMask:0x1 numSSMask:0x1 
+_eepromCtlIndex5G_40Mhz_9_A_0_0 mode:0x3 beamforming:0x1 regDmn:0x4 numChMask:0xe numSSMask:0x1 
+_eepromCtlIndex5G_40Mhz_10_A_0_0 mode:0x3 beamforming:0x1 regDmn:0x4 numChMask:0xe numSSMask:0x2 
+_eepromCtlIndex5G_40Mhz_11_A_0_0 mode:0x3 beamforming:0x1 regDmn:0x4 numChMask:0xc numSSMask:0x4 
+_eepromCtlIndex5G_40Mhz_12_A_0_0 mode:0x3 beamforming:0x0 regDmn:0x3 numChMask:0xe numSSMask:0x1 
+_eepromCtlIndex5G_40Mhz_13_A_0_0 mode:0x3 beamforming:0x0 regDmn:0x3 numChMask:0xe numSSMask:0xe 
+_eepromCtlIndex5G_40Mhz_14_A_0_0 mode:0x3 beamforming:0x0 regDmn:0x3 numChMask:0x1 numSSMask:0x1 
+_eepromCtlIndex5G_40Mhz_15_A_0_0 mode:0x3 beamforming:0x1 regDmn:0x3 numChMask:0xe numSSMask:0x1 
+_eepromCtlIndex5G_40Mhz_16_A_0_0 mode:0x3 beamforming:0x1 regDmn:0x3 numChMask:0xe numSSMask:0x2 
+_eepromCtlIndex5G_40Mhz_17_A_0_0 mode:0x3 beamforming:0x1 regDmn:0x3 numChMask:0xc numSSMask:0x4 
+ctlFreqbin5G_40Mhz_0_A_0_0 78 86 94 102 142 150 158 166 174 182 191 199 
+ctlFreqbin5G_40Mhz_1_A_0_0 78 86 94 102 142 150 158 166 174 182 191 199 
+ctlFreqbin5G_40Mhz_2_A_0_0 78 86 94 102 142 150 158 166 174 182 191 199 
+ctlData5G_40Mhz_0_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_40Mhz_1_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_40Mhz_2_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_40Mhz_3_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_40Mhz_4_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_40Mhz_5_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_40Mhz_6_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_40Mhz_7_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_40Mhz_8_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_40Mhz_9_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_40Mhz_10_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_40Mhz_11_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_40Mhz_12_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_40Mhz_13_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_40Mhz_14_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_40Mhz_15_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_40Mhz_16_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_40Mhz_17_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+_eepromCtlIndex5G_80Mhz_0_A_0_0 mode:0x4 beamforming:0x0 regDmn:0x1 numChMask:0xe numSSMask:0xf 
+_eepromCtlIndex5G_80Mhz_1_A_0_0 mode:0x4 beamforming:0x0 regDmn:0x1 numChMask:0x1 numSSMask:0x1 
+_eepromCtlIndex5G_80Mhz_2_A_0_0 mode:0x4 beamforming:0x1 regDmn:0x1 numChMask:0xe numSSMask:0x1 
+_eepromCtlIndex5G_80Mhz_3_A_0_0 mode:0x4 beamforming:0x1 regDmn:0x1 numChMask:0xe numSSMask:0x2 
+_eepromCtlIndex5G_80Mhz_4_A_0_0 mode:0x4 beamforming:0x1 regDmn:0x1 numChMask:0xc numSSMask:0x4 
+_eepromCtlIndex5G_80Mhz_5_A_0_0 mode:0x4 beamforming:0x0 regDmn:0x1 numChMask:0x0 numSSMask:0x0 
+_eepromCtlIndex5G_80Mhz_6_A_0_0 mode:0x4 beamforming:0x0 regDmn:0x4 numChMask:0xe numSSMask:0xf 
+_eepromCtlIndex5G_80Mhz_7_A_0_0 mode:0x4 beamforming:0x0 regDmn:0x4 numChMask:0x1 numSSMask:0x1 
+_eepromCtlIndex5G_80Mhz_8_A_0_0 mode:0x4 beamforming:0x1 regDmn:0x4 numChMask:0xe numSSMask:0x1 
+_eepromCtlIndex5G_80Mhz_9_A_0_0 mode:0x4 beamforming:0x1 regDmn:0x4 numChMask:0xe numSSMask:0x2 
+_eepromCtlIndex5G_80Mhz_10_A_0_0 mode:0x4 beamforming:0x1 regDmn:0x4 numChMask:0xc numSSMask:0x4 
+_eepromCtlIndex5G_80Mhz_11_A_0_0 mode:0x4 beamforming:0x0 regDmn:0x4 numChMask:0x0 numSSMask:0x0 
+_eepromCtlIndex5G_80Mhz_12_A_0_0 mode:0x4 beamforming:0x0 regDmn:0x3 numChMask:0xe numSSMask:0xf 
+_eepromCtlIndex5G_80Mhz_13_A_0_0 mode:0x4 beamforming:0x0 regDmn:0x3 numChMask:0x1 numSSMask:0x1 
+_eepromCtlIndex5G_80Mhz_14_A_0_0 mode:0x4 beamforming:0x1 regDmn:0x3 numChMask:0xe numSSMask:0x1 
+_eepromCtlIndex5G_80Mhz_15_A_0_0 mode:0x4 beamforming:0x1 regDmn:0x3 numChMask:0xe numSSMask:0x2 
+_eepromCtlIndex5G_80Mhz_16_A_0_0 mode:0x4 beamforming:0x1 regDmn:0x3 numChMask:0xc numSSMask:0x4 
+_eepromCtlIndex5G_80Mhz_17_A_0_0 mode:0x4 beamforming:0x0 regDmn:0x3 numChMask:0x0 numSSMask:0x0 
+ctlFreqbin5G_80Mhz_0_A_0_0 82 98 146 162 178 195 
+ctlFreqbin5G_80Mhz_1_A_0_0 82 98 146 162 178 195 
+ctlFreqbin5G_80Mhz_2_A_0_0 82 98 146 162 178 195 
+ctlData5G_80Mhz_0_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80Mhz_1_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80Mhz_2_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80Mhz_3_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80Mhz_4_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80Mhz_5_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80Mhz_6_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80Mhz_7_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80Mhz_8_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80Mhz_9_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80Mhz_10_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80Mhz_11_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80Mhz_12_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80Mhz_13_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80Mhz_14_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80Mhz_15_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80Mhz_16_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlData5G_80Mhz_17_A_0_0 0x3c 0x3c 0x3c 0x3c 0x3c 0x3c 
+ctlIndex5G_160Mhz_0_A_0_0 mode:0x6 beamforming:0x0 regDmn:0x1 numChMask:0x2 numSSMask:0x3 
+ctlIndex5G_160Mhz_1_A_0_0 mode:0x6 beamforming:0x0 regDmn:0x1 numChMask:0x1 numSSMask:0x1 
+ctlIndex5G_160Mhz_2_A_0_0 mode:0x6 beamforming:0x1 regDmn:0x1 numChMask:0x2 numSSMask:0x1 
+ctlIndex5G_160Mhz_3_A_0_0 mode:0x6 beamforming:0x0 regDmn:0x4 numChMask:0x2 numSSMask:0x3 
+ctlIndex5G_160Mhz_4_A_0_0 mode:0x6 beamforming:0x0 regDmn:0x4 numChMask:0x1 numSSMask:0x1 
+ctlIndex5G_160Mhz_5_A_0_0 mode:0x6 beamforming:0x1 regDmn:0x4 numChMask:0x2 numSSMask:0x1 
+ctlIndex5G_160Mhz_6_A_0_0 mode:0x6 beamforming:0x0 regDmn:0x3 numChMask:0x2 numSSMask:0x3 
+ctlIndex5G_160Mhz_7_A_0_0 mode:0x6 beamforming:0x0 regDmn:0x3 numChMask:0x1 numSSMask:0x1 
+ctlIndex5G_160Mhz_8_A_0_0 mode:0x6 beamforming:0x1 regDmn:0x3 numChMask:0x2 numSSMask:0x1 
+ctlFreqbin5G_160Mhz_0_A_0_0 90 154 
+ctlFreqbin5G_160Mhz_1_A_0_0 90 154 
+ctlFreqbin5G_160Mhz_2_A_0_0 90 154 
+ctlData5G_160Mhz_0_A_0_0 0x3c 0x3c 
+ctlData5G_160Mhz_1_A_0_0 0x3c 0x3c 
+ctlData5G_160Mhz_2_A_0_0 0x3c 0x3c 
+ctlData5G_160Mhz_3_A_0_0 0x3c 0x3c 
+ctlData5G_160Mhz_4_A_0_0 0x3c 0x3c 
+ctlData5G_160Mhz_5_A_0_0 0x3c 0x3c 
+ctlData5G_160Mhz_6_A_0_0 0x3c 0x3c 
+ctlData5G_160Mhz_7_A_0_0 0x3c 0x3c 
+ctlData5G_160Mhz_8_A_0_0 0x3c 0x3c 
+thermAdcScaledGain__0_0 0 
+thermAdcOffset__0_0 0 
+rbias__0_0 0x0 
+thermAdcScaledGain1__0_0 0 
+thermAdcOffset1__0_0 0 
+ate_reserved1__0_0 0x0 
+thermAdcScaledGain2__0_0 0 
+thermAdcOffset2__0_0 0 
+ate_reserved2__0_0 0x0 
+thermAdcScaledGain3__0_0 0 
+thermAdcOffset3__0_0 0 
+ate_reserved3__0_0 0x0 
+configFlag__0_0 0x1 
+ate_reserved4__0_0 0x0 0x0 0x0 
+ateCALTemp__0_0 0x0 
+ateCALTemp1__0_0 0x0 
+ate_reserved5__0_0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 
+AttenAteCal_ext_2g_chain0__0_0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+AttenAteCal_ext_2g_chain1__0_0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+AttenAteCal_ext_5g_chain0__0_0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+AttenAteCal_ext_5g_chain1__0_0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+AttenAteCal_int_2g_chain0__0_0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+AttenAteCal_int_2g_chain1__0_0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+AttenAteCal_int_5g_chain0__0_0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+AttenAteCal_int_5g_chain1__0_0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ateFuture__0_0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 

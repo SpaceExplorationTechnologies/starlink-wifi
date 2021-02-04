@@ -1,0 +1,11 @@
+diff -Nur a/programs/pluto/ipsec_doi.c b/programs/pluto/ipsec_doi.c
+--- a/programs/pluto/ipsec_doi.c	2015-03-18 09:31:54.494440669 -0700
++++ b/programs/pluto/ipsec_doi.c	2015-03-18 09:32:52.190442122 -0700
+@@ -445,6 +445,7 @@
+ 	 * that rekeying doesn't downgrade security.  I admit that
+ 	 * this doesn't capture everything.
+ 	 */
++	policy = policy | (st->st_connection->policy & ~POLICY_IKEV2_MASK);
+ 	if (st->st_pfs_group != NULL)
+ 	    policy |= POLICY_PFS;
+ 	if (st->st_ah.present)

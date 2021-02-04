@@ -1,0 +1,337 @@
+--- a/drivers/net/wireless/ath/ath10k/ahb.c
++++ b/drivers/net/wireless/ath/ath10k/ahb.c
+@@ -25,7 +25,7 @@
+ #include "ahb.h"
+ 
+ static const struct of_device_id ath10k_ahb_of_match[] = {
+-	{ .compatible = "qcom,ipq4019-wifi",
++	{ .compatible = "qca,wifi-ipq40xx",
+ 	  .data = (void *)ATH10K_HW_QCA4019
+ 	},
+ 	{ }
+--- a/drivers/net/wireless/ath/ath10k/core.c
++++ b/drivers/net/wireless/ath/ath10k/core.c
+@@ -22,6 +22,8 @@
+ #include <linux/dmi.h>
+ #include <linux/ctype.h>
+ #include <asm/byteorder.h>
++#include <linux/mtd/mtd.h>
++#include <linux/vmalloc.h>
+ 
+ #include "core.h"
+ #include "mac.h"
+@@ -81,6 +83,7 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
+ 		.channel_counters_freq_hz = 88000,
+ 		.max_probe_resp_desc_thres = 0,
+ 		.cal_data_len = 2116,
++		.board_id_cap = 0,
+ 		.fw = {
+ 			.dir = QCA988X_HW_2_0_FW_DIR,
+ 			.board = QCA988X_HW_2_0_BOARD_DATA_FILE,
+@@ -139,6 +142,7 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
+ 		.channel_counters_freq_hz = 88000,
+ 		.max_probe_resp_desc_thres = 0,
+ 		.cal_data_len = 2116,
++		.board_id_cap = 0,
+ 		.fw = {
+ 			.dir = QCA9887_HW_1_0_FW_DIR,
+ 			.board = QCA9887_HW_1_0_BOARD_DATA_FILE,
+@@ -167,6 +171,7 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
+ 		.channel_counters_freq_hz = 88000,
+ 		.max_probe_resp_desc_thres = 0,
+ 		.cal_data_len = 8124,
++		.board_id_cap = 0,
+ 		.fw = {
+ 			.dir = QCA6174_HW_2_1_FW_DIR,
+ 			.board = QCA6174_HW_2_1_BOARD_DATA_FILE,
+@@ -195,6 +200,7 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
+ 		.channel_counters_freq_hz = 88000,
+ 		.max_probe_resp_desc_thres = 0,
+ 		.cal_data_len = 8124,
++		.board_id_cap = 0,
+ 		.fw = {
+ 			.dir = QCA6174_HW_2_1_FW_DIR,
+ 			.board = QCA6174_HW_2_1_BOARD_DATA_FILE,
+@@ -223,6 +229,7 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
+ 		.channel_counters_freq_hz = 88000,
+ 		.max_probe_resp_desc_thres = 0,
+ 		.cal_data_len = 8124,
++		.board_id_cap = 0,
+ 		.fw = {
+ 			.dir = QCA6174_HW_3_0_FW_DIR,
+ 			.board = QCA6174_HW_3_0_BOARD_DATA_FILE,
+@@ -251,6 +258,7 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
+ 		.channel_counters_freq_hz = 88000,
+ 		.max_probe_resp_desc_thres = 0,
+ 		.cal_data_len = 8124,
++		.board_id_cap = 0,
+ 		.fw = {
+ 			/* uses same binaries as hw3.0 */
+ 			.dir = QCA6174_HW_3_0_FW_DIR,
+@@ -287,6 +295,7 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
+ 		.rx_chain_mask = 0xf,
+ 		.max_spatial_stream = 4,
+ 		.cal_data_len = 12064,
++		.board_id_cap = 1,
+ 		.fw = {
+ 			.dir = QCA99X0_HW_2_0_FW_DIR,
+ 			.board = QCA99X0_HW_2_0_BOARD_DATA_FILE,
+@@ -322,6 +331,7 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
+ 		.rx_chain_mask = 0xf,
+ 		.max_spatial_stream = 4,
+ 		.cal_data_len = 12064,
++		.board_id_cap = 1,
+ 		.fw = {
+ 			.dir = QCA9984_HW_1_0_FW_DIR,
+ 			.board = QCA9984_HW_1_0_BOARD_DATA_FILE,
+@@ -360,6 +370,7 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
+ 		.rx_chain_mask = 3,
+ 		.max_spatial_stream = 2,
+ 		.cal_data_len = 12064,
++		.board_id_cap = 1,
+ 		.fw = {
+ 			.dir = QCA9888_HW_2_0_FW_DIR,
+ 			.board = QCA9888_HW_2_0_BOARD_DATA_FILE,
+@@ -393,6 +404,7 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
+ 		.channel_counters_freq_hz = 88000,
+ 		.max_probe_resp_desc_thres = 0,
+ 		.cal_data_len = 8124,
++		.board_id_cap = 0,
+ 		.fw = {
+ 			.dir = QCA9377_HW_1_0_FW_DIR,
+ 			.board = QCA9377_HW_1_0_BOARD_DATA_FILE,
+@@ -421,6 +433,7 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
+ 		.channel_counters_freq_hz = 88000,
+ 		.max_probe_resp_desc_thres = 0,
+ 		.cal_data_len = 8124,
++		.board_id_cap = 0,
+ 		.fw = {
+ 			.dir = QCA9377_HW_1_0_FW_DIR,
+ 			.board = QCA9377_HW_1_0_BOARD_DATA_FILE,
+@@ -457,6 +470,7 @@ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
+ 		.rx_chain_mask = 0x3,
+ 		.max_spatial_stream = 2,
+ 		.cal_data_len = 12064,
++		.board_id_cap = 1,
+ 		.fw = {
+ 			.dir = QCA4019_HW_1_0_FW_DIR,
+ 			.board = QCA4019_HW_1_0_BOARD_DATA_FILE,
+@@ -755,6 +769,125 @@ exit:
+ 	return ret;
+ }
+ 
++static int ath10k_verify_mtd_cal_data_chksum(u32 *data, u32 len)
++{
++	u16 *buf = (u16 *)data;
++	u16 sum;
++	int i;
++
++	sum = 0;
++
++	for (i = 0; i < (len / 2); i++)
++		sum ^= le16_to_cpu(*buf++);
++
++	if (sum != 0xffff)
++		return -EINVAL;
++
++	return 0;
++}
++
++static int ath10k_download_cal_data_mtd(struct ath10k *ar)
++{
++	struct device_node *node;
++	struct mtd_info *mtd;
++	size_t retlen;
++	u32 *buf, addr, len;
++	const char *mtd_name;
++	int ret, i;
++
++	node = ar->dev->of_node;
++	if (!node) {
++		/* Device Tree is optional, don't print any warnings if
++		 * there is no node for ath10k.
++		 */
++		return -ENOENT;
++	}
++
++	ret = of_property_read_u32(node, "qcom,cal-len", &len);
++	if (ret)
++		return -ENOENT;
++
++	ret = of_property_read_u32(node, "qcom,cal-offset", &addr);
++	if (ret)
++		return -ENOENT;
++
++	mtd_name = of_get_property(node, "qcom,mtd-name", NULL);
++	if (!mtd_name)
++		return -ENOENT;
++
++	if (len != ar->hw_params.cal_data_len) {
++		ath10k_warn(ar, "invalid cal data length in DT: %d\n", len);
++		return -EMSGSIZE;
++	}
++
++	ath10k_dbg(ar, ATH10K_DBG_BOOT, "mtd name: %s addr: 0x%x len: %d\n",
++		   mtd_name, addr, len);
++
++	buf = vmalloc(len);
++	if (!buf) {
++		ath10k_dbg(ar, ATH10K_DBG_BOOT,
++			   "failed to alloc memory for mtd caldata\n");
++		return -ENOMEM;
++	}
++
++	mtd = get_mtd_device_nm(mtd_name);
++	if (IS_ERR_OR_NULL(mtd)) {
++		ath10k_dbg(ar, ATH10K_DBG_BOOT,
++			   "mtd device %s not found to read caldata\n",
++			   mtd_name);
++		ret = PTR_ERR(mtd);
++		goto release_buf;
++	}
++
++	ret = mtd_read(mtd, addr, len, &retlen, (u_char *)buf);
++	if (ret) {
++		ath10k_dbg(ar, ATH10K_DBG_BOOT,
++			   "failed to read caldata from mtd device %s: %d\n",
++			   mtd_name, ret);
++		goto release_mtd;
++	}
++
++	if (retlen != len) {
++		ath10k_dbg(ar, ATH10K_DBG_BOOT,
++			   "got only %d bytes from mtd (requested: %d)\n",
++			   retlen, len);
++		goto release_mtd;
++	}
++
++	ret = ath10k_verify_mtd_cal_data_chksum(buf, len);
++	if (ret) {
++		ath10k_dbg(ar, ATH10K_DBG_BOOT,
++			   "checksum verification failed\n");
++		goto release_mtd;
++	}
++
++	for (i = 0; i < (len / 4); i++)
++		buf[i] = cpu_to_le32(buf[i]);
++
++	ret = ath10k_download_board_data(ar, (const void *)buf,
++					 (size_t)len);
++	if (ret) {
++		ath10k_err(ar, "failed to download mtd caldata: %d\n", ret);
++		goto release_mtd;
++	}
++
++	ath10k_dbg(ar, ATH10K_DBG_BOOT,
++		   "cal data downloaded successfully\n");
++
++	put_mtd_device(mtd);
++	vfree(buf);
++
++	return 0;
++
++release_mtd:
++	put_mtd_device(mtd);
++
++release_buf:
++	vfree(buf);
++
++	return ret;
++}
++
+ static int ath10k_download_cal_file(struct ath10k *ar,
+ 				    const struct firmware *file)
+ {
+@@ -890,7 +1023,8 @@ static int ath10k_core_get_board_id_from_otp(struct ath10k *ar)
+ 	}
+ 
+ 	if (ar->cal_mode == ATH10K_PRE_CAL_MODE_DT ||
+-	    ar->cal_mode == ATH10K_PRE_CAL_MODE_FILE)
++	    ar->cal_mode == ATH10K_PRE_CAL_MODE_FILE ||
++	    ar->cal_mode == ATH10K_PRE_CAL_MODE_FLASH_MTD)
+ 		bmi_board_id_param = BMI_PARAM_GET_FLASH_BOARD_ID;
+ 	else
+ 		bmi_board_id_param = BMI_PARAM_GET_EEPROM_BOARD_ID;
+@@ -1051,6 +1185,9 @@ static int ath10k_download_and_run_otp(struct ath10k *ar)
+ 	    ar->cal_mode == ATH10K_PRE_CAL_MODE_FILE)
+ 		bmi_otp_exe_param = BMI_PARAM_FLASH_SECTION_ALL;
+ 
++	if (ar->cal_mode == ATH10K_PRE_CAL_MODE_FLASH_MTD)
++		bmi_otp_exe_param = BMI_PARAM_FLASH_SECTION_ALL;
++
+ 	ret = ath10k_bmi_execute(ar, address, bmi_otp_exe_param, &result);
+ 	if (ret) {
+ 		ath10k_err(ar, "could not execute otp (%d)\n", ret);
+@@ -1670,6 +1807,12 @@ static int ath10k_core_pre_cal_download(struct ath10k *ar)
+ {
+ 	int ret;
+ 
++	ret = ath10k_download_cal_data_mtd(ar);
++	if (ret == 0) {
++		ar->cal_mode = ATH10K_PRE_CAL_MODE_FLASH_MTD;
++		goto success;
++	}
++
+ 	ret = ath10k_download_cal_file(ar, ar->pre_cal_file);
+ 	if (ret == 0) {
+ 		ar->cal_mode = ATH10K_PRE_CAL_MODE_FILE;
+@@ -1706,8 +1849,11 @@ static int ath10k_core_pre_cal_config(struct ath10k *ar)
+ 		return ret;
+ 	}
+ 
++	if (!ar->hw_params.board_id_cap)
++		return 0;
++
+ 	ret = ath10k_core_get_board_id_from_otp(ar);
+-	if (ret) {
++	if (ret && ret != -EOPNOTSUPP) {
+ 		ath10k_err(ar, "failed to get board id: %d\n", ret);
+ 		return ret;
+ 	}
+@@ -2533,6 +2679,9 @@ static int ath10k_core_probe_fw(struct ath10k *ar)
+ 				   "could not load pre cal data: %d\n", ret);
+ 		}
+ 
++		if (!ar->hw_params.board_id_cap)
++			goto skip_get_board_id;
++
+ 		ret = ath10k_core_get_board_id_from_otp(ar);
+ 		if (ret && ret != -EOPNOTSUPP) {
+ 			ath10k_err(ar, "failed to get board id from otp: %d\n",
+@@ -2548,6 +2697,7 @@ static int ath10k_core_probe_fw(struct ath10k *ar)
+ 		if (ret)
+ 			ath10k_dbg(ar, ATH10K_DBG_BOOT, "DT bdf variant name not set.\n");
+ 
++skip_get_board_id:
+ 		ret = ath10k_core_fetch_board_file(ar);
+ 		if (ret) {
+ 			ath10k_err(ar, "failed to fetch board file: %d\n", ret);
+--- a/drivers/net/wireless/ath/ath10k/core.h
++++ b/drivers/net/wireless/ath/ath10k/core.h
+@@ -762,6 +762,7 @@ enum ath10k_cal_mode {
+ 	ATH10K_PRE_CAL_MODE_FILE,
+ 	ATH10K_PRE_CAL_MODE_DT,
+ 	ATH10K_CAL_MODE_EEPROM,
++	ATH10K_PRE_CAL_MODE_FLASH_MTD,
+ };
+ 
+ enum ath10k_crypt_mode {
+@@ -786,6 +787,8 @@ static inline const char *ath10k_cal_mode_str(enum ath10k_cal_mode mode)
+ 		return "pre-cal-dt";
+ 	case ATH10K_CAL_MODE_EEPROM:
+ 		return "eeprom";
++	case ATH10K_PRE_CAL_MODE_FLASH_MTD:
++		return "flash mtd part";
+ 	}
+ 
+ 	return "unknown";
+--- a/drivers/net/wireless/ath/ath10k/hw.h
++++ b/drivers/net/wireless/ath/ath10k/hw.h
+@@ -533,6 +533,7 @@ struct ath10k_hw_params {
+ 	u32 rx_chain_mask;
+ 	u32 max_spatial_stream;
+ 	u32 cal_data_len;
++	bool board_id_cap;
+ 
+ 	struct ath10k_hw_params_fw {
+ 		const char *dir;

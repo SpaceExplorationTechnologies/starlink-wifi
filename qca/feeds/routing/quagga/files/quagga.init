@@ -1,0 +1,87 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org
+
+START=60
+
+. /lib/functions/network.sh
+
+# Always start zebra. Other daemons are started only if they're enabled in UCI
+START_DAEMONS="zebra"
+
+ripd_iface_set_interface() {
+	local cfg=$1
+	local conffile=$2
+
+	local receive_version send_version
+	local name ifname
+
+	config_get name ${cfg} name
+	network_get_device ifname $name
+	[ -n "${ifname}" ] || return
+
+	echo "interface ${ifname}" >> ${conffile}
+
+	config_get receive_version ${cfg} receive_version
+	[ -n "${receive_version}" ] && \
+		echo " ip rip receive version ${receive_version}" >> ${conffile}
+
+	config_get send_version ${cfg} send_version
+	[ -n "${send_version}" ] &&  \
+		echo " ip rip send version ${send_version}" >> ${conffile}
+}
+
+ripd_iface_set_no_passive() {
+	local cfg=$1
+	local conffile=$2
+
+	local name ifname
+	config_get name ${cfg} name
+	network_get_device ifname ${name}
+	[ -n "${ifname}" ] || return
+
+	echo " network ${ifname}" >> ${conffile}
+	echo " no passive-interface ${ifname}" >> ${conffile}
+}
+
+ripd_config() {
+	config_load "ripd"
+
+	local redistribute version
+	local tmpconf="/var/etc/quagga/ripd.conf"
+
+	# Only run this function if ripd is enabled
+	config_get_bool enable config enable 0
+	[ "${enable}" -gt 0 ] || return 1
+
+	cat /etc/quagga/ripd.conf > ${tmpconf}
+
+	echo "!" >> ${tmpconf}
+	echo "router rip" >> ${tmpconf}
+
+	config_get redistribute config redistribute
+	[ -n "${redistribute}" ] && echo " redistribute ${redistribute}" >> ${tmpconf}
+
+	config_get version config version
+	[ -n "${version}" ] && echo " version ${version}" >> ${tmpconf}
+
+	config_foreach ripd_iface_set_no_passive rip-interface ${tmpconf}
+
+	echo "log syslog" >>${tmpconf}
+	echo "!">>${tmpconf}
+
+	config_foreach ripd_iface_set_interface rip-interface ${tmpconf}
+}
+
+start() {
+	mkdir -p /var/etc/quagga
+	cp  /etc/quagga/* /var/etc/quagga/ -f
+
+	ripd_config && append START_DAEMONS "ripd"
+
+	append START_DAEMONS "watchquagga"
+	/usr/sbin/quagga.init start ${START_DAEMONS}
+}
+
+stop() {
+	/usr/sbin/quagga.init stop
+}

@@ -1,0 +1,252 @@
+--- a/drivers/net/wireless/ath/wil6210/ftm.c
++++ b/drivers/net/wireless/ath/wil6210/ftm.c
+@@ -52,6 +52,7 @@ nla_policy wil_nl80211_loc_policy[QCA_WL
+ 	[QCA_WLAN_VENDOR_ATTR_FTM_INITIAL_TOKEN] = { .type = NLA_U8 },
+ 	[QCA_WLAN_VENDOR_ATTR_AOA_TYPE] = { .type = NLA_U32 },
+ 	[QCA_WLAN_VENDOR_ATTR_LOC_ANTENNA_ARRAY_MASK] = { .type = NLA_U32 },
++	[QCA_WLAN_VENDOR_ATTR_FREQ] = { .type = NLA_U32 },
+ };
+ 
+ static const struct
+@@ -61,6 +62,7 @@ nla_policy wil_nl80211_ftm_peer_policy[
+ 	[QCA_WLAN_VENDOR_ATTR_FTM_PEER_MEAS_FLAGS] = { .type = NLA_U32 },
+ 	[QCA_WLAN_VENDOR_ATTR_FTM_PEER_MEAS_PARAMS] = { .type = NLA_NESTED },
+ 	[QCA_WLAN_VENDOR_ATTR_FTM_PEER_SECURE_TOKEN_ID] = { .type = NLA_U8 },
++	[QCA_WLAN_VENDOR_ATTR_FTM_PEER_FREQ] = { .type = NLA_U32 },
+ };
+ 
+ static const struct
+@@ -72,6 +74,37 @@ nla_policy wil_nl80211_ftm_meas_param_po
+ 	[QCA_WLAN_VENDOR_ATTR_FTM_PARAM_BURST_PERIOD] = { .type = NLA_U16 },
+ };
+ 
++static u8 wil_ftm_get_channel(struct wil6210_priv *wil,
++			      const u8 *mac_addr, u32 freq)
++{
++	struct wiphy *wiphy = wil_to_wiphy(wil);
++	struct cfg80211_bss *bss;
++	struct ieee80211_channel *chan;
++	u8 channel;
++
++	if (freq) {
++		chan = ieee80211_get_channel(wiphy, freq);
++		if (!chan) {
++			wil_err(wil, "invalid freq: %d\n", freq);
++			return 0;
++		}
++		channel = chan->hw_value;
++	} else {
++		bss = cfg80211_get_bss(wiphy, NULL, mac_addr,
++				       NULL, 0, IEEE80211_BSS_TYPE_ANY,
++				       IEEE80211_PRIVACY_ANY);
++		if (!bss) {
++			wil_err(wil, "Unable to find BSS\n");
++			return 0;
++		}
++		channel = bss->channel->hw_value;
++		cfg80211_put_bss(wiphy, bss);
++	}
++
++	wil_dbg_misc(wil, "target %pM at channel %d\n", mac_addr, channel);
++	return channel;
++}
++
+ static int wil_ftm_parse_meas_params(struct wil6210_priv *wil,
+ 				     struct nlattr *attr,
+ 				     struct wil_ftm_meas_params *params)
+@@ -276,7 +309,7 @@ wil_ftm_cfg80211_start_session(struct wi
+ 	struct wil6210_vif *vif = ndev_to_vif(ndev);
+ 	int rc = 0;
+ 	bool has_lci = false, has_lcr = false;
+-	u8 max_meas = 0, *ptr;
++	u8 max_meas = 0, channel, *ptr;
+ 	u32 i, cmd_len;
+ 	struct wmi_tof_session_start_cmd *cmd;
+ 
+@@ -286,12 +319,6 @@ wil_ftm_cfg80211_start_session(struct wi
+ 		rc = -EAGAIN;
+ 		goto out;
+ 	}
+-	/* for now allow measurement to associated AP only */
+-	if (!test_bit(wil_status_fwconnected, wil->status)) {
+-		wil_err(wil, "must be associated\n");
+-		rc = -ENOTSUPP;
+-		goto out;
+-	}
+ 
+ 	for (i = 0; i < request->n_peers; i++) {
+ 		if (request->peers[i].flags &
+@@ -336,7 +363,14 @@ wil_ftm_cfg80211_start_session(struct wi
+ 	for (i = 0; i < request->n_peers; i++) {
+ 		ether_addr_copy(cmd->ftm_dest_info[i].dst_mac,
+ 				request->peers[i].mac_addr);
+-		cmd->ftm_dest_info[i].channel = request->peers[i].channel;
++		channel = wil_ftm_get_channel(wil, request->peers[i].mac_addr,
++					      request->peers[i].freq);
++		if (!channel) {
++			wil_err(wil, "can't find FTM target at index %d\n", i);
++			rc = -EINVAL;
++			goto out_cmd;
++		}
++		cmd->ftm_dest_info[i].channel = channel - 1;
+ 		if (request->peers[i].flags &
+ 		    QCA_WLAN_VENDOR_ATTR_FTM_PEER_MEAS_FLAG_SECURE) {
+ 			cmd->ftm_dest_info[i].flags |=
+@@ -370,14 +404,13 @@ wil_ftm_cfg80211_start_session(struct wi
+ 	}
+ 
+ 	rc = wmi_send(wil, WMI_TOF_SESSION_START_CMDID, vif->mid, cmd, cmd_len);
++	if (!rc) {
++		wil->ftm.session_cookie = request->session_cookie;
++		wil->ftm.session_started = 1;
++	}
++out_cmd:
+ 	kfree(cmd);
+ 
+-	if (rc)
+-		goto out_ftm_res;
+-
+-	wil->ftm.session_cookie = request->session_cookie;
+-	wil->ftm.session_started = 1;
+-
+ out_ftm_res:
+ 	if (rc) {
+ 		kfree(wil->ftm.ftm_res);
+@@ -451,8 +484,8 @@ wil_aoa_cfg80211_start_measurement(struc
+ 	struct net_device *ndev =  wil->main_ndev;
+ 	struct wil6210_vif *vif = ndev_to_vif(ndev);
+ 	int rc = 0;
+-	struct cfg80211_bss *bss;
+ 	struct wmi_aoa_meas_cmd cmd;
++	u8 channel;
+ 
+ 	mutex_lock(&wil->ftm.lock);
+ 
+@@ -467,30 +500,25 @@ wil_aoa_cfg80211_start_measurement(struc
+ 		goto out;
+ 	}
+ 
+-	bss = cfg80211_get_bss(wil_to_wiphy(wil), NULL, request->mac_addr,
+-			       NULL, 0,
+-			       IEEE80211_BSS_TYPE_ANY, IEEE80211_PRIVACY_ANY);
+-	if (!bss) {
+-		wil_err(wil, "Unable to find BSS\n");
+-		rc = -ENOENT;
++	channel = wil_ftm_get_channel(wil, request->mac_addr, request->freq);
++	if (!channel) {
++		rc = -EINVAL;
+ 		goto out;
+ 	}
+ 
+ 	memset(&cmd, 0, sizeof(cmd));
+ 	ether_addr_copy(cmd.mac_addr, request->mac_addr);
+-	cmd.channel = bss->channel->hw_value - 1;
++	cmd.channel = channel - 1;
+ 	cmd.aoa_meas_type = request->type;
+ 
+ 	rc = wmi_send(wil, WMI_AOA_MEAS_CMDID, vif->mid, &cmd, sizeof(cmd));
+ 	if (rc)
+-		goto out_bss;
++		goto out;
+ 
+ 	ether_addr_copy(wil->ftm.aoa_peer_mac_addr, request->mac_addr);
+ 	mod_timer(&wil->ftm.aoa_timer,
+ 		  jiffies + msecs_to_jiffies(WIL_AOA_MEASUREMENT_TIMEOUT));
+ 	wil->ftm.aoa_started = 1;
+-out_bss:
+-	cfg80211_put_bss(wil_to_wiphy(wil), bss);
+ out:
+ 	mutex_unlock(&wil->ftm.lock);
+ 	return rc;
+@@ -730,7 +758,6 @@ int wil_ftm_start_session(struct wiphy *
+ 	struct nlattr *tb2[QCA_WLAN_VENDOR_ATTR_FTM_PEER_MAX + 1];
+ 	struct nlattr *peer;
+ 	int rc, n_peers = 0, index = 0, tmp;
+-	struct cfg80211_bss *bss;
+ 
+ 	if (!test_bit(WMI_FW_CAPABILITY_FTM, wil->fw_capabilities))
+ 		return -ENOTSUPP;
+@@ -794,17 +821,9 @@ int wil_ftm_start_session(struct wiphy *
+ 		memcpy(request->peers[index].mac_addr,
+ 		       nla_data(tb2[QCA_WLAN_VENDOR_ATTR_FTM_PEER_MAC_ADDR]),
+ 		       ETH_ALEN);
+-		bss = cfg80211_get_bss(wiphy, NULL,
+-				       request->peers[index].mac_addr, NULL, 0,
+-				       IEEE80211_BSS_TYPE_ANY,
+-				       IEEE80211_PRIVACY_ANY);
+-		if (!bss) {
+-			wil_err(wil, "invalid bss at index %d\n", index);
+-			rc = -ENOENT;
+-			goto out;
+-		}
+-		request->peers[index].channel = bss->channel->hw_value - 1;
+-		cfg80211_put_bss(wiphy, bss);
++		if (tb2[QCA_WLAN_VENDOR_ATTR_FTM_PEER_FREQ])
++			request->peers[index].freq = nla_get_u32(
++				tb2[QCA_WLAN_VENDOR_ATTR_FTM_PEER_FREQ]);
+ 		if (tb2[QCA_WLAN_VENDOR_ATTR_FTM_PEER_MEAS_FLAGS])
+ 			request->peers[index].flags = nla_get_u32(
+ 				tb2[QCA_WLAN_VENDOR_ATTR_FTM_PEER_MEAS_FLAGS]);
+@@ -877,6 +896,8 @@ int wil_aoa_start_measurement(struct wip
+ 	ether_addr_copy(request.mac_addr,
+ 			nla_data(tb[QCA_WLAN_VENDOR_ATTR_MAC_ADDR]));
+ 	request.type = nla_get_u32(tb[QCA_WLAN_VENDOR_ATTR_AOA_TYPE]);
++	if (tb[QCA_WLAN_VENDOR_ATTR_FREQ])
++		request.freq = nla_get_u32(tb[QCA_WLAN_VENDOR_ATTR_FREQ]);
+ 
+ 	rc = wil_aoa_cfg80211_start_measurement(wil, &request);
+ 	return rc;
+--- a/drivers/net/wireless/ath/wil6210/ftm.h
++++ b/drivers/net/wireless/ath/wil6210/ftm.h
+@@ -77,6 +77,8 @@
+  *  %QCA_WLAN_VENDOR_ATTR_AOA_TYPE_TOP_CIR_PHASE_AMP: array of 2 U16
+  *  values, phase and amplitude of the strongest CIR path for each
+  *  antenna in the measured array(s)
++ * @QCA_WLAN_VENDOR_ATTR_FREQ: Frequency where peer is listening, in MHz.
++ *  Unsigned 32 bit value.
+  */
+ enum qca_wlan_vendor_attr_loc {
+ 	/* we reuse these attributes */
+@@ -94,6 +96,7 @@ enum qca_wlan_vendor_attr_loc {
+ 	QCA_WLAN_VENDOR_ATTR_AOA_TYPE = 23,
+ 	QCA_WLAN_VENDOR_ATTR_LOC_ANTENNA_ARRAY_MASK = 24,
+ 	QCA_WLAN_VENDOR_ATTR_AOA_MEAS_RESULT = 25,
++	QCA_WLAN_VENDOR_ATTR_FREQ = 28,
+ 	/* keep last */
+ 	QCA_WLAN_VENDOR_ATTR_LOC_AFTER_LAST,
+ 	QCA_WLAN_VENDOR_ATTR_LOC_MAX = QCA_WLAN_VENDOR_ATTR_LOC_AFTER_LAST - 1,
+@@ -176,6 +179,9 @@ enum qca_wlan_vendor_attr_loc_capa_flags
+  * @QCA_WLAN_VENDOR_ATTR_FTM_PEER_AOA_BURST_PERIOD: Request AOA
+  *  measurement every _value_ bursts. If 0 or not specified,
+  *  AOA measurements will be disabled for this peer.
++ * @QCA_WLAN_VENDOR_ATTR_FTM_PEER_FREQ: Frequency in MHz where
++ *  peer is listening. Optional; if not specified, use the
++ *  entry from the kernel scan results cache.
+  */
+ enum qca_wlan_vendor_attr_ftm_peer_info {
+ 	QCA_WLAN_VENDOR_ATTR_FTM_PEER_INVALID,
+@@ -184,6 +190,7 @@ enum qca_wlan_vendor_attr_ftm_peer_info
+ 	QCA_WLAN_VENDOR_ATTR_FTM_PEER_MEAS_PARAMS,
+ 	QCA_WLAN_VENDOR_ATTR_FTM_PEER_SECURE_TOKEN_ID,
+ 	QCA_WLAN_VENDOR_ATTR_FTM_PEER_AOA_BURST_PERIOD,
++	QCA_WLAN_VENDOR_ATTR_FTM_PEER_FREQ,
+ 	/* keep last */
+ 	QCA_WLAN_VENDOR_ATTR_FTM_PEER_AFTER_LAST,
+ 	QCA_WLAN_VENDOR_ATTR_FTM_PEER_MAX =
+@@ -427,7 +434,7 @@ struct wil_ftm_meas_params {
+ /* measurement request for a single peer */
+ struct wil_ftm_meas_peer_info {
+ 	u8 mac_addr[ETH_ALEN];
+-	u8 channel;
++	u32 freq;
+ 	u32 flags; /* enum qca_wlan_vendor_attr_ftm_peer_meas_flags */
+ 	struct wil_ftm_meas_params params;
+ 	u8 secure_token_id;
+@@ -466,6 +473,7 @@ struct wil_ftm_peer_meas_res {
+ /* standalone AOA measurement request */
+ struct wil_aoa_meas_request {
+ 	u8 mac_addr[ETH_ALEN];
++	u32 freq;
+ 	u32 type;
+ };
+ 

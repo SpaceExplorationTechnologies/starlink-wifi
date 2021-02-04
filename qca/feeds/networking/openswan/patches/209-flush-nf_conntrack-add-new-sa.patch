@@ -1,0 +1,11 @@
+diff -Nur a/programs/_updown.netkey/_updown.netkey.in openswan-2.6.41/programs/_updown.netkey/_updown.netkey.in
+--- a/programs/_updown.netkey/_updown.netkey.in	2015-07-20 12:34:53.363099423 -0700
++++ openswan-2.6.41/programs/_updown.netkey/_updown.netkey.in	2015-07-20 12:35:23.387100179 -0700
+@@ -466,6 +466,7 @@
+     up-client)
+ 	# connection to my client subnet coming up
+ 	# If you are doing a custom version, firewall commands go here.
++	echo f >/proc/net/nf_conntrack
+ 	;;
+     down-client)
+ 	# connection to my client subnet going down

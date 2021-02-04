@@ -1,0 +1,18 @@
+--- a/rngd.c
++++ b/rngd.c
+@@ -210,11 +210,15 @@ static int update_kernel_random(int random_step,
+ 	unsigned char *buf, fips_ctx_t *fipsctx_in)
+ {
+ 	unsigned char *p;
++#ifndef RNG_TEST_PRIV
+ 	int fips;
+ 
+ 	fips = fips_run_rng_test(fipsctx_in, buf);
+ 	if (fips)
+ 		return 1;
++#else
++	//TODO
++#endif
+ 
+ 	for (p = buf; p + random_step <= &buf[FIPS_RNG_BUFFER_SIZE];
+ 		 p += random_step) {

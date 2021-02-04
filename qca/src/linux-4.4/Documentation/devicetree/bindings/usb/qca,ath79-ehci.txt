@@ -1,0 +1,38 @@
+ATH79 USB EHCI controllers
+
+Required properties:
+  - compatible : should be "qca, ath79-ehci".
+  - reg : should contain at least address and length of the standard EHCI
+    register set for the device. Optional platform-dependent registers
+    (debug-port or other) can be also specified here, but only after
+    definition of standard EHCI registers.
+  - interrupts : one EHCI interrupt should be described here.
+
+Optional properties:
+ - big-endian-regs : boolean, set this for hcds with big-endian registers
+ - big-endian-desc : boolean, set this for hcds with big-endian descriptors
+ - big-endian : boolean, for hcds with big-endian-regs + big-endian-desc
+ - needs-reset-on-resume : boolean, set this to force EHCI reset after resume
+ - has-transaction-translator : boolean, set this if EHCI have a Transaction
+				Translator built into the root hub.
+ - clocks : a list of phandle + clock specifier pairs
+ - phys : phandle + phy specifier pair
+ - phy-names : "usb"
+ - resets : phandle + reset specifier pair
+ - qca_force_host_mode: Set, if host mode to be forced for ATH79 SoCs
+ - qca_force_16bit_ptw: Set, if 16bit ptw to be forced for ATH79 SoCs
+ - caps-offset: Specify the caps offset
+
+Example (Qualcomm Atheros ATH79 SoC)
+
+   ehci0: usb@1b000000 {
+	   compatible = "qca,ath79-ehci", "qca,ap135-ehci", qca,ap137-ehci", "qca,ap147-ehci";
+	   reg = <0x1b000000 0x200>;
+	   interrupt-parent = <&ip3_int>;
+	   interrupts = <0>;
+	   has-transaction-translator;
+	   qca_force_host_mode;
+	   qca_force_16bit_ptw;
+	   caps-offset = <0x100>;
+	   status = "okay";
+   };

@@ -1,0 +1,142 @@
+diff --git a/include/linux/ieee80211.h b/include/linux/ieee80211.h
+index 638960f..6b0600a 100644
+--- a/include/linux/ieee80211.h
++++ b/include/linux/ieee80211.h
+@@ -233,6 +233,12 @@ static inline u16 ieee80211_sn_sub(u16 sn1, u16 sn2)
+ 
+ #define IEEE80211_HT_CTL_LEN		4
+ 
++/* Multi-AP */
++#define MAP_OUI_TYPE 0x1B
++#define MAP_SUB_ELEM_TYPE 0x06
++#define IEEE80211_MAP_BACKHAUL_STA 0x80
++
++
+ struct ieee80211_hdr {
+ 	__le16 frame_control;
+ 	__le16 duration_id;
+diff --git a/net/mac80211/cfg.c b/net/mac80211/cfg.c
+index 85eddae..37f24e9 100644
+--- a/net/mac80211/cfg.c
++++ b/net/mac80211/cfg.c
+@@ -164,6 +164,7 @@ static int ieee80211_change_iface(struct wiphy *wiphy,
+ 	} else if (type == NL80211_IFTYPE_STATION &&
+ 		   params && params->use_4addr >= 0) {
+ 		sdata->u.mgd.use_4addr = params->use_4addr;
++		sdata->u.mgd.map_enabled = params->map_enabled;
+ 	}
+ 
+ 	if (sdata->vif.type == NL80211_IFTYPE_MONITOR) {
+diff --git a/net/mac80211/ieee80211_i.h b/net/mac80211/ieee80211_i.h
+index 00a9ea3..b13cbb2 100644
+--- a/net/mac80211/ieee80211_i.h
++++ b/net/mac80211/ieee80211_i.h
+@@ -504,6 +504,8 @@ struct ieee80211_if_managed {
+ 
+ 	u8 use_4addr;
+ 
++	u8 map_enabled;
++
+ 	s16 p2p_noa_index;
+ 
+ 	struct ewma_beacon_signal ave_beacon_signal;
+@@ -1491,6 +1493,7 @@ struct ieee802_11_elems {
+ 	const struct ieee80211_sec_chan_offs_ie *sec_chan_offs;
+ 	struct ieee80211_mesh_chansw_params_ie *mesh_chansw_params_ie;
+ 	const struct ieee80211_bss_max_idle_period_ie *max_idle_period_ie;
++	const u8 *map;
+ 
+ 	/* length of them, respectively */
+ 	u8 ext_capab_len;
+@@ -1508,6 +1511,7 @@ struct ieee802_11_elems {
+ 	u8 prep_len;
+ 	u8 perr_len;
+ 	u8 country_elem_len;
++	u8 map_len;
+ 
+ 	/* whether a parse error occurred while retrieving these elements */
+ 	bool parse_error;
+diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
+index cdc20d3..16f0646 100644
+--- a/net/mac80211/mlme.c
++++ b/net/mac80211/mlme.c
+@@ -103,6 +103,21 @@ static void run_again(struct ieee80211_sub_if_data *sdata,
+ 		mod_timer(&sdata->u.mgd.timer, timeout);
+ }
+ 
++u8 *ieee80211_add_map_info_ie(u8 *buf)
++{
++	*buf++ = WLAN_EID_VENDOR_SPECIFIC;
++	*buf++ = 7; /* len */
++	*buf++ = 0x50;/* Wi-Fi Alliance specific OUI 50-6F-9A */
++	*buf++ = 0x6F;
++	*buf++ = 0x9A;
++	*buf++ = MAP_OUI_TYPE;
++	*buf++ = MAP_SUB_ELEM_TYPE;
++	*buf++ = 0x01;/* sub element len */
++	*buf++ = IEEE80211_MAP_BACKHAUL_STA;
++
++	return buf;
++}
++
+ void ieee80211_sta_reset_beacon_monitor(struct ieee80211_sub_if_data *sdata)
+ {
+ 	if (sdata->vif.driver_flags & IEEE80211_VIF_BEACON_FILTER)
+@@ -846,6 +861,9 @@ static void ieee80211_send_assoc(struct ieee80211_sub_if_data *sdata)
+ 		pos = ieee80211_add_wmm_info_ie(skb_put(skb, 9), qos_info);
+ 	}
+ 
++	if (ifmgd->map_enabled)
++		pos = ieee80211_add_map_info_ie(skb_put(skb, 9));
++
+ 	/* add any remaining custom (i.e. vendor specific here) IEs */
+ 	if (assoc_data->ie_len) {
+ 		noffset = assoc_data->ie_len;
+@@ -2982,6 +3000,12 @@ static bool ieee80211_assoc_success(struct ieee80211_sub_if_data *sdata,
+ 		ret = false;
+ 		goto out;
+ 	}
++	if (ifmgd->map_enabled && !elems.map) {
++		 sdata_info(sdata,
++			    "AP is missing Multi-AP capability/operation\n");
++		ret = false;
++		goto out;
++	}
+ 
+ 	mutex_lock(&sdata->local->sta_mtx);
+ 	/*
+@@ -3106,7 +3130,7 @@ static bool ieee80211_assoc_success(struct ieee80211_sub_if_data *sdata,
+ 	 * If we're using 4-addr mode, let the AP know that we're
+ 	 * doing so, so that it can create the STA VLAN on its side
+ 	 */
+-	if (ifmgd->use_4addr)
++	if (ifmgd->use_4addr && !ifmgd->map_enabled)
+ 		ieee80211_send_4addr_nullfunc(local, sdata);
+ 
+ 	/*
+diff --git a/net/mac80211/util.c b/net/mac80211/util.c
+index 1b41a48..d1d08c6 100644
+--- a/net/mac80211/util.c
++++ b/net/mac80211/util.c
+@@ -914,6 +914,18 @@ u32 ieee802_11_parse_elems_crc(const u8 *start, size_t len, bool action,
+ 						elems->wmm_param_len = elen;
+ 					}
+ 				}
++			} else if (elen >=4 && pos[0] == 0x50 &&
++				   pos[1] == 0x6F && pos[2] == 0x9A) {
++				/* Wi-Fi Alliance specific OUI */
++
++				if (calc_crc)
++					crc = crc32_be(crc, pos - 2, elen + 2);
++
++				if (elen >= 5 && pos[3] == 0x1B) {
++					/* Multi-AP OUI TYPE */
++					elems->map = pos;
++					elems->map_len = elen;
++				}
+ 			}
+ 			break;
+ 		case WLAN_EID_RSN:
+-- 
+2.7.4
+

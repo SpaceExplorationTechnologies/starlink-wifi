@@ -1,0 +1,100 @@
+--- a/drivers/net/wireless/ath/wil6210/main.c
++++ b/drivers/net/wireless/ath/wil6210/main.c
+@@ -654,6 +654,7 @@ void wil_priv_deinit(struct wil6210_priv
+ 	cancel_work_sync(&wil->probe_client_worker);
+ 	destroy_workqueue(wil->wq_service);
+ 	destroy_workqueue(wil->wmi_wq);
++	kfree(wil->board_file);
+ }
+ 
+ static void wil_shutdown_bl(struct wil6210_priv *wil)
+@@ -1269,7 +1270,7 @@ int wil_reset(struct wil6210_priv *wil,
+ 	wil_set_oob_mode(wil, oob_mode);
+ 	if (load_fw) {
+ 		wil_info(wil, "Use firmware <%s> + board <%s>\n",
+-			 wil->wil_fw_name, WIL_BOARD_FILE_NAME);
++			 wil->wil_fw_name, wil_get_board_file(wil));
+ 
+ 		if (!no_flash)
+ 			wil_bl_prepare_halt(wil);
+@@ -1284,7 +1285,7 @@ int wil_reset(struct wil6210_priv *wil,
+ 			rc = wil_request_board(wil, WIL_BOARD_FILE_NAME);
+ 		else
+ 			rc = wil_request_firmware(wil,
+-						  WIL_BOARD_FILE_NAME,
++						  wil_get_board_file(wil),
+ 						  true);
+ 		if (rc)
+ 			goto out;
+--- a/drivers/net/wireless/ath/wil6210/sysfs.c
++++ b/drivers/net/wireless/ath/wil6210/sysfs.c
+@@ -94,8 +94,55 @@ static DEVICE_ATTR(ftm_txrx_offset, 0644
+ 		   wil_ftm_txrx_offset_sysfs_show,
+ 		   wil_ftm_txrx_offset_sysfs_store);
+ 
++static ssize_t
++wil_board_file_sysfs_show(struct device *dev,
++			  struct device_attribute *attr,
++			  char *buf)
++{
++	struct wil6210_priv *wil = dev_get_drvdata(dev);
++	ssize_t len;
++
++	len = snprintf(buf, PAGE_SIZE, "%s\n", wil_get_board_file(wil));
++	return len;
++}
++
++static ssize_t
++wil_board_file_sysfs_store(struct device *dev,
++			   struct device_attribute *attr,
++			   const char *buf, size_t count)
++{
++	struct wil6210_priv *wil = dev_get_drvdata(dev);
++	size_t len;
++
++	mutex_lock(&wil->mutex);
++
++	kfree(wil->board_file);
++	wil->board_file = NULL;
++
++	len = count;
++	if (buf[count - 1] == '\n')
++		len--;
++	len = strnlen(buf, len);
++	if (len > 0) {
++		wil->board_file = kmalloc(len + 1, GFP_KERNEL);
++		if (!wil->board_file) {
++			mutex_unlock(&wil->mutex);
++			return -ENOMEM;
++		}
++		strlcpy(wil->board_file, buf, len + 1);
++	}
++	mutex_unlock(&wil->mutex);
++
++	return count;
++}
++
++static DEVICE_ATTR(board_file, 0644,
++		   wil_board_file_sysfs_show,
++		   wil_board_file_sysfs_store);
++
+ static struct attribute *wil6210_sysfs_entries[] = {
+ 	&dev_attr_ftm_txrx_offset.attr,
++	&dev_attr_board_file.attr,
+ 	NULL
+ };
+ 
+--- a/drivers/net/wireless/ath/wil6210/wil6210.h
++++ b/drivers/net/wireless/ath/wil6210/wil6210.h
+@@ -869,6 +869,11 @@ static inline void wil_c(struct wil6210_
+ 	wil_w(wil, reg, wil_r(wil, reg) & ~val);
+ }
+ 
++static inline const char *wil_get_board_file(struct wil6210_priv *wil)
++{
++	return wil->board_file ? wil->board_file : WIL_BOARD_FILE_NAME;
++}
++
+ #if defined(CONFIG_DYNAMIC_DEBUG)
+ #define wil_hex_dump_txrx(prefix_str, prefix_type, rowsize,	\
+ 			  groupsize, buf, len, ascii)		\

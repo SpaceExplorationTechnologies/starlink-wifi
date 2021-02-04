@@ -1,0 +1,16 @@
+diff -Nur a/Makefile rstp-2011-10-11/Makefile
+--- a/Makefile	2015-10-27 12:19:13.019058746 -0700
++++ rstp-2011-10-11/Makefile	2015-10-27 12:20:01.587059969 -0700
+@@ -19,10 +19,10 @@
+ .PHONY: rstplib
+ 
+ rstpd: $(DOBJECTS) rstplib
+-	$(CC) -o $@ $(DOBJECTS) -L ./rstplib -lrstp
++	$(CC) $(LDFLAGS) -o $@ $(DOBJECTS) -L ./rstplib -lrstp
+ 
+ rstpctl: $(CTLOBJECTS)
+-	$(CC) -o $@ $(CTLOBJECTS)
++	$(CC) $(LDFLAGS) -o $@ $(CTLOBJECTS)
+ 
+ clean:
+ 	rm -f *.o rstpd rstpctl

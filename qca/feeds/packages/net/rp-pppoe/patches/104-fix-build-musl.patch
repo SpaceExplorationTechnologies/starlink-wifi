@@ -1,0 +1,41 @@
+--- a/src/if.c
++++ b/src/if.c
+@@ -30,9 +30,11 @@
+ #include <linux/if_packet.h>
+ #endif
+ 
++#if defined(__GLIBC__) && defined(__UCLIBC__)
+ #ifdef HAVE_NET_ETHERNET_H
+ #include <net/ethernet.h>
+ #endif
++#endif
+ 
+ #ifdef HAVE_ASM_TYPES_H
+ #include <asm/types.h>
+--- a/src/pppoe.h
++++ b/src/pppoe.h
+@@ -139,10 +139,12 @@
+ #ifdef HAVE_SYS_SOCKET_H
+ #include <sys/socket.h>
+ #endif
++#if defined(__GLIBC__) || defined(__UCLIBC__)
+ #ifndef HAVE_SYS_DLPI_H
+ #include <netinet/if_ether.h>
+ #endif
+ #endif
++#endif
+ 
+ 
+ 
+--- a/src/plugin.c
++++ b/src/plugin.c
+@@ -49,7 +49,9 @@
+ #include <unistd.h>
+ #include <fcntl.h>
+ #include <signal.h>
++#if defined(__GLIBC__) || defined(__UCLIBC__)
+ #include <net/ethernet.h>
++#endif
+ #include <net/if_arp.h>
+ #include <linux/ppp_defs.h>
+ #include <linux/if_pppox.h>

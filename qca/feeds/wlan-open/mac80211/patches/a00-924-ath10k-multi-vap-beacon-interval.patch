@@ -1,0 +1,84 @@
+--- a/drivers/net/wireless/ath/ath10k/mac.c
++++ b/drivers/net/wireless/ath/ath10k/mac.c
+@@ -9152,6 +9152,24 @@ static const struct ieee80211_iface_comb
+ 	},
+ };
+ 
++static const struct
++ieee80211_iface_combination ath10k_qca40xx_10_4_bcn_int_if_comb[] = {
++	{
++		.limits = ath10k_qca40xx_10_4_if_limits,
++		.n_limits = ARRAY_SIZE(ath10k_qca40xx_10_4_if_limits),
++		.max_interfaces = 8,
++		.num_different_channels = 1,
++		.beacon_int_infra_match = true,
++		.beacon_int_min_gcd = 100,
++#ifdef CPTCFG_ATH10K_DFS_CERTIFIED
++		.radar_detect_widths =	BIT(NL80211_CHAN_WIDTH_20_NOHT) |
++					BIT(NL80211_CHAN_WIDTH_20) |
++					BIT(NL80211_CHAN_WIDTH_40) |
++					BIT(NL80211_CHAN_WIDTH_80),
++#endif
++	},
++};
++
+ static void ath10k_get_arvif_iter(void *data, u8 *mac,
+ 				  struct ieee80211_vif *vif)
+ {
+@@ -9535,6 +9553,13 @@ int ath10k_mac_register(struct ath10k *a
+ 				ath10k_qca40xx_10_4_if_comb;
+ 			ar->hw->wiphy->n_iface_combinations =
+ 				ARRAY_SIZE(ath10k_qca40xx_10_4_if_comb);
++			if (test_bit
++			    (WMI_SERVICE_VDEV_DIFFERENT_BEACON_INTERVAL_SUPPORT, ar->wmi.svc_map)) {
++				ar->hw->wiphy->iface_combinations =
++					ath10k_qca40xx_10_4_bcn_int_if_comb;
++				ar->hw->wiphy->n_iface_combinations =
++					ARRAY_SIZE(ath10k_qca40xx_10_4_bcn_int_if_comb);
++			}
+ 		} else {
+ 			ar->hw->wiphy->iface_combinations =
+ 				ath10k_10_4_if_comb;
+--- a/drivers/net/wireless/ath/ath10k/wmi.h
++++ b/drivers/net/wireless/ath/ath10k/wmi.h
+@@ -207,6 +207,8 @@ enum wmi_service {
+ 	WMI_SERVICE_CFR_CAPTURE_IND_MSG_TYPE_LAGACY,
+ 	WMI_SERVICE_PER_PACKET_SW_ENCRYPT,
+ 	WMI_SERVICE_VDEV_BCN_RATE_CONTROL,
++	WMI_SERVICE_PEER_TID_CONFIGS_SUPPORT,
++	WMI_SERVICE_VDEV_DIFFERENT_BEACON_INTERVAL_SUPPORT,
+ 
+ 	/* keep last */
+ 	WMI_SERVICE_MAX,
+@@ -360,6 +362,9 @@ enum wmi_10_4_service {
+ 	WMI_10_4_SERVICE_TX_DATA_ACK_RSSI,
+ 	WMI_10_4_SERVICE_CFR_CAPTURE_IND_MSG_TYPE_LAGACY,
+ 	WMI_10_4_SERVICE_PER_PACKET_SW_ENCRYPT,
++	WMI_10_4_SERVICE_PEER_TID_CONFIGS_SUPPORT,
++	WMI_10_4_SERVICE_VDEV_BCN_RATE_CONTROL,
++	WMI_10_4_SERVICE_VDEV_DIFFERENT_BEACON_INTERVAL_SUPPORT,
+ };
+ 
+ static inline char *wmi_service_name(int service_id)
+@@ -479,6 +484,8 @@ static inline char *wmi_service_name(int
+ 	SVCSTR(WMI_SERVICE_CFR_CAPTURE_IND_MSG_TYPE_LAGACY);
+ 	SVCSTR(WMI_SERVICE_PER_PACKET_SW_ENCRYPT);
+ 	SVCSTR(WMI_SERVICE_VDEV_BCN_RATE_CONTROL);
++	SVCSTR(WMI_SERVICE_PEER_TID_CONFIGS_SUPPORT);
++	SVCSTR(WMI_SERVICE_VDEV_DIFFERENT_BEACON_INTERVAL_SUPPORT);
+ 
+ 	default:
+ 		return NULL;
+@@ -800,6 +807,12 @@ static inline void wmi_10_4_svc_map(cons
+ 	       WMI_SERVICE_CFR_CAPTURE_IND_MSG_TYPE_LAGACY, len);
+ 	SVCMAP(WMI_10_4_SERVICE_PER_PACKET_SW_ENCRYPT,
+ 	       WMI_SERVICE_PER_PACKET_SW_ENCRYPT, len);
++	SVCMAP(WMI_10_4_SERVICE_PEER_TID_CONFIGS_SUPPORT,
++	       WMI_SERVICE_PEER_TID_CONFIGS_SUPPORT, len);
++	SVCMAP(WMI_10_4_SERVICE_VDEV_BCN_RATE_CONTROL,
++	       WMI_SERVICE_VDEV_BCN_RATE_CONTROL, len);
++	SVCMAP(WMI_10_4_SERVICE_VDEV_DIFFERENT_BEACON_INTERVAL_SUPPORT,
++	        WMI_SERVICE_VDEV_DIFFERENT_BEACON_INTERVAL_SUPPORT, len);
+ }
+ 
+ #undef SVCMAP

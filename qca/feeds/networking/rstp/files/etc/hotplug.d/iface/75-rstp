@@ -1,0 +1,19 @@
+#!/bin/sh
+# Copyright (c) 2013 The Linux Foundation. All rights reserved.
+
+local ifname
+local enabled
+
+[ "$ACTION" = "ifup" ] && {
+	. /lib/functions.sh
+	. /lib/functions/network.sh
+
+	config_load rstp
+	config_get_bool enabled global enable
+	[ "$enabled" = "1" ] && {
+		network_get_device ifname ${INTERFACE}
+		[ -d "/sys/class/net/$ifname/bridge" ] && {
+			/etc/init.d/rstp restart
+		}
+	}
+}

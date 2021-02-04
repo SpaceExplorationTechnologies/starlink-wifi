@@ -1,0 +1,333 @@
+--- a/drivers/net/wireless/ath/ath10k/core.h
++++ b/drivers/net/wireless/ath/ath10k/core.h
+@@ -106,6 +106,9 @@
+ /* Number of TID target accepts from host */
+ #define ATH10K_MAX_TIDS	0x8
+ 
++/* Upper limit/default retry count for a ppdu */
++#define	ATH10K_MAX_RETRY_COUNT 30
++
+ struct ath10k;
+ 
+ /* enum qca_nl80211_vendor_subcmds - QCA nl80211 vendor command identifiers
+@@ -693,6 +696,15 @@ struct ath10k_sta {
+ 
+ 	/* TID bitmap for station's NoAck policy, protected by conf_mutex */
+ 	int noack_map;
++
++	/* TID retry count for a station and by default
++	 * this will have -1 for all the TIDs until user changes
++	 * the retry count by specifying station's MAC address
++	 */
++	int retry_count[ATH10K_MAX_TIDS];
++
++	/* TID aggregation control value for the station */
++	u8 aggr_ctrl[ATH10K_MAX_TIDS];
+ };
+ 
+ #define ATH10K_VDEV_SETUP_TIMEOUT_HZ (5 * HZ)
+@@ -856,6 +868,14 @@ struct ath10k_vif {
+ 
+ 	/* TID bitmap for station's NoAck policy, protected by conf_mutex */
+ 	int noack_map;
++
++	/* TID retry count for all the stations in the vif */
++	int retry_count[ATH10K_MAX_TIDS];
++
++	/* TID aggregation control parameter fo all the connected
++	 * stations in the vif
++	 */
++	u8 aggr_ctrl[ATH10K_MAX_TIDS];
+ };
+ 
+ struct ath10k_vif_iter {
+--- a/drivers/net/wireless/ath/ath10k/mac.c
++++ b/drivers/net/wireless/ath/ath10k/mac.c
+@@ -3908,6 +3908,57 @@ ath10k_mac_set_noack_tid_bitmap(struct a
+ 	return ret;
+ }
+ 
++static int ath10k_new_peer_tid_config(struct ath10k *ar,
++				      struct ieee80211_sta *sta,
++				      struct ath10k_vif *arvif)
++{
++	struct ath10k_sta *arsta = (struct ath10k_sta *)sta->drv_priv;
++	struct wmi_per_peer_per_tid_cfg_arg arg = {};
++	int i, ret;
++
++	if (arvif->noack_map) {
++		arg.vdev_id = arvif->vdev_id;
++		ether_addr_copy(arg.peer_macaddr.addr, sta->addr);
++
++		ret = ath10k_mac_set_noack_tid_bitmap(ar, &arg,
++						      arvif->noack_map);
++		if (ret) {
++			ath10k_warn(ar, "failed to set peer tid noack policy for sta %pM: %d\n",
++				    sta->addr, ret);
++			return ret;
++		}
++	}
++
++	/* Assign default noack_map value (-1) to newly connecting station.
++	 * This default value used to identify the station configured with
++	 * vif specific noack configuration rather than station specific.
++	 */
++	arsta->noack_map = -1;
++	memset(&arg, 0, sizeof(arg));
++
++	for (i = 0; i < ATH10K_MAX_TIDS; i++) {
++		if (arvif->retry_count[i] || arvif->aggr_ctrl[i]) {
++			arg.tid = i;
++			arg.vdev_id = arvif->vdev_id;
++			arg.retry_count = arvif->retry_count[i];
++			arg.aggr_control = arvif->aggr_ctrl[i];
++			ether_addr_copy(arg.peer_macaddr.addr, sta->addr);
++			ret = ath10k_wmi_set_per_peer_per_tid_cfg(ar, &arg);
++			if (ret) {
++				ath10k_warn(ar, "failed to set per tid retry/aggr config for sta %pM: %d\n",
++					    sta->addr, ret);
++				return ret;
++			}
++		}
++		/* Assign default retry count(-1) to newly connected station.
++		 * This is to identify station specific tid retry count not
++		 * configured for the station.
++		 */
++		arsta->retry_count[i] = -1;
++	}
++	return 0;
++}
++
+ static int ath10k_station_assoc(struct ath10k *ar,
+ 				struct ieee80211_vif *vif,
+ 				struct ieee80211_sta *sta,
+@@ -3915,7 +3966,6 @@ static int ath10k_station_assoc(struct a
+ {
+ 	struct ath10k_vif *arvif = (void *)vif->drv_priv;
+ 	struct wmi_peer_assoc_complete_arg peer_arg;
+-	struct ath10k_sta *arsta = (struct ath10k_sta *)sta->drv_priv;
+ 	int ret = 0;
+ 
+ 	lockdep_assert_held(&ar->conf_mutex);
+@@ -3974,24 +4024,10 @@ static int ath10k_station_assoc(struct a
+ 		}
+ 	}
+ 
+-	if (arvif->noack_map) {
+-		struct wmi_per_peer_per_tid_cfg_arg arg = {};
+-
+-		arg.vdev_id = arvif->vdev_id;
+-		ether_addr_copy(arg.peer_macaddr.addr, sta->addr);
+-
+-		ret = ath10k_mac_set_noack_tid_bitmap(ar, &arg,
+-						      arvif->noack_map);
+-		if (ret)
+-			return ret;
+-	}
++	if (!test_bit(WMI_SERVICE_PEER_TID_CONFIGS_SUPPORT, ar->wmi.svc_map))
++		return 0;
+ 
+-	/* Assign default noack_map value (-1) to newly connecting station.
+-	 * This default value used to identify the station configured with
+-	 * vif specific noack configuration rather than station specific.
+-	 */
+-	arsta->noack_map = -1;
+-	return ret;
++	return ath10k_new_peer_tid_config(ar, sta, arvif);
+ }
+ 
+ static int ath10k_station_disassoc(struct ath10k *ar,
+@@ -8917,6 +8953,133 @@ exit:
+ 	return ret;
+ }
+ 
++struct ath10k_mac_iter_tid_conf_data {
++	struct wmi_per_peer_per_tid_cfg_arg *arg;
++	u8 changed;
++	struct ieee80211_vif *curr_vif;
++	struct ath10k *ar;
++};
++
++static void ath10k_mac_vif_stations_tid_conf(void *data,
++					     struct ieee80211_sta *sta)
++{
++	struct ath10k_sta *arsta = (struct ath10k_sta *)sta->drv_priv;
++	struct ath10k_mac_iter_tid_conf_data *iter_data = data;
++	struct ieee80211_vif *sta_vif = arsta->arvif->vif;
++	int ret;
++
++	if (sta_vif != iter_data->curr_vif)
++		return;
++
++	if (iter_data->changed & TID_RETRY_CONF_CHANGED) {
++		if (arsta->retry_count[iter_data->arg->tid] != -1)
++			return;
++	} else if (iter_data->changed & TID_AGGR_CONF_CHANGED) {
++		if (arsta->aggr_ctrl[iter_data->arg->tid])
++			return;
++	} else {
++		return;
++	}
++
++	ether_addr_copy(iter_data->arg->peer_macaddr.addr, sta->addr);
++	ret = ath10k_wmi_set_per_peer_per_tid_cfg(iter_data->ar,
++						  iter_data->arg);
++	if (ret)
++		ath10k_warn(iter_data->ar, "failed to set per tid retry/aggr config for sta %pM: %d\n",
++			    sta->addr, ret);
++}
++
++static int ath10k_mac_op_set_tid_conf(struct ieee80211_hw *hw,
++				      struct ieee80211_vif *vif,
++				      struct ieee80211_sta *sta,
++				      struct ieee80211_tid_conf *tid_conf,
++				      u8 changed)
++{
++	int ret;
++	struct ath10k *ar = hw->priv;
++	struct ath10k_vif *arvif = (void *)vif->drv_priv;
++	struct ath10k_mac_iter_tid_conf_data data = {};
++	struct wmi_per_peer_per_tid_cfg_arg arg = {};
++	struct ath10k_sta *arsta;
++
++	mutex_lock(&ar->conf_mutex);
++	arg.vdev_id = arvif->vdev_id;
++	arg.tid = tid_conf->tid;
++
++	if (sta) {
++		arsta = (struct ath10k_sta *)sta->drv_priv;
++		ether_addr_copy(arg.peer_macaddr.addr, sta->addr);
++
++		if (changed & TID_RETRY_CONF_CHANGED) {
++			ret = 0;
++			if (tid_conf->retry_long == arsta->retry_count[arg.tid])
++				goto exit;
++
++			if (tid_conf->retry_long == -1) {
++				if (arvif->retry_count[arg.tid])
++					arg.retry_count =
++						arvif->retry_count[arg.tid];
++				else
++					arg.retry_count =
++						ATH10K_MAX_RETRY_COUNT;
++			} else {
++				arg.retry_count = tid_conf->retry_long;
++			}
++		} else if (changed & TID_AGGR_CONF_CHANGED) {
++			if (tid_conf->aggr)
++				arg.aggr_control =
++					WMI_TID_CONFIG_AGGR_CONTROL_ENABLE;
++			else
++				arg.aggr_control =
++					WMI_TID_CONFIG_AGGR_CONTROL_DISABLE;
++		}
++
++		ret = ath10k_wmi_set_per_peer_per_tid_cfg(ar, &arg);
++		if (!ret) {
++			/* Store the configured parameters in success case */
++			if (changed & TID_RETRY_CONF_CHANGED)
++				arsta->retry_count[arg.tid] = tid_conf->retry_long;
++			if (changed & TID_AGGR_CONF_CHANGED)
++				arsta->aggr_ctrl[arg.tid] = arg.aggr_control;
++		}
++
++		goto exit;
++	}
++
++	ret = 0;
++	if (changed & TID_RETRY_CONF_CHANGED &&
++	    tid_conf->retry_long == arvif->retry_count[arg.tid])
++		goto exit;
++
++	if (changed & TID_RETRY_CONF_CHANGED)
++		arg.retry_count = tid_conf->retry_long;
++	if (changed & TID_AGGR_CONF_CHANGED) {
++		if (tid_conf->aggr)
++			arg.aggr_control =
++				WMI_TID_CONFIG_AGGR_CONTROL_ENABLE;
++		else
++			arg.aggr_control =
++				WMI_TID_CONFIG_AGGR_CONTROL_DISABLE;
++	}
++
++	data.curr_vif = vif;
++	data.ar = ar;
++	data.arg = &arg;
++	data.changed = changed;
++	ieee80211_iterate_stations_atomic(hw,
++					  ath10k_mac_vif_stations_tid_conf,
++					  &data);
++
++	if (changed & TID_RETRY_CONF_CHANGED)
++		arvif->retry_count[arg.tid] = tid_conf->retry_long;
++	if (changed & TID_AGGR_CONF_CHANGED)
++		arvif->aggr_ctrl[arg.tid] = arg.aggr_control;
++
++exit:
++	mutex_unlock(&ar->conf_mutex);
++	return ret;
++}
++
+ static const struct ieee80211_ops ath10k_ops = {
+ 	.tx				= ath10k_mac_op_tx,
+ 	.wake_tx_queue			= ath10k_mac_op_wake_tx_queue,
+@@ -8960,6 +9123,7 @@ static const struct ieee80211_ops ath10k
+ 	.sta_pre_rcu_remove		= ath10k_mac_op_sta_pre_rcu_remove,
+ 	.sta_statistics			= ath10k_sta_statistics,
+ 	.set_noack_tid_bitmap           = ath10k_mac_op_set_noack_tid_bitmap,
++	.set_tid_conf			= ath10k_mac_op_set_tid_conf,
+ 
+ 	CFG80211_TESTMODE_CMD(ath10k_tm_cmd)
+ 
+@@ -9632,11 +9796,22 @@ int ath10k_mac_register(struct ath10k *a
+ 		wiphy_ext_feature_set(ar->hw->wiphy,
+ 			NL80211_EXT_FEATURE_ACK_SIGNAL_SUPPORT);
+ 
+-	if (test_bit(WMI_SERVICE_PEER_TID_CONFIGS_SUPPORT, ar->wmi.svc_map))
++	if (test_bit(WMI_SERVICE_PEER_TID_CONFIGS_SUPPORT, ar->wmi.svc_map)) {
+ 		wiphy_ext_feature_set(ar->hw->wiphy,
+ 				      NL80211_EXT_FEATURE_PER_STA_NOACK_MAP);
+-	else
++		wiphy_ext_feature_set(ar->hw->wiphy,
++				      NL80211_EXT_FEATURE_PER_TID_RETRY_CONFIG);
++		wiphy_ext_feature_set(ar->hw->wiphy,
++				      NL80211_EXT_FEATURE_PER_STA_RETRY_CONFIG);
++		wiphy_ext_feature_set(ar->hw->wiphy,
++				      NL80211_EXT_FEATURE_PER_TID_AMPDU_AGGR_CTRL);
++		wiphy_ext_feature_set(ar->hw->wiphy,
++				      NL80211_EXT_FEATURE_PER_STA_AMPDU_AGGR_CTRL);
++		ar->hw->wiphy->max_data_retry_count = ATH10K_MAX_RETRY_COUNT;
++	} else {
+ 		ar->ops->set_noack_tid_bitmap = NULL;
++		ar->ops->set_tid_conf = NULL;
++	}
+ 
+ 	/*
+ 	 * on LL hardware queues are managed entirely by the FW
+--- a/drivers/net/wireless/ath/ath10k/wmi.c
++++ b/drivers/net/wireless/ath/ath10k/wmi.c
+@@ -8751,10 +8751,12 @@ ath10k_wmi_10_4_gen_per_peer_per_tid_cfg
+ 	cmd->ack_policy = cpu_to_le32(arg->ack_policy);
+ 	cmd->aggr_control = cpu_to_le32(arg->aggr_control);
+ 	cmd->rate_control = cpu_to_le32(arg->rate_ctrl);
++	cmd->sw_retry_threshold = cpu_to_le32(arg->retry_count);
+ 
+ 	ath10k_dbg(ar, ATH10K_DBG_WMI,
+-		   "wmi noack tid %d vdev id %d ack_policy %d aggr %u rate %u mac_addr %pM\n",
+-		   arg->tid, arg->vdev_id, arg->ack_policy, arg->aggr_control, arg->rate_ctrl, arg->peer_macaddr.addr);
++		   "wmi noack tid %d vdev id %d ack_policy %d aggr %u rate %u retry_count %d mac_addr %pM\n",
++		   arg->tid, arg->vdev_id, arg->ack_policy, arg->aggr_control, arg->rate_ctrl, arg->retry_count,
++		   arg->peer_macaddr.addr);
+ 	return skb;
+ }
+ 
+--- a/drivers/net/wireless/ath/ath10k/wmi.h
++++ b/drivers/net/wireless/ath/ath10k/wmi.h
+@@ -7134,6 +7134,7 @@ struct wmi_per_peer_per_tid_cfg_arg {
+ 	enum wmi_noack_tid_conf ack_policy;
+ 	enum wmi_tid_aggr_control_conf aggr_control;
+ 	enum wmi_tid_rate_ctrl_conf rate_ctrl;
++	u8 retry_count;
+ };
+ 
+ struct wmi_peer_per_tid_cfg_cmd {

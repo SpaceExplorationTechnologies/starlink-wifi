@@ -1,0 +1,21 @@
+--- a/src/dial.c
++++ b/src/dial.c
+@@ -39,7 +39,7 @@
+ #include "intl.h"
+ 
+ #ifdef VC_MUSIC
+-#  if defined(__GLIBC__)
++#  if defined(__GLIBC__) || defined(__linux__)
+ #    include <sys/ioctl.h>
+ #    include <sys/kd.h>
+ #    include <sys/time.h>
+--- a/src/getsdir.c
++++ b/src/getsdir.c
+@@ -30,6 +30,7 @@
+ #include <string.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
++#include <sys/param.h>
+ #include <errno.h>
+ 
+ #include "getsdir.h"

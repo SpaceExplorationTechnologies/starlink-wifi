@@ -1,0 +1,58 @@
+diff -Nur a/programs/_realsetup/_realsetup.in openswan-2.6.41/programs/_realsetup/_realsetup.in
+--- a/programs/_realsetup/_realsetup.in	2015-07-24 16:37:55.900170052 -0700
++++ openswan-2.6.41/programs/_realsetup/_realsetup.in	2015-07-24 16:39:29.560172411 -0700
+@@ -98,10 +98,6 @@
+ klips)  netkey=false; klips=true;  mast=false;;
+ mast)   netkey=false; klips=false; mast=true;;
+ netkey) 
+-    if test \! -f $kamepfkey
+-    then
+-        @MODPROBE@ af_key;
+-    fi
+ 	netkey=true;  klips=false; mast=false;;
+ none)   netkey=false; klips=false; mast=false;;
+ nostack) netkey=false; klips=false; mast=false;;
+@@ -404,7 +400,7 @@
+ 			xfrm4_tunnel xfrm4_mode_beet esp4 esp6 ah4 ah6 af_key \
+ 			xfrm_ipcomp tunnel6
+ 		    do
+-			lsmod 2>&1 | grep "^$mod" > /dev/null && rmmod  $mod
++			lsmod 2>&1 | grep "^$mod" > /dev/null && rmmod  $mod >/dev/null 2>&1
+ 		    done
+ 	fi 
+ 
+diff -Nur a/programs/_startklips/_startklips.in openswan-2.6.41/programs/_startklips/_startklips.in
+--- a/programs/_startklips/_startklips.in	2015-07-24 16:37:55.892170052 -0700
++++ openswan-2.6.41/programs/_startklips/_startklips.in	2015-07-24 16:40:14.176173535 -0700
+@@ -55,12 +55,12 @@
+ then
+ 	echo "Warning: found NETKEY stack loaded"
+ 	echo -n Trying to unload all NETKEY modules:
+-                for mod in ipcomp ipcomp6 xfrm6_tunnel xfrm6_mode_tunnel xfrm6_mode_beet xfrm6_mode_ro \
++                for mod in ipcomp ipcomp6 xfrm_ipcomp xfrm6_tunnel xfrm6_mode_tunnel xfrm6_mode_beet xfrm6_mode_ro \
+                         xfrm6_mode_transport xfrm4_mode_transport xfrm4_mode_tunnel \
+                         xfrm4_tunnel xfrm4_mode_beet esp4 esp6 ah4 ah6 af_key xfrm_user
+                    do
+-                        echo -n "$mod "
+-                        rmmod -a $mod 2> /dev/null
++                        #echo -n "$mod "
++                        rmmod $mod 2> /dev/null
+                    done
+                 echo
+ 	if test -f $netkey
+diff -Nur a/programs/_startnetkey/_startnetkey.in openswan-2.6.41/programs/_startnetkey/_startnetkey.in
+--- a/programs/_startnetkey/_startnetkey.in	2015-07-24 16:37:55.900170052 -0700
++++ openswan-2.6.41/programs/_startnetkey/_startnetkey.in	2015-07-24 16:40:50.952174461 -0700
+@@ -178,9 +178,10 @@
+ 		@MODPROBE@ intel-rng 2>/dev/null
+ 
+ 		# load all NETKEY modules
+-		for mod in ipcomp6 ipcomp xfrm6_tunnel xfrm6_mode_tunnel xfrm6_mode_beet xfrm6_mode_ro \
++		for mod in xfrm_ipcomp ipcomp xfrm6_tunnel ipcomp6 xfrm6_mode_tunnel\
++			xfrm6_mode_beet xfrm6_mode_ro \
+ 			xfrm6_mode_transport xfrm4_mode_transport xfrm4_mode_tunnel \
+-			xfrm4_tunnel xfrm4_mode_beet esp4 esp6 ah4 ah6 iaf_key
++			xfrm4_tunnel xfrm4_mode_beet esp4 esp6 ah4 ah6 af_key
+ 		   do
+ 			#echo -n "$mod "
+ 			@MODPROBE@ $mod 2> /dev/null

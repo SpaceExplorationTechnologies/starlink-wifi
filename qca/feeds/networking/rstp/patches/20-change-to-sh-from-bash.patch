@@ -1,0 +1,10 @@
+diff --git a/bridge-stp b/bridge-stp
+index e699b87..f9277df 100755
+--- a/bridge-stp
++++ b/bridge-stp
+@@ -1,4 +1,4 @@
+-#!/bin/bash
++#!/bin/sh
+ #
+ # Script to start/stop spanning tree called from kernel
+ # Make sure umask is sane

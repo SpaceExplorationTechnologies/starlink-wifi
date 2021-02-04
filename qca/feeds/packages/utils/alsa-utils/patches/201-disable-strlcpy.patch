@@ -1,0 +1,11 @@
+--- a/alsactl/init_sysdeps.c
++++ b/alsactl/init_sysdeps.c
+@@ -17,7 +17,7 @@
+  *
+  */
+ 
+-#if defined(__GLIBC__) && !(defined(__UCLIBC__) && defined(__USE_BSD))
++#if 0
+ static size_t strlcpy(char *dst, const char *src, size_t size)
+ {
+ 	size_t bytes = 0;

@@ -1,0 +1,66 @@
+#!/bin/sh
+
+#common_execute_method_param "$parameter" "$permission" "$get_cmd" "$set_cmd" "xsd:$type" "$forcedinform"
+# $forcedinform should be set to 1 if the parameter is included in the inform message otherwise empty
+# Default of $type = string
+
+#############################
+#   Entry point functuons   #
+#############################
+
+prefix_list="$prefix_list $DMROOT.Time."
+entry_execute_method_list="$entry_execute_method_list entry_execute_method_root_Time"
+entry_execute_method_list_forcedinform="$entry_execute_method_list_forcedinform  entry_execute_method_root_Time"
+
+entry_execute_method_root_Time() {
+        case "$1" in ""|"$DMROOT."|"$DMROOT.Time."*)
+                common_execute_method_obj "$DMROOT.Time." "0"
+                common_execute_method_param "$DMROOT.Time.Enable" "1" "$UCI_GET system.ntp.enable_server" "time_info_set_enable_server" "" "1"
+                common_execute_method_param "$DMROOT.Time.NTPServer1" "1" "get_ntp1" "" "" "1"
+                common_execute_method_param "$DMROOT.Time.NTPServer2" "1" "get_ntp2" "" "" "1"
+                common_execute_method_param "$DMROOT.Time.NTPServer3" "1" "get_ntp3" "" "" "1"
+                common_execute_method_param "$DMROOT.Time.NTPServer4" "1" "get_ntp4" "" "" "1"
+                common_execute_method_param "$DMROOT.Time.LocalTimeZone" "1" "$UCI_GET system.@system[0].timezone" "time_info_set_local_time_zone" "" "1"
+                common_execute_method_param "$DMROOT.Time.CurrentLocalTime" "0" "get_current_local_time" "" "" "1"
+                return 0;
+                ;;
+        esac
+        return $E_INVALID_PARAMETER_NAME;
+}
+
+#######################################
+#   Data model parameters functions   #
+#######################################
+
+time_info_set_enable_server() {
+        local val="$1"
+        $UCI_SET system.ntp.enable_server="$val"
+        return 0
+}
+
+time_info_set_local_time_zone() {
+        local val="$1"
+        $UCI_SET system.@system[0].timezone="$val"
+        return 0
+}
+
+get_current_local_time() {
+        date
+}
+
+get_ntp1() {
+        cat /etc/config/system | grep -m 1 list | tail -n 1 | cut -f 3
+}
+
+get_ntp2() {
+        cat /etc/config/system | grep -m 2 list | tail -n 1 | cut -f 3
+}
+
+get_ntp3() {
+        cat /etc/config/system | grep -m 3 list | tail -n 1 | cut -f 3
+}
+
+get_ntp4() {
+        cat /etc/config/system | grep -m 4 list | tail -n 1 | cut -f 3
+}
+

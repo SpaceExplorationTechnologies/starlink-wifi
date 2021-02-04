@@ -1,0 +1,38 @@
+Index: openswan-2.6.38/linux/include/openswan/ipsec_esp.h
+===================================================================
+--- openswan-2.6.38.orig/linux/include/openswan/ipsec_esp.h	2014-02-21 12:32:05.815889630 +0530
++++ openswan-2.6.38/linux/include/openswan/ipsec_esp.h	2014-02-21 12:34:06.519889228 +0530
+@@ -67,7 +67,6 @@
+ 
+ struct ipsec_skb_cb {
+ 	struct net_device *tunnel_dev;
+-	struct net_device *eth_dev;
+ };
+ 
+ extern struct xform_functions esp_xform_funcs[];
+Index: openswan-2.6.38/linux/net/ipsec/ipsec_esp.c
+===================================================================
+--- openswan-2.6.38.orig/linux/net/ipsec/ipsec_esp.c	2014-02-21 12:32:05.815889630 +0530
++++ openswan-2.6.38/linux/net/ipsec/ipsec_esp.c	2014-02-21 12:33:32.263896287 +0530
+@@ -165,9 +165,7 @@
+ 		SHA1_CTX	sha1;
+ 	} tctx;
+ 
+-	struct ipsecpriv *prv = netdev_to_ipsecpriv(skb->dev);
+ 	((struct ipsec_skb_cb *)skb->cb)->tunnel_dev = skb->dev;
+-	((struct ipsec_skb_cb *)skb->cb)->eth_dev = prv->dev;
+ 
+ #ifdef CONFIG_KLIPS_OCF
+ 	if (irs->ipsp->ocf_in_use)
+Index: openswan-2.6.38/linux/net/ipsec/ipsec_xmit.c
+===================================================================
+--- openswan-2.6.38.orig/linux/net/ipsec/ipsec_xmit.c	2014-02-21 12:32:05.831889628 +0530
++++ openswan-2.6.38/linux/net/ipsec/ipsec_xmit.c	2014-02-21 12:33:48.379883740 +0530
+@@ -942,7 +942,6 @@
+ 		osw_ip4_hdr(ixs)->protocol = IPPROTO_ESP;
+ 
+ 	((struct ipsec_skb_cb *)ixs->skb->cb)->tunnel_dev = ixs->dev;
+-	((struct ipsec_skb_cb *)ixs->skb->cb)->eth_dev = ixs->iprv->dev;
+ 
+ #ifdef CONFIG_KLIPS_OCF
+ 	if (ixs->ipsp->ocf_in_use) {

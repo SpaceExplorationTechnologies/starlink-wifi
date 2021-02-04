@@ -1,0 +1,243 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006-2011 OpenWrt.org
+
+START=55
+
+SERVICE_USE_PID=1
+SERVICE_DAEMONIZE=1
+SERVICE_WRITE_PID=1
+
+yes_or_no(){
+	local xboolean=$1
+	if [ "$xboolean" = "1" ]
+	then
+		echo "yes"
+	else
+		echo "no"
+	fi
+}
+
+ifname_exist=1
+port_is_valid=1
+option_cb()
+{
+	local name="$1"
+	local value="$2"
+
+	if [ "$name" = "ifname" ]; then
+		[ -d "/sys/class/net/$value" ] || ifname_exist=0
+	fi
+}
+
+validate_port(){
+	local port_name=$1
+	local bridge ifname switch switchPortId
+	local bridge_ifname switch_ifname
+
+	config_get bridge $port_name bridge
+	config_get ifname $port_name ifname
+	config_get switch $port_name switch
+	config_get switchPortId $port_name switchPortId
+
+	[ -z "$bridge" ] && port_is_valid=0 && return
+	config_get bridge_ifname $bridge ifname
+	[ -z "$bridge_ifname" ] && port_is_valid=0 && return
+
+	[ -z "$ifname" ] && [ -z "$switch" ] && port_is_valid=0 && return
+#	[ -n "$ifname" ] && [ -n "$switch" ] && port_is_valid=0 && return
+	[ -n "$switch" ] && [ -z "$switchPortId" ] && port_is_valid=0 && return
+
+	if [ -n "$switch" ]; then
+		config_get switch_ifname $switch ifname
+		[ -z "$switch_ifname" ] && port_is_valid=0 && return
+	fi
+}
+
+validate_config(){
+	if [ "$ifname_exist" = "0" ]; then
+		echo "ifname of bridge or switch port not exist"
+		return -1
+	fi
+
+	config_foreach validate_port port
+	if [ "$port_is_valid" = "0" ]; then
+		echo "switch port configuration error"
+		return -1
+	fi
+
+	return 0
+}
+
+rstpctl_add_bridge(){
+	local bridge_name=$1
+	local enable=0
+	local bridge_ifname
+	local priority helloTime maxAge forwardDelay forceProtocolVersion
+
+	config_get enable $bridge_name enable
+	[ "$enable" = "0" ] && return
+
+	config_get bridge_ifname $bridge_name ifname
+	[ -z "$bridge_ifname" ] && return
+
+	/sbin/rstpctl addBridge $bridge_ifname
+
+	config_get priority $bridge_name priority
+	[ -n "$priority" ] && /sbin/rstpctl setbridgeprio $bridge_ifname $priority
+
+	config_get helloTime $bridge_name helloTime
+	[ -n "$helloTime" ] && /sbin/rstpctl sethello $bridge_ifname $helloTime
+
+	config_get maxAge $bridge_name maxAge
+	[ -n "$maxAge" ] && /sbin/rstpctl setmaxage $bridge_ifname $maxAge
+
+	config_get forwardDelay $bridge_name forwardDelay
+	[ -n "$forwardDelay" ] && /sbin/rstpctl setfdelay $bridge_ifname $forwardDelay
+
+	config_get forceProtocolVersion $bridge_name forceProtocolVersion
+	[ "$forceProtocolVersion" = "1" ] && /sbin/rstpctl setforcevers $bridge_ifname "slow"
+	[ "$forceProtocolVersion" = "2" ] && /sbin/rstpctl setforcevers $bridge_ifname "normal"
+}
+
+rstpctl_add_port(){
+	local port_name=$1
+	local bridge enable ifname switch switchPortId
+	local bridge_ifname switch_ifname
+	local priority pathCost edgePort p2pLink
+
+	config_get enable $port_name enable
+	[ "$enable" = "0" ] && return
+	enable=0
+
+	config_get bridge $port_name bridge
+	config_get bridge_ifname $bridge ifname
+	config_get enable $bridge enable
+	[ "$enable" = "0" ] && return
+
+	config_get ifname $port_name ifname
+	[ -z "$ifname" ] && ifname="no-exist"
+	config_get switch $port_name switch
+	config_get switchPortId $port_name switchPortId
+	if [ -n "$switch" ] && [ -n "$switchPortId" ] ; then
+		config_get switch_ifname $switch ifname
+		ifname="$switch_ifname.$port_name"
+	fi
+
+	/sbin/rstpctl addBridgePort $bridge_ifname $ifname
+
+	config_get priority $port_name priority
+	[ -n "$priority" ] && /sbin/rstpctl setportprio $bridge_ifname $ifname $priority
+
+	config_get pathCost $port_name pathCost
+	[ -n "$pathCost" ] && /sbin/rstpctl setportpathcost $bridge_ifname $ifname $pathCost
+
+	config_get edgePort $port_name edgePort
+	[ -n "$edgePort" ] && /sbin/rstpctl setportedge $bridge_ifname $ifname $(yes_or_no $edgePort)
+
+	config_get p2pLink $port_name p2pLink
+	[ -n "$p2pLink" ] && /sbin/rstpctl setportp2p $bridge_ifname $ifname $(yes_or_no $p2pLink)
+}
+
+rstpctl_start_bridge(){
+	local bridge_name=$1
+	local enable=0
+	local bridge_ifname
+
+	config_get enable $bridge_name enable
+	[ "$enable" = "0" ] && return
+
+	config_get bridge_ifname $bridge_name ifname
+	[ -z "$bridge_ifname" ] && return
+
+	brctl stp $bridge_ifname on
+}
+
+rstpctl_stop_bridge(){
+	local bridge_name=$1
+	local enable=0
+	local bridge_ifname
+
+	config_get enable $bridge_name enable
+	[ "$enable" = "0" ] && return
+
+	config_get bridge_ifname $bridge_name ifname
+	[ -z "$bridge_ifname" ] && return
+
+	brctl stp $bridge_ifname off
+}
+board_set() {
+	if [ -e /proc/sys/net/edma/enable_stp_rstp ]; then
+		echo 0xfefe > /proc/sys/net/edma/athr_hdr_eth_type
+		echo 1 > /proc/sys/net/edma/enable_stp_rstp
+	fi
+}
+
+board_recover() {
+	if [ -e /proc/sys/net/edma/enable_stp_rstp ]; then
+		echo 0 > /proc/sys/net/edma/enable_stp_rstp
+		echo 0 > /proc/sys/net/edma/athr_hdr_eth_type
+	fi
+}
+
+start() {
+	local rstp_enable autoMode ifname
+
+	config_load "rstp"
+
+	config_get rstp_enable global enable 0
+	[ "$rstp_enable" = "0" ] && return
+
+	config_get autoMode global autoMode 0
+	if [ "$autoMode" = "1" ] ; then
+		service_start /sbin/rstpd -a
+		sleep 1
+
+		. /lib/functions/network.sh
+		network_get_device ifname lan
+		brctl stp $ifname on
+	else
+		validate_config || return
+
+		service_start /sbin/rstpd
+		sleep 1
+
+		config_foreach rstpctl_start_bridge bridge
+		config_foreach rstpctl_add_bridge bridge
+		config_foreach rstpctl_add_port port
+	fi
+	board_set
+}
+
+stop() {
+	local rstp_enable autoMode ifname
+
+	config_load "rstp"
+
+	config_get rstp_enable global enable 0
+
+	board_recover
+
+	[ "$rstp_enable" = "0" ] && return
+
+	config_get autoMode global autoMode 0
+	if [ "$autoMode" = "1" ] ; then
+		. /lib/functions/network.sh
+		network_get_device ifname lan
+		brctl stp $ifname off
+
+		sleep 1
+		service_stop /sbin/rstpd
+	else
+		validate_config || return
+
+		config_foreach rstpctl_stop_bridge bridge
+		sleep 1
+		service_stop /sbin/rstpd
+	fi
+}
+
+restart() {
+	stop
+	sleep 1
+	start
+}

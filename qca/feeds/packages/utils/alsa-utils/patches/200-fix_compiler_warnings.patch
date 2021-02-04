@@ -1,0 +1,22 @@
+Index: alsa-utils-1.0.28/alsamixer/widget.c
+===================================================================
+--- alsa-utils-1.0.28.orig/alsamixer/widget.c	2014-06-13 22:51:05.000000000 +0530
++++ alsa-utils-1.0.28/alsamixer/widget.c	2016-10-25 16:29:44.491544710 +0530
+@@ -118,7 +118,7 @@
+ 
+ 	active_panel = panel_below(NULL);
+ 	if (active_panel)
+-		return panel_userptr(active_panel);
++		return (struct widget *) panel_userptr(active_panel);
+ 	else
+ 		return NULL;
+ }
+@@ -134,7 +134,7 @@
+ 
+ 	for (panel = panel_below(NULL); panel; panel = below) {
+ 		below = panel_below(panel);
+-		widget = panel_userptr(panel);
++		widget = (struct widget *) panel_userptr(panel);
+ 		widget->window_size_changed();
+ 	}
+ }

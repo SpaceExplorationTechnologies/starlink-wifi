@@ -1,0 +1,311 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="cmdEncoder">
+      <UniqueIdentifier>{13b13c27-b0be-4325-9636-35bcecc5310c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cmdParser">
+      <UniqueIdentifier>{2c3c5cd3-5f32-4b6a-9515-978922e1e197}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{a66a467e-5cf7-4bc1-9e42-efc422aee9a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tlvcmdrsp">
+      <UniqueIdentifier>{874e64c8-b0ac-412b-b46a-2782aaf2779d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{46a631e0-9008-49c3-bd3a-08cb39916483}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="cmdEncoder\tlvCmdEncoder.c">
+      <Filter>cmdEncoder</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdHandlerTbl.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdTPCCALHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdTPCCALPWRHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\parseBinCmdStream_v2.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="common\cmdRspParmsDict.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="common\cmdRspParmsInternal.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="tlvcmdrsp\tlvCmdRsp.c">
+      <Filter>tlvcmdrsp</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdRegReadHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdRxGainCalHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdRegWriteHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdTxHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdTxStatusHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdBasicRspHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdRxHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdRxStatusHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdHwCalHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdXtalCalHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdConfigHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdMemReadHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdMemWriteHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdCommitOtpStream.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdCustOtpSpaceGetSize.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdCustOtpSpaceRead.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdCustOtpSpaceWrite.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdDPDComplete.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdGetTgtPwr.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdSetPCIEConfigParam.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdSetRegDmn.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\sysCmdHandlerTbl.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="common\sysCmdRspParmsDict.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdMoreSegmentHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\util\testUtil.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\sysCmdTestData.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\sysCmdGeneric.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdDPDAgc2Pwr.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdDPDLoopbackAttn.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdDPDLoopbackTiming.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdDPDTrainingQuality.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdLMHWCALHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdLMHWCALRSPHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdLMTxHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdLMRxInitHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\sysCmdSetChannel.c">
+    <ClCompile Include="cmdParser\cmdLMQueryHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdLMTxInitHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdLMChannelListAndRspHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdLMGoHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdParser\cmdGenericUtfCmdHandler.c">
+      <Filter>cmdParser</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\cmdHandlers.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdRegWriteHandler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdRspParmsDict.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdRspParmsInternal.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdTPCCALPWRHandler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tlv2Api.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tlv2Inc.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tlvCmdRsp.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tlvCmdRspInternal.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdRegReadHandler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdTxHandler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdRxGainCalHandler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdTxStatusHandler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdBasicRspHandler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdRxHandler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdRxStatusHandler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdHwCalHandler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdTPCCALHandler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdXtalCalHandler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdCommitOtpStream.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdCustOtpSpaceGetSize.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdCustOtpSpaceRead.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdCustOtpSpaceWrite.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdDPDComplete.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdGetTgtPwr.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdSetPCIEConfigParam.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdSetRegDmn.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tlv2SysApi.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tlvCmdEncoder.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdMoreSegmentHandler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sysCmdTestData.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sysCmdGeneric.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdDPDAgc2Pwr.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdDPDLoopbackAttn.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdDPDLoopbackTiming.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdDPDTrainingQuality.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdLMHWCALHandler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdLMHWCALRSPHandler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdLMTxHandler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdLMRxHandler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdLMChannelListAndRspHandler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdLMGoHandler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdLMQueryHandler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdLMTxInitHandler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdLMRxInitHandler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmdGenericUtfCmdHandler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,181 @@
+/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+
+#include "ath79.dtsi"
+
+/ {
+	compatible = "qca,db120", "qca,ath79";
+	model = "QCA DB120 Board";
+
+	aliases {
+		serial0 = "/ahb/apb/uart@18020000";
+		eth0 = "/ahb/ethernet@19000000";
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x2000000>;
+	};
+
+	chosen {
+		bootargs = "board=DTB console=ttyS0,115200 mtdparts=spi0.0:256k(u-boot)ro,64k(u-boot-env),14528k(rootfs),1472k(kernel),64k(art),16000k@0x50000(firmware) rootfstype=squashfs,jffs2 noinitrd crashkernel=10M@20M";
+	};
+
+	extosc: oscillator {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <40000000>;
+	};
+
+
+	ahb {
+		apb {
+			uart@18020000 {
+				status = "okay";
+				clock-frequency = <40000000>;
+			};
+
+			gpio@18040000 {
+				val,gpio = <
+					0 11     /*VALUE GPIO*/
+				>;
+			};
+
+			pll-controller@18050000 {
+				clocks = <&extosc>;
+			};
+
+			ehci0: usb@1b000000 {
+				compatible = "qca,ath79-ehci", "qca,db120-ehci";
+				reg = <0x1b000000 0x200>;
+				interrupt-parent = <&cpuintc>;
+				interrupts = <3>;
+				has-transaction-translator;
+				qca_force_host_mode;
+				qca_force_16bit_ptw;
+				caps-offset = <0x100>;
+				status = "okay";
+			};
+
+			pci_0: pci@0x14000000 {
+				compatible = "qca,ar724x-pci";
+				reg = <0x14000000 0x1000>,
+					<0x180f0000 0x100>,
+					<0x180c0000 0x1000>,
+					<0x10000000 0x04000000>,
+					<0 1>;
+				reg-names = "cfg_base","ctrl_base","crp_base",
+						"mem_base","io_base";
+				interrupt-parent = <&ip2_int>;
+				interrupts = <0>;
+				status = "okay";
+			};
+
+		};
+
+		spi_0: spi@1f000000 {
+			status = "okay";
+			m25p80@0 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				compatible = "n25q128a11";
+				linux,modalias = "m25p80", "n25q128a11";
+				reg = <0>;
+				spi-max-frequency = <25000000>;
+
+				partition@0 {
+					label = "u-boot";
+					reg = <0x000000 0x040000>;
+				};
+
+				partition@1 {
+					label = "u-boot-env";
+					reg = <0x040000 0x050000>;
+				};
+
+				partition@2 {
+					label = "rootfs";
+					reg = <0x050000 0xe80000>;
+				};
+
+				partition@3 {
+					label = "kernel";
+					reg = <0xe80000 0xff0000>;
+				};
+
+				partition@4 {
+					label = "art";
+					reg = <0xff0000 0x1000000>;
+				};
+
+				partition@5 {
+					label = "firmware";
+					reg = <0x50000 0xff0000>;
+				};
+			};
+		};
+
+	};
+
+	gpio-keys-polled {
+		compatible = "gpio-keys-polled";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		poll-interval = <20>;
+
+		button@0 {
+			label = "WPS button";
+			linux,code = <KEY_WPS_BUTTON>;
+			gpios = <&gpio 16 GPIO_ACTIVE_LOW>;
+			debounce-interval = <60>;
+		};
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		led@0 {
+			label = "db120:green:status";
+			gpios = <&gpio 14 GPIO_ACTIVE_LOW>;
+		};
+
+		led@1 {
+			label = "db120:green:wps";
+			gpios = <&gpio 15 GPIO_ACTIVE_LOW>;
+		};
+
+		led@2 {
+			label = "db120:green:wlan-5g";
+			gpios = <&gpio 12 GPIO_ACTIVE_LOW>;
+		};
+
+		led@3 {
+			label = "db120:green:wlan-2g";
+			gpios = <&gpio 13 GPIO_ACTIVE_LOW>;
+		};
+
+		led@4 {
+			label = "db120:green:usb";
+			gpios = <&gpio 11 GPIO_ACTIVE_LOW>;
+		};
+
+	};
+};

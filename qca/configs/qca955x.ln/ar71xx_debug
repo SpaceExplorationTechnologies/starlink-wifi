@@ -1,0 +1,14 @@
+CONFIG_USE_STRIP=y
+CONFIG_STRIP_ARGS="--strip-unneeded --remove-section=.comment --remove-section=.note"
+CONFIG_DEBUG=y
+CONFIG_KERNEL_ENABLE_DEFAULT_TRACERS=y
+CONFIG_KERNEL_FTRACE=y
+CONFIG_KERNEL_KEXEC=y
+CONFIG_PACKAGE_crashkernel=y
+CONFIG_PACKAGE_kexec-tools=y
+CONFIG_PACKAGE_qca-wifi-fw-hw7-10.4-asic=m
+CONFIG_PACKAGE_qca-wifi-fw-hw3-10.4-asic=m
+CONFIG_PACKAGE_qca-wifi-fw-hw6-10.4-asic=m
+CONFIG_PACKAGE_qca-wifi-fw-hw8-10.4-asic=m
+CONFIG_PACKAGE_qca-wifi-fw-hw9-10.4-asic=m
+CONFIG_KERNEL_KPROBES=y

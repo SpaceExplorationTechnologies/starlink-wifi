@@ -1,0 +1,13 @@
+Index: libweave-1.4/third_party/third_party.mk
+===================================================================
+--- libweave-1.4.orig/third_party/third_party.mk	2016-04-18 17:07:30.000000000 +0200
++++ libweave-1.4/third_party/third_party.mk	2016-04-18 17:12:49.289312869 +0200
+@@ -96,7 +96,7 @@
+ 	rm -rf $(third_party_libevhtp)
+ 
+ # These settings are exported for other code to use as needed.
+-USE_INTERNAL_LIBEVHTP ?= 1
++USE_INTERNAL_LIBEVHTP ?= 0
+ 
+ ifeq (1, $(USE_INTERNAL_LIBEVHTP))
+ LIBEVHTP_INCLUDES = -Ithird_party/libevhtp -I$(dir $(third_party_libevhtp_header))

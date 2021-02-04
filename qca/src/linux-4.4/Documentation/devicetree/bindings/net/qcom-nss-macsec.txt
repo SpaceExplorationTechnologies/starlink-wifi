@@ -1,0 +1,20 @@
+* Qualcomm Technologies Inc. NSS MAC Security Engine Driver.
+
+This driver configures PHY Security Engine on the board.
+
+1. Driver access details to each PHY Security Engine
+
+Required properties:
+- device_type: = "network";
+- compatible: = should be "qcom,nss-macsec";
+- phy_addr:  physical phy address for the device.
+- phy_access_mode: 0 means mdio access, 1 means i2c access.
+
+Optional properties:
+
+Example:
+nss-macsec0 {
+	compatible = "qcom,nss-macsec";
+	phy_addr = <0x1c>;
+	phy_access_mode = <0>;
+};

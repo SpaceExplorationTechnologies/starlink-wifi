@@ -1,0 +1,14 @@
+QCA TZLOG_IPQ806X
+
+The tz_log driver is used to provide tz diagnostic information to the user space.
+It also provides capability to capture SMMU and XPU faults found by TZ.
+This binding is specifically used to make the driver compatible for ipq806x.
+
+Required properties:
+- compatible: must contain "qca,tzlog_ipq806x" for IPQ806x
+
+Example for ipq806x:
+
+	qca,tzlog {
+		compatible = "qca,tzlog_ipq806x";
+	};

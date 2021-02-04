@@ -1,0 +1,118 @@
+Index: libweave-1.3/examples/provider/wifi_manager_mips.cc
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ libweave-1.3/examples/provider/wifi_manager_mips.cc	2016-04-18 15:30:08.696389333 +0200
+@@ -0,0 +1,100 @@
++// Copyright 2015 The Weave Authors. All rights reserved.
++
++#include "examples/provider/wifi_manager.h"
++
++#include <arpa/inet.h>
++#include <linux/wireless.h>
++#include <sys/ioctl.h>
++#include <sys/wait.h>
++
++#include <fstream>
++
++#include <base/bind.h>
++#include <weave/provider/task_runner.h>
++
++#include "examples/provider/event_network.h"
++#include "examples/provider/ssl_stream.h"
++
++namespace weave {
++namespace examples {
++
++WifiImpl::WifiImpl(provider::TaskRunner* task_runner, EventNetworkImpl* network)
++    : task_runner_{task_runner}, network_{network} {
++  CHECK_EQ(0u, getuid())
++      << "WiFi manager expects root access to control WiFi capabilities";
++  StopAccessPoint();
++}
++WifiImpl::~WifiImpl() {
++  StopAccessPoint();
++}
++
++void WifiImpl::TryToConnect(const std::string& ssid,
++                            const std::string& passphrase,
++                            int pid,
++                            base::Time until,
++                            const DoneCallback& callback) {
++  CHECK_EQ(0, std::system("uci set wireless.@wifi-iface[0].mode=sta"));
++  CHECK_EQ(0, std::system("uci set wireless.@wifi-iface[0].network=\'lan wlan\'"));
++  CHECK_EQ(0, std::system("uci set wireless.@wifi-iface[0].encryption=psk2"));
++  CHECK_EQ(0, std::system(("uci set wireless.@wifi-iface[0].ssid=\"" + ssid + "\"").c_str()));
++  CHECK_EQ(0, std::system(("uci set wireless.@wifi-iface[0].key=" + passphrase).c_str()));
++
++  CHECK_EQ(0, std::system("uci set network.wlan=interface"));
++  CHECK_EQ(0, std::system("uci set network.wlan.proto=dhcp"));
++
++  CHECK_EQ(0, std::system("uci commit"));
++  CHECK_EQ(0, std::system("wifi"));
++}
++
++void WifiImpl::Connect(const std::string& ssid,
++                       const std::string& passphrase,
++                       const DoneCallback& callback) {
++  network_->SetSimulateOffline(false);
++  CHECK(!hostapd_started_);
++  if (hostapd_started_) {
++    ErrorPtr error;
++    Error::AddTo(&error, FROM_HERE, "busy", "Running Access Point.");
++    task_runner_->PostDelayedTask(
++        FROM_HERE, base::Bind(callback, base::Passed(&error)), {});
++    return;
++  }
++
++  TryToConnect(ssid, passphrase, 0,
++               base::Time::Now() + base::TimeDelta::FromMinutes(1), callback);
++}
++
++void WifiImpl::StartAccessPoint(const std::string& ssid) {
++  if (hostapd_started_)
++    return;
++
++  CHECK_EQ(0, std::system("uci set network.lan.ipaddr=192.168.1.1"));
++
++  CHECK_EQ(0, std::system("uci set wireless.radio0.channel=1"));
++  CHECK_EQ(0, std::system("uci set wireless.@wifi-iface[0].mode=ap"));
++  CHECK_EQ(0, std::system("uci set wireless.@wifi-iface[0].encryption=none"));
++  CHECK_EQ(0, std::system("uci set wireless.@wifi-iface[0].key=\"\""));
++  CHECK_EQ(0, std::system(("uci set wireless.@wifi-iface[0].ssid=\"" + ssid + "\"").c_str()));
++
++  CHECK_EQ(0, std::system("uci commit"));
++  CHECK_EQ(0, std::system("wifi"));
++  hostapd_started_ = true;
++}
++
++void WifiImpl::StopAccessPoint() {
++  CHECK_EQ(0, std::system("wifi down"));
++  hostapd_started_ = false;
++}
++
++bool WifiImpl::HasWifiCapability() {
++  bool ret;
++  ret = (std::system("uci show wireless | grep wifi-device") == 0);
++
++  if (ret)
++    //TODO; radio interface number detection for multi-radio boards
++    CHECK_EQ(0, std::system("uci set wireless.radio0.disabled=0"));
++
++  return ret;
++}
++
++}  // namespace examples
++}  // namespace weave
+Index: libweave-1.3/file_lists.mk
+===================================================================
+--- libweave-1.3.orig/file_lists.mk	2016-04-18 15:29:49.464316856 +0200
++++ libweave-1.3/file_lists.mk	2016-04-18 15:29:49.460316838 +0200
+@@ -88,7 +88,7 @@
+ 	examples/provider/event_task_runner.cc \
+ 	examples/provider/file_config_store.cc \
+ 	examples/provider/ssl_stream.cc \
+-	examples/provider/wifi_manager.cc
++	examples/provider/wifi_manager_mips.cc
+ 
+ THIRD_PARTY_CHROMIUM_BASE_SRC_FILES := \
+ 	third_party/chromium/base/bind_helpers.cc \

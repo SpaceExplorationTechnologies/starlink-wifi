@@ -1,0 +1,15 @@
+* Qualcomm Technologies, Inc IPQ8074 ASoC Codec driver
+
+This node models the Qualcomm Technologies, Inc IPQ8074 ASoC Codec driver
+
+Required properties:
+
+- compatible	: "qca,ipq8074-codec"
+- reg		: should have the stereo i2c register address
+
+Example:
+qca_codec: qca_codec@12 {
+	compatible = "qca,ipq8074-codec";
+	reg = <0x12>;
+	status = "disabled";
+};

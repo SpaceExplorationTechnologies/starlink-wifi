@@ -1,0 +1,156 @@
+--- a/drivers/net/wireless/ath/ath10k/wmi-ops.h
++++ b/drivers/net/wireless/ath/ath10k/wmi-ops.h
+@@ -237,6 +237,8 @@ struct wmi_ops {
+ 							  u32 idx,
+ 							  u32 action,
+ 							  u32 type);
++	struct sk_buff *(*gen_per_peer_per_tid_cfg)(struct ath10k *ar,
++				const struct wmi_per_peer_per_tid_cfg_arg *arg);
+ };
+ 
+ int ath10k_wmi_cmd_send(struct ath10k *ar, struct sk_buff *skb, u32 cmd_id);
+@@ -1701,4 +1703,22 @@ ath10k_wmi_set_neighbor_rx_param(struct
+ 
+ 	return ath10k_wmi_cmd_send(ar, skb, cmdid);
+ }
++
++static inline int
++ath10k_wmi_set_per_peer_per_tid_cfg(struct ath10k *ar,
++				const struct wmi_per_peer_per_tid_cfg_arg *arg)
++{
++	struct sk_buff *skb;
++
++	if (!ar->wmi.ops->gen_per_peer_per_tid_cfg)
++		return -EOPNOTSUPP;
++
++	skb = ar->wmi.ops->gen_per_peer_per_tid_cfg(ar, arg);
++	if (IS_ERR(skb))
++		return PTR_ERR(skb);
++
++	return ath10k_wmi_cmd_send(ar, skb,
++				   ar->wmi.cmd->per_peer_per_tid_config_cmdid);
++}
++
+ #endif
+--- a/drivers/net/wireless/ath/ath10k/wmi.c
++++ b/drivers/net/wireless/ath/ath10k/wmi.c
+@@ -767,7 +767,8 @@ static struct wmi_cmd_map wmi_10_4_cmd_m
+ 	.tdls_set_offchan_mode_cmdid = WMI_10_4_TDLS_SET_OFFCHAN_MODE_CMDID,
+ 	.set_coex_param_cmdid = WMI_10_4_BTCOEX_CFG_CMDID,
+ 	.radar_found_cmdid = WMI_10_4_RADAR_FOUND_CMDID,
+-	.peer_set_cfr_capture_conf_cmdid = WMI_10_4_PEER_SET_CFR_CAPTURE_CONF_CMDID
++	.peer_set_cfr_capture_conf_cmdid = WMI_10_4_PEER_SET_CFR_CAPTURE_CONF_CMDID,
++	.per_peer_per_tid_config_cmdid = WMI_10_4_PER_PEER_PER_TID_CONFIG_CMDID,
+ };
+ 
+ /* MAIN WMI VDEV param map */
+@@ -8731,6 +8732,33 @@ ath10k_wmi_10_4_gen_radar_found(struct a
+ }
+ 
+ static struct sk_buff *
++ath10k_wmi_10_4_gen_per_peer_per_tid_cfg(struct ath10k *ar,
++				const struct wmi_per_peer_per_tid_cfg_arg *arg)
++{
++	struct wmi_peer_per_tid_cfg_cmd *cmd;
++	struct sk_buff *skb;
++
++	skb = ath10k_wmi_alloc_skb(ar, sizeof(*cmd));
++	if (!skb)
++		return ERR_PTR(-ENOMEM);
++
++	memset(skb->data, 0, sizeof(*cmd));
++
++	cmd = (struct wmi_peer_per_tid_cfg_cmd *)skb->data;
++	cmd->vdev_id = cpu_to_le32(arg->vdev_id);
++	ether_addr_copy(cmd->peer_macaddr.addr, arg->peer_macaddr.addr);
++	cmd->tid = cpu_to_le32(arg->tid);
++	cmd->ack_policy = cpu_to_le32(arg->ack_policy);
++	cmd->aggr_control = cpu_to_le32(arg->aggr_control);
++	cmd->rate_control = cpu_to_le32(arg->rate_ctrl);
++
++	ath10k_dbg(ar, ATH10K_DBG_WMI,
++		   "wmi noack tid %d vdev id %d ack_policy %d aggr %u rate %u mac_addr %pM\n",
++		   arg->tid, arg->vdev_id, arg->ack_policy, arg->aggr_control, arg->rate_ctrl, arg->peer_macaddr.addr);
++	return skb;
++}
++
++static struct sk_buff *
+ ath10k_wmi_op_gen_echo(struct ath10k *ar, u32 value)
+ {
+ 	struct wmi_echo_cmd *cmd;
+@@ -9401,6 +9429,7 @@ static const struct wmi_ops wmi_10_4_ops
+ 			ath10k_wmi_10_4_op_gen_pdev_get_tpc_table_cmdid,
+ 	.gen_radar_found = ath10k_wmi_10_4_gen_radar_found,
+ 	.gen_peer_cfr_capture_conf = ath10k_wmi_10_4_op_gen_peer_cfr_capture_conf,
++	.gen_per_peer_per_tid_cfg = ath10k_wmi_10_4_gen_per_peer_per_tid_cfg,
+ 
+ 	/* shared with 10.2 */
+ 	.pull_echo_ev = ath10k_wmi_op_pull_echo_ev,
+--- a/drivers/net/wireless/ath/ath10k/wmi.h
++++ b/drivers/net/wireless/ath/ath10k/wmi.h
+@@ -1013,6 +1013,7 @@ struct wmi_cmd_map {
+ 	u32 set_coex_param_cmdid;
+ 	u32 radar_found_cmdid;
+ 	u32 peer_set_cfr_capture_conf_cmdid;
++	u32 per_peer_per_tid_config_cmdid;
+ };
+ 
+ /*
+@@ -1853,6 +1854,7 @@ enum wmi_10_4_cmd_id {
+ 	WMI_10_4_ATF_GROUP_WMM_AC_CONFIG_REQUEST_CMDID,
+ 	WMI_10_4_RADAR_FOUND_CMDID,
+ 	WMI_10_4_PEER_SET_CFR_CAPTURE_CONF_CMDID,
++	WMI_10_4_PER_PEER_PER_TID_CONFIG_CMDID,
+ 	WMI_10_4_PDEV_UTF_CMDID = WMI_10_4_END_CMDID - 1,
+ };
+ 
+@@ -7116,6 +7118,49 @@ struct wmi_tdls_peer_event {
+ 	__le32 vdev_id;
+ } __packed;
+ 
++enum wmi_tid_aggr_control_conf {
++	WMI_TID_CONFIG_AGGR_CONTROL_IGNORE,
++	WMI_TID_CONFIG_AGGR_CONTROL_ENABLE,
++	WMI_TID_CONFIG_AGGR_CONTROL_DISABLE,
++};
++
++enum wmi_noack_tid_conf {
++	WMI_NOACK_TID_CONFIG_IGNORE_ACK_POLICY,
++	WMI_PEER_TID_CONFIG_ACK,
++	WMI_PEER_TID_CONFIG_NOACK,
++};
++
++enum wmi_tid_rate_ctrl_conf {
++	WMI_TID_CONFIG_RATE_CONTROL_IGNORE,
++	WMI_TID_CONFIG_RATE_CONTROL_AUTO,
++	WMI_TID_CONFIG_RATE_CONTROL_FIXED_RATE,
++	WMI_TID_CONFIG_RATE_CONTROL_DEFAULT_LOWEST_RATE,
++};
++
++struct wmi_per_peer_per_tid_cfg_arg {
++	u32 vdev_id;
++	struct wmi_mac_addr peer_macaddr;
++	u32 tid;
++	enum wmi_noack_tid_conf ack_policy;
++	enum wmi_tid_aggr_control_conf aggr_control;
++	enum wmi_tid_rate_ctrl_conf rate_ctrl;
++};
++
++struct wmi_peer_per_tid_cfg_cmd {
++	__le32 vdev_id;
++	struct wmi_mac_addr peer_macaddr;
++	__le32 tid;
++
++	/* see enum wmi_noack_tid_conf */
++	__le32 ack_policy;
++	/* see enum wmi_tid_aggr_control_conf */
++	__le32 aggr_control;
++	/* see enum wmi_tid_rate_ctrl_conf */
++	__le32 rate_control;
++	__le32 rcode_rcflags;
++	__le32 sw_retry_threshold;
++} __packed;
++
+ enum wmi_txbf_conf {
+ 	WMI_TXBF_CONF_UNSUPPORTED,
+ 	WMI_TXBF_CONF_BEFORE_ASSOC,

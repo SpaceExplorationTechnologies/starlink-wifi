@@ -1,0 +1,65 @@
+CC = $(TOOLPREFIX)gcc
+LD = $(TOOLPREFIX)ld
+#WORKAREA = /home/user/work/convergedFramework
+CMN_INCLUDE_DIR = ../../../../../include
+HALPHY_TOOLS_COMPONENT_DIR ?= ../../..
+TLV_ROOT = $(HALPHY_TOOLS_COMPONENT_DIR)/common/tlv2p0
+TLV2P0_INC_DIR = $(TLV_ROOT)/include
+
+CFLAGS = -fPIC -D_DEBUG -DDEBUG -DLINUX -DLinux -DTEST_STANDALONE -D_HOST_SIM_TESTING -D_FOR_HOST_TESTING -fno-stack-protector -Wno-pointer-to-int-cast
+CFLAGS += -I$(CMN_INCLUDE_DIR) -I$(HALPHY_TOOLS_COMPONENT_DIR)/include -I$(TLV2P0_INC_DIR) -I$(TLV_ROOT)/common/output
+
+LDFLAGS	 = -L$(TLV_ROOT)/cmdEncoder/$(OS) -ltlvencoder
+LDFLAGS	+= -L$(TLV_ROOT)/cmdParser/$(OS)  -ltlvparser
+#LDFLAGS	+= -L$(WORKAREA)/TS_TLV1p0/parseCmdStream/$(OS)  -lparsecmdtlv
+LDFLAGS	+= -L$(TLV_ROOT)/tlvcmdrsp/$(OS)  -ltlvcmdrsp
+#LDFLAGS	= 
+LDFLAGS_SO := -shared 
+
+COMMON_DIR = $(TLV_ROOT)/common
+VPATH	:= . $(COMMON_DIR)
+#EXTRA_SRCS := cmdRspParmsDict.c cmdRspParmsInternal.c testUtil.c
+EXTRA_SRCS := 
+#EXTRA_HANDLER_SRCS := cmdTxHandler.c cmdRxHandler.c
+
+ifeq ($(OS),)
+OS := Linux
+endif
+
+ifeq ($(DEBUG),1)
+    CFLAGS += -g
+endif
+
+
+BIN_TLVCMDRSP        = $(OS)/testTLVCmdRsp.out
+SRCS_BINTLVCMDRSP   := testTLVCmdRsp.c $(EXTRA_SRCS)
+OBJS_BINTLVCMDRSP   :=  $(patsubst %.c,$(OS)/%.o,$(SRCS_BINTLVCMDRSP))
+
+LIB_SO_TLVCMDRSP    := $(OS)/libtlvcmdrsp.so
+LIB_TLVCMDRSP       := $(OS)/libtlvcmdrsp.a
+SRCS_TLVCMDRSP      := tlvCmdRsp.c $(EXTRA_SRCS) 
+OBJS_TLVCMDRSP      :=  $(patsubst %.c,$(OS)/%.o,$(SRCS_TLVCMDRSP))
+
+#all: dirs $(LIB_SO_TLVCMDRSP) $(LIB_TLVCMDRSP) $(BIN_TLVCMDRSP) 
+all: dirs $(LIB_SO_TLVCMDRSP) $(LIB_TLVCMDRSP) 
+
+dirs:
+	mkdir -p $(OS)
+
+$(BIN_TLVCMDRSP): $(OBJS_BINTLVCMDRSP) 
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJS_BINTLVCMDRSP)
+
+$(LIB_TLVCMDRSP): $(OS) $(OBJS_TLVCMDRSP)
+	$(AR) rcs $@ $(OBJS_TLVCMDRSP)
+
+$(LIB_SO_TLVCMDRSP): $(OS) $(OBJS_TLVCMDRSP)
+	$(LD) $(LDFLAGS_SO) -o $@ $(OBJS_TLVCMDRSP)
+
+$(OS)/%.o : %.c
+	$(CC) -c $(CFLAGS) $< -o $@
+
+clean:
+	rm -rf $(OS) 
+
+.PHONY:
+	clean all

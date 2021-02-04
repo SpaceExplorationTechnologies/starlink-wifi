@@ -1,0 +1,24 @@
+From 7c1a9ff609b6506010572d88ad4f07021b77e85b Mon Sep 17 00:00:00 2001
+From: blogic <blogic@3c298f89-4303-0410-b956-a3cf2f4a3e73>
+Date: Thu, 17 Dec 2015 09:27:24 +0000
+Subject: [PATCH] ath9k: Allow configuration of LED polarity in platform data.
+
+Signed-off-by: Vittorio Gambaletta <openwrt@vittgam.net>
+
+git-svn-id: svn://svn.openwrt.org/openwrt/trunk@47910 3c298f89-4303-0410-b956-a3cf2f4a3e73
+---
+ ...2-ath9k_get_led_polarity_from_platform_data.patch | 20 ++++++++++++++++++++
+ .../patches/543-ath9k_entropy_from_adc.patch         |  6 +++---
+ 2 files changed, 23 insertions(+), 3 deletions(-)
+ create mode 100644 package/kernel/mac80211/patches/532-ath9k_get_led_polarity_from_platform_data.patch
+
+--- a/drivers/net/wireless/ath/ath9k/init.c
++++ b/drivers/net/wireless/ath/ath9k/init.c
+@@ -589,6 +589,7 @@ static int ath9k_init_platform(struct ath_softc *sc)
+ 		ah->external_reset = pdata->external_reset;
+ 		ah->disable_2ghz = pdata->disable_2ghz;
+ 		ah->disable_5ghz = pdata->disable_5ghz;
++		ah->config.led_active_high = pdata->led_active_high;
+ 
+ 		if (!pdata->endian_check)
+ 			ah->ah_flags |= AH_NO_EEP_SWAP;

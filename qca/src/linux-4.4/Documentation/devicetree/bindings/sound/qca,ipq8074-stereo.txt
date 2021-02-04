@@ -1,0 +1,17 @@
+* Qualcomm Technologies, Inc IPQ8074 ASoC stereo driver
+
+This node models the Qualcomm Technologies, Inc IPQ8074 ASoC stereo driver
+
+Required properties:
+
+- compatible	 : "qca,ipq8074-stereo"
+- reg		 : should have the stereo register address, length
+- stereo-index	 : should have the stereo port index
+
+Example:
+stereo0: stereo@7709000 {
+	compatible = "qca,ipq8074-stereo";
+	reg = <0x7709000 0x1000>;
+	stereo-index = <STEREO0_ID>;
+	status = "disabled";
+};

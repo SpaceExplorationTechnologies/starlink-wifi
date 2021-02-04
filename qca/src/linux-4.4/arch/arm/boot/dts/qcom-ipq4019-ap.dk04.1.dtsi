@@ -1,0 +1,533 @@
+/* Copyright (c) 2015 - 2016, The Linux Foundation. All rights reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
+
+#include "qcom-ipq4019.dtsi"
+#include "qcom-ipq4019-mhi.dtsi"
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	model = "Qualcomm Technologies, Inc. IPQ4019/AP-DK04.1";
+	compatible = "qcom,ipq4019";
+
+	memory {
+		device_type = "memory";
+		reg = <0x80000000 0x10000000>; /* 256MB */
+	};
+
+	chosen {
+		bootargs-append = " clk_ignore_unused";
+	};
+
+	aliases {
+		sdhc1 = &sdhc_1;
+	};
+
+	soc {
+		pinctrl@0x01000000 {
+			serial_0_pins: serial0_pinmux {
+				mux {
+					pins = "gpio16", "gpio17";
+					function = "blsp_uart0";
+					bias-disable;
+				};
+			};
+
+			led_0_pins: led0_pinmux {
+				mux_1 {
+					pins = "gpio36";
+					function = "led0";
+					bias-pull-down;
+				};
+				mux_2 {
+					pins = "gpio40";
+					function = "led4";
+					bias-pull-down;
+				};
+			};
+
+			serial_1_pins: serial1_pinmux {
+				mux {
+					pins = "gpio8", "gpio9",
+						"gpio10", "gpio11";
+					function = "blsp_uart1";
+					bias-disable;
+				};
+			};
+
+			spi_0_pins: spi_0_pinmux {
+				pinmux {
+					function = "blsp_spi0";
+					pins = "gpio13", "gpio14", "gpio15";
+					bias-disable;
+				};
+				pinmux_cs {
+					function = "gpio";
+					pins = "gpio12";
+					bias-disable;
+					output-high;
+				};
+			};
+
+			i2c_0_pins: i2c_0_pinmux {
+				mux {
+					pins = "gpio20", "gpio21";
+					function = "blsp_i2c0";
+					bias-disable;
+				};
+			};
+
+			sd_0_pins: sd_0_pinmux {
+				sd0 {
+					pins = "gpio23";
+					function = "sdio0";
+					pull-res = <RES_35_KOHM>;
+					drive-type = <DRV_TYPE_C>;
+					vm-enable;
+				};
+				sd1 {
+					pins = "gpio24";
+					function = "sdio1";
+					pull-res = <RES_35_KOHM>;
+					drive-type = <DRV_TYPE_C>;
+					vm-enable;
+				};
+				sd2 {
+					pins = "gpio25";
+					function = "sdio2";
+					pull-res = <RES_35_KOHM>;
+					drive-type = <DRV_TYPE_C>;
+					vm-enable;
+				};
+				sd3 {
+					pins = "gpio26";
+					function = "sdio3";
+					pull-res = <RES_35_KOHM>;
+					drive-type = <DRV_TYPE_C>;
+					vm-enable;
+				};
+				sdclk {
+					pins = "gpio27";
+					function = "sdio_clk";
+					pull-res = <RES_35_KOHM>;
+					drive-type = <DRV_TYPE_A>;
+					vm-enable;
+				};
+				sdcmd {
+					pins = "gpio28";
+					function = "sdio_cmd";
+					pull-res = <RES_35_KOHM>;
+					drive-type = <DRV_TYPE_C>;
+					vm-enable;
+				};
+				sd4 {
+					pins = "gpio29";
+					function = "sdio4";
+					pull-res = <RES_35_KOHM>;
+					drive-type = <DRV_TYPE_C>;
+					vm-enable;
+				};
+				sd5 {
+					pins = "gpio30";
+					function = "sdio5";
+					pull-res = <RES_35_KOHM>;
+					drive-type = <DRV_TYPE_C>;
+					vm-enable;
+				};
+				sd6 {
+					pins = "gpio31";
+					function = "sdio6";
+					pull-res = <RES_35_KOHM>;
+					drive-type = <DRV_TYPE_C>;
+					vm-enable;
+				};
+				sd7 {
+					pins = "gpio32";
+					function = "sdio7";
+					pull-res = <RES_35_KOHM>;
+					drive-type = <DRV_TYPE_C>;
+					vm-enable;
+				};
+			};
+
+			sd_1_pins: sd_1_pinmux {
+				sd0 {
+					pins = "gpio23";
+					function = "sdio0";
+					pull-res = <RES_35_KOHM>;
+					drive-type = <DRV_TYPE_D>;
+					vm-enable;
+				};
+				sd1 {
+					pins = "gpio24";
+					function = "sdio1";
+					pull-res = <RES_35_KOHM>;
+					drive-type = <DRV_TYPE_D>;
+					vm-enable;
+				};
+				sd2 {
+					pins = "gpio25";
+					function = "sdio2";
+					pull-res = <RES_35_KOHM>;
+					drive-type = <DRV_TYPE_D>;
+					vm-enable;
+				};
+				sd3 {
+					pins = "gpio26";
+					function = "sdio3";
+					pull-res = <RES_35_KOHM>;
+					drive-type = <DRV_TYPE_D>;
+					vm-enable;
+				};
+				sdclk {
+					pins = "gpio27";
+					function = "sdio_clk";
+					pull-res = <RES_35_KOHM>;
+					drive-type = <DRV_TYPE_D>;
+					vm-enable;
+				};
+				sdcmd {
+					pins = "gpio28";
+					function = "sdio_cmd";
+					pull-res = <RES_35_KOHM>;
+					drive-type = <DRV_TYPE_D>;
+					vm-enable;
+				};
+				sd4 {
+					pins = "gpio29";
+					function = "sdio4";
+					pull-res = <RES_35_KOHM>;
+					drive-type = <DRV_TYPE_D>;
+					vm-enable;
+				};
+				sd5 {
+					pins = "gpio30";
+					function = "sdio5";
+					pull-res = <RES_35_KOHM>;
+					drive-type = <DRV_TYPE_D>;
+					vm-enable;
+				};
+				sd6 {
+					pins = "gpio31";
+					function = "sdio6";
+					pull-res = <RES_35_KOHM>;
+					drive-type = <DRV_TYPE_D>;
+					vm-enable;
+				};
+				sd7 {
+					pins = "gpio32";
+					function = "sdio7";
+					pull-res = <RES_35_KOHM>;
+					drive-type = <DRV_TYPE_D>;
+					vm-enable;
+				};
+			};
+			ts_0_pins: ts_0_pinmux {
+				mux_1 {
+					pins = "gpio34";
+					output-high;
+				};
+				mux_2 {
+					pins= "gpio35";
+					input-enable;
+					bias-pull-up;
+				};
+			};
+
+			mdio_pins: mdio_pinmux {
+				mux_1 {
+					pins = "gpio6";
+					function = "mdio0";
+					bias-pull-up;
+				};
+				mux_2 {
+					pins = "gpio7";
+					function = "mdc";
+					bias-pull-up;
+				};
+			};
+
+			nand_pins: nand_pins {
+
+				mux_1 {
+					pins = "gpio52", "gpio53", "gpio54",
+						"gpio55", "gpio56", "gpio61",
+						"gpio62", "gpio63", "gpio69";
+					function = "qpic_pad";
+					bias-disable;
+				};
+
+				mux_2 {
+					pins = "gpio67";
+					function = "qpic_pad0";
+					bias-disable;
+				};
+
+				mux_3 {
+					pins = "gpio64";
+					function = "qpic_pad1";
+					bias-disable;
+				};
+
+				mux_4 {
+					pins = "gpio65";
+					function = "qpic_pad2";
+					bias-disable;
+				};
+
+				mux_5 {
+					pins = "gpio66";
+					function = "qpic_pad3";
+					bias-disable;
+				};
+
+				mux_6 {
+					pins = "gpio57";
+					function = "qpic_pad4";
+					bias-disable;
+				};
+
+				mux_7 {
+					pins = "gpio58";
+					function = "qpic_pad5";
+					bias-disable;
+				};
+
+				mux_8 {
+					pins = "gpio59";
+					function = "qpic_pad6";
+					bias-disable;
+				};
+
+				mux_9 {
+					pins = "gpio60";
+					function = "qpic_pad7";
+					bias-disable;
+				};
+
+				mux_10 {
+					pins = "gpio68";
+					function = "qpic_pad8";
+					bias-disable;
+				};
+
+				pullups {
+					pins = "gpio52", "gpio53", "gpio58",
+						"gpio59";
+					bias-pull-up;
+				};
+
+				pulldowns {
+					pins = "gpio54", "gpio55", "gpio56",
+						"gpio57", "gpio60", "gpio61",
+						"gpio62", "gpio63", "gpio64",
+						"gpio65", "gpio66", "gpio67",
+						"gpio68", "gpio69";
+					bias-pull-down;
+				};
+			};
+		};
+
+		mdio@90000 {
+			status = "ok";
+			pinctrl-0 = <&mdio_pins>;
+			pinctrl-names = "default";
+			phy-reset-gpio = <&tlmm 47 0>;
+			bias-disable;
+		};
+
+		serial@78af000 {
+			pinctrl-0 = <&serial_0_pins>;
+			pinctrl-names = "default";
+			status = "ok";
+		};
+
+		serial@78b0000 {
+			pinctrl-0 = <&serial_1_pins>;
+			pinctrl-names = "default";
+			status = "ok";
+		};
+
+		spi_0: spi@78b5000 { /* BLSP1 QUP1 */
+			pinctrl-0 = <&spi_0_pins>;
+			pinctrl-names = "default";
+			status = "ok";
+			cs-gpios = <&tlmm 12 0>;
+
+			m25p80@0 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0>;
+				compatible = "n25q128a11";
+				linux,modalias = "m25p80", "n25q128a11";
+				spi-max-frequency = <24000000>;
+				use-default-sizes;
+			};
+		};
+
+		i2c_0: i2c@78b7000 { /* BLSP1 QUP2 */
+			pinctrl-0 = <&i2c_0_pins>;
+			pinctrl-names = "default";
+			status = "ok";
+
+			lcd_ts: lcd_ts@40 {
+				compatible = "qca,gsl1680_ts";
+				reg = <0x40>;
+				status = "disabled";
+			};
+		};
+
+		pcie0: pci@40000000 {
+			status = "ok";
+			perst-gpio = <&tlmm 38 0x1>;
+		};
+
+		qcom: ledc@1937000  {
+			status = "ok";
+			pinctrl-0 = <&led_0_pins>;
+			pinctrl-names = "default";
+		};
+
+		ess-switch@c000000 {
+			switch_mac_mode = <0x0>; /* mac mode for RGMII RMII */
+			switch_initvlas = <
+				0x0007c 0x54 /* PORT0_STATUS */
+			>;
+			led_source@0 {
+				led = <0x3>;     /*led number */
+				source = <0x1>;  /*source id 1 */
+				mode = "normal"; /*on,off,blink,normal */
+				speed = "all";   /*10M,100M,1000M,all */
+				freq = "auto";   /*2Hz,4Hz,8Hz,auto*/
+			};
+			led_source@1 {
+				led = <0x4>;     /*led number */
+				source = <0x4>;  /*source id 4 */
+				mode = "normal"; /*on,off,blink,normal */
+				speed = "all";   /*10M,100M,1000M,all */
+				freq = "auto";   /*2Hz,4Hz,8Hz,auto*/
+			};
+			led_source@2 {
+				led = <0x5>;     /*led number */
+				source = <0x7>;  /*source id 7 */
+				mode = "normal"; /*on,off,blink,normal */
+				speed = "all";   /*10M,100M,1000M,all */
+				freq = "auto";   /*2Hz,4Hz,8Hz,auto*/
+			};
+			led_source@3 {
+				led = <0x6>;     /*led number */
+				source = <0xa>;  /*source id 10 */
+				mode = "normal"; /*on,off,blink,normal */
+				speed = "all";   /*10M,100M,1000M,all */
+				freq = "auto";   /*2Hz,4Hz,8Hz,auto*/
+			};
+			led_source@4 {
+				led = <0x7>;     /*led number */
+				source = <0xd>;  /*source id 13 */
+				mode = "normal"; /*on,off,blink,normal */
+				speed = "all";   /*10M,100M,1000M,all */
+				freq = "auto";   /*2Hz,4Hz,8Hz,auto*/
+			};
+		};
+
+		vccq_sd0: regulator@0 {
+			compatible = "qcom,regulator-ipq40xx";
+			regulator-name = "SD0 VccQ";
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <3000000>;
+			states = <3000000 0x3
+				1800000 0x1>;
+			reg = <0x01948000 0x4>;
+			mask = <0x3>;
+		};
+
+		sdhc_1: sdhci@7824000{
+			status = "ok";
+			qcom,bus-speed-mode = "HS200_1p8v", "DDR_1p8v";
+			qcom,clk-rates = <400000 25000000 50000000 100000000 \
+					 192000000>;
+			pinctrl-0 = <&sd_0_pins>;
+			pinctrl-1 = <&sd_1_pins>;
+			pinctrl-names = "active", "sleep";
+			vqmmc-supply = <&vccq_sd0>;
+			cd-gpios = <&tlmm 22 0x1>;
+			sd-ldo-gpios = <&tlmm 33 0x1>;
+		};
+
+		tcsr: tcsr@194b000 {
+			status = "ok";
+		};
+
+		usb3_ss_phy: ssphy@0 {
+			status = "ok";
+		};
+
+		usb3_hs_phy: hsphy@a6000 {
+			status = "ok";
+		};
+
+		usb2_hs_phy: hsphy@a8000 {
+			status = "ok";
+		};
+
+		usb3: usb3@8a00000 {
+			status = "ok";
+		};
+
+		usb2: usb2@6000000 {
+			status = "ok";
+		};
+
+		qpic_bam: dma@7984000{
+			status = "ok";
+		};
+
+		nand: qpic-nand@79b0000 {
+			pinctrl-0 = <&nand_pins>;
+			pinctrl-names = "default";
+			status = "ok";
+		};
+
+		gpio_keys {
+			compatible = "gpio-keys";
+
+			button@1 {
+				label = "wps";
+				linux,code = <KEY_WPS_BUTTON>;
+				gpios = <&tlmm 18 GPIO_ACTIVE_LOW>;
+				linux,input-type = <1>;
+			};
+		};
+
+		wifi0: wifi@a000000 {
+			wifi_led_num = <2>;         /* Wifi 2G */
+			wifi_led_source = <0>;      /* source id 0 */
+		};
+
+		wifi1: wifi@a800000 {
+			wifi_led_num = <1>;         /* Wifi 5G */
+			wifi_led_source = <2>;      /* source id 2 */
+		};
+
+		qcom_mdss_qpic@7980000 {
+			status = "ok";
+		};
+
+		qcom_mdss_qpic_panel {
+			status = "ok";
+		};
+	};
+};

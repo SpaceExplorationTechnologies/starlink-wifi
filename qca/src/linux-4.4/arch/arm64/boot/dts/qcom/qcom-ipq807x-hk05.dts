@@ -1,0 +1,127 @@
+/dts-v1/;
+/*
+ * Copyright (c) 2017, The Linux Foundation. All rights reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+#include "qcom-ipq807x-soc.dtsi"
+#include "qcom-ipq807x-hk-cpu.dtsi"
+
+/ {
+	#address-cells = <0x2>;
+	#size-cells = <0x2>;
+	model = "Qualcomm Technologies, Inc. IPQ807x/AP-HK05";
+	compatible = "qcom,ipq807x-hk01", "qcom,ipq807x";
+	qcom,msm-id = <0x125 0x0>;
+	interrupt-parent = <&intc>;
+	qcom,board-id = <0x10 0x0>;
+
+	chosen {
+		bootargs = "console=ttyMSM0,115200,n8 root=/dev/ram0 rw init=/init";
+		bootargs-append = " swiotlb=1";
+	};
+};
+
+&tlmm {
+	uart_pins: uart_pins {
+		mux {
+			pins = "gpio23", "gpio24";
+			function = "blsp4_uart1";
+			drive-strength = <8>;
+			bias-disable;
+		};
+	};
+};
+
+&apss_clk {
+	status = "disabled";
+};
+
+&blsp_dma {
+	status = "disabled";
+};
+
+&serial_blsp4 {
+       pinctrl-0 = <&uart_pins>;
+       pinctrl-names = "default";
+       status = "ok";
+};
+
+&q6v5_wcss {
+	qca,emulation = <1>;
+	status = "disabled";
+};
+
+&apcs {
+	status = "disabled";
+};
+
+&wcss {
+	status = "disabled";
+};
+
+&smem {
+	status = "disabled";
+};
+
+&tcsr_mutex_block {
+	status = "disabled";
+};
+
+&tcsr_mutex {
+	status = "disabled";
+};
+
+&nss_crypto {
+	status = "ok";
+};
+
+&watchdog {
+	status = "disabled";
+};
+
+&glink_mpss_ssr {
+	status = "disabled";
+};
+
+&glink_modem {
+	status = "disabled";
+};
+
+&ipc_router {
+	status = "disabled";
+};
+
+&ipc_router_modem {
+	status = "disabled";
+};
+
+&msm_imem {
+	status = "disabled";
+};
+
+&cryptobam {
+	status = "disabled";
+};
+
+&crypto {
+	status = "disabled";
+};
+
+&i2c_0 {
+	status = "disabled";
+};
+
+&i2c_1 {
+	status = "disabled";
+};

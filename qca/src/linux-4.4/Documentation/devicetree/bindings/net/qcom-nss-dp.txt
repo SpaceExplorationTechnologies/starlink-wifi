@@ -1,0 +1,63 @@
+* Qualcomm Technologies Inc. NSS Data Plane Platform Driver.
+
+Master data plane driver for the QCA networking subsystem (NSS)
+
+Required properties:
+- device_type: = "network";
+- compatible: = should be "qcom,nss-dp";
+- qcom,id: Unique Identifier for the GMAC block. This field is unique identifier
+		for each physical port.
+- reg: Base address and size for the Qcom/Synopsys Mac Register space
+- qcom,mactype: = 0 for Qcom GMAC, 1 for Synopsys GMAC.
+- local-mac-address: MAC Address to be used at the time of interface
+			initialization
+
+
+
+Example:
+
+dp1 {
+	device_type = "network";
+	compatible = "qcom,nss-dp";
+	qcom,id = <1>;
+	reg = <0x3a001000 0x200>;
+	qcom,mactype = <0>;
+	local-mac-address = [000000000000];
+};
+
+
+Required properties:
+- compatible: = should be "qcom,edma";
+- reg: Base address and size for the Qcom/Synopsys Mac Register space
+- reg-names: Namespace of registers
+- qcom,txdesc-ring-start: TX descriptor start ring number
+- qcom,txdesc-rings: Total number TX descriptor rings used from TX descriptor start ring number
+- qcom,txcmpl-ring_start: TX completion descriptor ring number start
+- qcom,txcmpl-rings: Total number TX completion descriptor rings used from TX completion descriptor start ring number
+- qcom,rxfill-ring_start: RX fill ring start number
+- qcom,rxfill-rings: Total number RX fill rings used from RX receive ring start number
+- qcom,rxdesc-ring_start: RX receive ring start number
+- qcom,rxdesc-rings: Total number RX rings used from RX receive ring start number
+- interrupts: Interrupt number used for txcmpl_ring, rxfill_ring, rxdesc_ring and misc interrupt in that order
+
+
+
+
+edma@3ab00000 {
+	compatible = "qcom,edma";
+	reg = <0x3ab00000 0x76900>;
+	reg-names = "edma-reg-base";
+	qcom,txdesc-ring-start = <23>;
+	qcom,txdesc-rings = <1>;
+	qcom,txcmpl-ring-start = <7>;
+	qcom,txcmpl-rings = <1>;
+	qcom,rxfill-ring-start = <7>;
+	qcom,rxfill-rings = <1>;
+	qcom,rxdesc-ring-start = <15>;
+	qcom,rxdesc-rings = <1>;
+	interrupts = <0 345 4>,
+		   <0 353 4>,
+		   <0 361 4>,
+		   <0 344 4>;
+};
+

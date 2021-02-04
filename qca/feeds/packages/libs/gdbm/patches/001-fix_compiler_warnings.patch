@@ -1,0 +1,26 @@
+Index: gdbm-1.11/src/gdbmtool.h
+===================================================================
+--- gdbm-1.11.orig/src/gdbmtool.h	2013-05-15 21:02:42.000000000 +0530
++++ gdbm-1.11/src/gdbmtool.h	2016-06-24 14:56:11.531963648 +0530
+@@ -250,7 +250,7 @@
+ void end_def (void);
+ 
+ int yylex (void);
+-int yyerror (char *s);
++int yyerror (const char *s);
+ int yyparse (void);
+ 
+ void datum_format (FILE *fp, datum const *dat, struct dsegm *ds);
+Index: gdbm-1.11/src/gram.c
+===================================================================
+--- gdbm-1.11.orig/src/gram.c	2013-12-25 15:23:45.000000000 +0530
++++ gdbm-1.11/src/gram.c	2016-06-24 14:59:12.560900894 +0530
+@@ -2017,7 +2017,7 @@
+ }
+ 
+ int
+-yyerror (char *s)
++yyerror (const char *s)
+ {
+   terror ("%s", s);
+   return 0;

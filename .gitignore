@@ -2,7 +2,6 @@
 .DS_Store
 .*.swp
 /env
-/dl
 /.config
 /.config.old
 /bin
@@ -16,7 +15,6 @@
 /package/feeds
 /package/openwrt-packages
 key-build*
-/qca
 *.orig
 *.rej
 *~

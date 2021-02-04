@@ -1,0 +1,14 @@
+diff -Nur MPlayer-1.1.1/mplayer.c b/mplayer.c
+--- MPlayer-1.1.1/mplayer.c	2013-05-06 01:18:01.000000000 +0800
++++ b/mplayer.c	2013-12-04 15:24:38.645111047 +0800
+@@ -2156,8 +2156,8 @@
+         // this is where mplayer sleeps during audio-only playback
+         // to avoid 100% CPU use
+         sleep_time = (ao_data.outburst - bytes_to_write) * 1000 / ao_data.bps;
+-        if (sleep_time < 10)
+-            sleep_time = 10;                  // limit to 100 wakeups per second
++        if (sleep_time < 20)
++            sleep_time = 20;                  // limit to 50 wakeups per second
+         usec_sleep(sleep_time * 1000);
+     }
+ 

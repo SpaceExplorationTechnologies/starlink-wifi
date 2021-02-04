@@ -1,0 +1,553 @@
+/* Copyright (c) 2015-2017, The Linux Foundation. All rights reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	model = "QCA IPQ8064/DB149";
+	compatible = "qcom,ipq8064-db149", "qcom,ipq8064";
+
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+		rsvd@41200000 {
+			reg = <0x41200000 0x300000>;
+			no-map;
+		};
+	};
+
+	aliases {
+		serial0 = &uart2;
+		mdio-gpio0 = &mdio0;
+		/*
+		 * U-Boot searches for these entries and patches
+		 * 'local-mac-address'
+		 */
+		ethernet0 = &gmac0;
+		ethernet1 = &gmac1;
+		ethernet2 = &gmac2;
+		ethernet3 = &gmac3;
+	};
+
+	chosen {
+		linux,stdout-path = "serial0:115200n8";
+	};
+
+	soc {
+		pinmux@800000 {
+			spi_pins: spi_pins {
+				mux {
+					pins = "gpio18", "gpio19", "gpio21";
+					function = "gsbi5";
+					drive-strength = <10>;
+					bias-none;
+				};
+			};
+
+			nand_pins: nand_pins {
+				mux {
+					pins = "gpio34", "gpio35", "gpio36",
+					       "gpio37", "gpio38", "gpio39",
+					       "gpio40", "gpio41", "gpio42",
+					       "gpio43", "gpio44", "gpio45",
+					       "gpio46", "gpio47";
+					function = "nand";
+					drive-strength = <10>;
+					bias-disable;
+				};
+				pullups {
+					pins = "gpio39";
+					bias-pull-up;
+				};
+				hold {
+					pins = "gpio40", "gpio41", "gpio42",
+					       "gpio43", "gpio44", "gpio45",
+					       "gpio46", "gpio47";
+					bias-bus-hold;
+				};
+			};
+
+			mdio0_pins: mdio0_pins {
+				mux {
+					pins = "gpio0", "gpio1";
+					function = "gpio";
+					drive-strength = <8>;
+					bias-disable;
+				};
+			};
+
+			rgmii0_pins: rgmii0_pins {
+				mux {
+					pins = "gpio2", "gpio66";
+					drive-strength = <8>;
+					bias-disable;
+				};
+			};
+
+			sdcc1_pins: sdcc1_pinmux {
+				mux {
+					pins = "gpio38", "gpio39", "gpio40",
+					       "gpio41", "gpio42", "gpio43",
+					       "gpio44", "gpio45", "gpio46",
+					       "gpio47";
+					function = "sdc1";
+				};
+				cmd {
+					pins = "gpio45";
+					drive-strength = <10>;
+					bias-pull-up;
+				};
+				data {
+					pins = "gpio38", "gpio39", "gpio40",
+					       "gpio41", "gpio43", "gpio44",
+					       "gpio46", "gpio47";
+					drive-strength = <10>;
+					bias-pull-up;
+				};
+				clk {
+					pins = "gpio42";
+					drive-strength = <16>;
+					bias-pull-down;
+				};
+				card_det {
+					pins = "gpio51";
+					drive-strength = <2>;
+					bias-pull-up;
+				};
+			};
+
+			sdcc3_pins: sdcc3_pinmux {
+				mux {
+					pins = "gpio52";
+					drive-strength = <2>;
+					bias-pull-down;
+				};
+				card_det {
+					pins = "gpio61";
+					drive-strength = <16>;
+					bias-pull-none;
+				};
+			};
+
+			buttons_pins: buttons_pinmux {
+				mux {
+					pins = "gpio26";
+					drive-strength = <2>;
+					bias-pull-up;
+				};
+			};
+		};
+
+		gsbi2: gsbi@12480000 {
+			qcom,mode = <GSBI_PROT_I2C_UART>;
+			status = "ok";
+			uart2: serial@12490000 {
+				status = "ok";
+			};
+		};
+
+		gsbi5: gsbi@1a200000 {
+			qcom,mode = <GSBI_PROT_SPI>;
+			status = "ok";
+
+			spi4: spi@1a280000 {
+				status = "ok";
+				spi-max-frequency = <50000000>;
+
+				pinctrl-0 = <&spi_pins>;
+				pinctrl-names = "default";
+
+				cs-gpios = <&qcom_pinmux 20 0>;
+
+				flash: m25p80@0 {
+					compatible = "s25fl256s1";
+					#address-cells = <1>;
+					#size-cells = <1>;
+					spi-max-frequency = <50000000>;
+					reg = <0>;
+					m25p,fast-read;
+
+					partition@0 {
+						label = "lowlevel_init";
+						reg = <0x0 0x1b0000>;
+					};
+
+					partition@1 {
+						label = "u-boot";
+						reg = <0x1b0000 0x80000>;
+					};
+
+					partition@2 {
+						label = "u-boot-env";
+						reg = <0x230000 0x40000>;
+					};
+
+					partition@3 {
+						label = "caldata";
+						reg = <0x270000 0x40000>;
+					};
+
+					partition@4 {
+						label = "firmware";
+						reg = <0x2b0000 0x1d50000>;
+					};
+				};
+			};
+		};
+
+		sata-phy@1b400000 {
+			status = "ok";
+		};
+
+		sata@29000000 {
+			status = "ok";
+		};
+
+		phy@100f8800 {		/* USB3 port 1 HS phy */
+			status = "ok";
+		};
+
+		phy@100f8830 {		/* USB3 port 1 SS phy */
+			status = "ok";
+		};
+
+		phy@110f8800 {		/* USB3 port 0 HS phy */
+			status = "ok";
+		};
+
+		phy@110f8830 {		/* USB3 port 0 SS phy */
+			status = "ok";
+		};
+
+		usb30@0 {
+			status = "ok";
+		};
+
+		usb30@1 {
+			status = "ok";
+		};
+
+		pcie0: pci@1b500000 {
+			status = "ok";
+		};
+
+		pcie1: pci@1b700000 {
+			status = "ok";
+		};
+
+		pcie2: pci@1b900000 {
+			status = "ok";
+		};
+
+		nand@1ac00000 {
+			status = "ok";
+
+			pinctrl-0 = <&nand_pins>;
+			pinctrl-names = "default";
+
+			nand-ecc-strength = <4>;
+			nand-bus-width = <8>;
+		};
+
+		gpio_keys {
+			compatible = "gpio-keys";
+			pinctrl-0 = <&buttons_pins>;
+			pinctrl-names = "default";
+			button@1 {
+				label = "wps";
+				linux,code = <KEY_WPS_BUTTON>;
+				gpios = <&qcom_pinmux 26 GPIO_ACTIVE_LOW>;
+				linux,input-type = <1>;
+				debounce-interval = <60>;
+			};
+		};
+
+		vcc_sdc3: regulator@0 {
+			compatible = "regulator-gpio";
+			regulator-name = "SDC3 GPIO Regulator";
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <3000000>;
+
+			gpios = <&qcom_pinmux 61 0>;
+			states = <3000000 0
+				1800000 1>;
+			enable-active-high;
+		};
+
+		mdio0: mdio {
+			compatible = "virtual,mdio-gpio";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			gpios = <&qcom_pinmux 1 0 &qcom_pinmux 0 0>;
+
+			pinctrl-0 = <&mdio0_pins>;
+			pinctrl-names = "default";
+
+			phy0: ethernet-phy@0 {
+				device_type = "ethernet-phy";
+				reg = <0>;
+				qca,ar8327-initvals = <
+					0x00004 0x7600000   /* PAD0_MODE */
+					0x00008 0x1000000   /* PAD5_MODE */
+					0x0000c 0x80        /* PAD6_MODE */
+					0x000e4 0xaa545     /* MAC_POWER_SEL */
+					0x000e0 0xc74164de  /* SGMII_CTRL */
+					0x0007c 0x4e        /* PORT0_STATUS */
+					0x00094 0x4e        /* PORT6_STATUS */
+				>;
+			};
+
+			phy4: ethernet-phy@4 {
+				device_type = "ethernet-phy";
+				reg = <4>;
+			};
+
+			phy6: ethernet-phy@6 {
+				device_type = "ethernet-phy";
+				reg = <6>;
+			};
+
+			phy7: ethernet-phy@7 {
+				device_type = "ethernet-phy";
+				reg = <7>;
+			};
+		};
+
+		nss0: nss@40000000 {
+			compatible = "qcom,nss";
+			interrupts = <GIC_SPI 213 IRQ_TYPE_LEVEL_HIGH
+				      GIC_SPI 232 IRQ_TYPE_LEVEL_HIGH>;
+			reg = <0x36000000 0x1000 0x39000000 0x10000>;
+			reg-names = "nphys", "vphys";
+			clocks = <&gcc NSS_CORE_CLK>, <&gcc NSSTCM_CLK_SRC>,
+				 <&gcc NSSTCM_CLK>, <&nss_fabric0_clk>,
+				 <&nss_fabric1_clk>;
+			clock-names = "nss-core-clk", "nss-tcm-src",
+				      "nss-tcm-clk", "nss-fab0-clk",
+				      "nss-fab1-clk";
+			resets = <&gcc UBI32_CORE1_CLKRST_CLAMP_RESET>,
+				 <&gcc UBI32_CORE1_CLAMP_RESET>,
+				 <&gcc UBI32_CORE1_AHB_RESET>,
+				 <&gcc UBI32_CORE1_AXI_RESET>;
+			reset-names = "clkrst-clamp", "clamp", "ahb", "axi";
+			qcom,id = <0>;
+			qcom,num-irq = <2>;
+			qcom,num-queue = <2>;
+			qcom,load-addr = <0x40000000>;
+			qcom,turbo-frequency;
+
+			qcom,ipv4-enabled;
+			qcom,ipv6-enabled;
+			qcom,wlanredirect-enabled;
+			qcom,tun6rd-enabled;
+			qcom,l2tpv2-enabled;
+			qcom,gre-enabled;
+			qcom,map-t-enabled;
+			qcom,portid-enabled;
+			qcom,pppoe-enabled;
+			qcom,pptp-enabled;
+			qcom,tunipip6-enabled;
+			qcom,shaping-enabled;
+			qcom,wlan-dataplane-offload-enabled;
+		};
+
+		nss1: nss@40800000 {
+			compatible = "qcom,nss";
+			interrupts = <GIC_SPI 214 IRQ_TYPE_LEVEL_HIGH
+				      GIC_SPI 233 IRQ_TYPE_LEVEL_HIGH>;
+			reg = <0x36400000 0x1000 0x39010000 0x10000>;
+			reg-names = "nphys", "vphys";
+			resets = <&gcc UBI32_CORE2_CLKRST_CLAMP_RESET>,
+				 <&gcc UBI32_CORE2_CLAMP_RESET>,
+				 <&gcc UBI32_CORE2_AHB_RESET>,
+				 <&gcc UBI32_CORE2_AXI_RESET>;
+			reset-names = "clkrst-clamp", "clamp", "ahb", "axi";
+			qcom,id = <1>;
+			qcom,num-irq = <2>;
+			qcom,num-queue = <2>;
+			qcom,load-addr = <0x40800000>;
+			qcom,turbo-frequency;
+
+			qcom,capwap-enabled;
+			qcom,crypto-enabled;
+			qcom,dtls-enabled;
+			qcom,ipsec-enabled;
+		};
+
+		nss-gmac-common@03000000 {
+			compatible = "qcom,nss-gmac-common";
+			reg = <0x03000000 0x0000FFFF 0x1bb00000
+			       0x0000FFFF 0x00900000 0x00004000>;
+			reg-names = "nss_reg_base" , "qsgmii_reg_base",
+				    "clk_ctl_base";
+		};
+
+		gmac0: ethernet@37000000 {
+			status = "ok";
+			device_type = "network";
+			compatible = "qcom,nss-gmac";
+			reg = <0x37000000 0x200000>;
+			interrupts = <GIC_SPI 220 IRQ_TYPE_LEVEL_HIGH>;
+			phy-mode = "rgmii";
+			qcom,id = <0>;
+			qcom,pcs-chanid = <0>;
+			qcom,phy-mdio-addr = <4>;
+			qcom,poll-required = <1>;
+			qcom,rgmii-delay = <1>;
+			qcom,emulation = <0>;
+			qcom,forced-speed = <1000>;
+			qcom,forced-duplex = <1>;
+			qcom,mmds-mask = <0>;
+			qcom,socver = <0>;
+			local-mac-address = [000000000000];
+			mdiobus = <&mdio0>;
+		};
+
+		gmac1: ethernet@37200000 {
+			status = "ok";
+			device_type = "network";
+			compatible = "qcom,nss-gmac";
+			reg = <0x37200000 0x200000>;
+			interrupts = <GIC_SPI 223 IRQ_TYPE_LEVEL_HIGH>;
+			phy-mode = "sgmii";
+			qcom,id = <1>;
+			qcom,pcs-chanid = <1>;
+			qcom,phy-mdio-addr = <0>;
+			qcom,poll-required = <0>;
+			qcom,rgmii-delay = <0>;
+			qcom,emulation = <0>;
+			qcom,forced-speed = <1000>;
+			qcom,forced-duplex = <1>;
+			qcom,mmds-mask = <0>;
+			qcom,socver = <0>;
+			local-mac-address = [000000000000];
+			mdiobus = <&mdio0>;
+		};
+
+		gmac2: ethernet@37400000 {
+			status = "ok";
+			device_type = "network";
+			compatible = "qcom,nss-gmac";
+			reg = <0x37400000 0x200000>;
+			interrupts = <GIC_SPI 226 IRQ_TYPE_LEVEL_HIGH>;
+			phy-mode = "sgmii";
+			qcom,id = <2>;
+			qcom,pcs-chanid = <2>;
+			qcom,phy-mdio-addr = <6>;
+			qcom,poll-required = <1>;
+			qcom,rgmii-delay = <0>;
+			qcom,emulation = <0>;
+			qcom,forced-speed = <0>;
+			qcom,forced-duplex = <0xFF>;
+			qcom,mmds-mask = <0>;
+			qcom,socver = <0>;
+			local-mac-address = [000000000000];
+			mdiobus = <&mdio0>;
+		};
+
+		gmac3: ethernet@37600000 {
+			status = "ok";
+			device_type = "network";
+			compatible = "qcom,nss-gmac";
+			reg = <0x37600000 0x200000>;
+			interrupts = <GIC_SPI 229 IRQ_TYPE_LEVEL_HIGH>;
+			phy-mode = "sgmii";
+			qcom,id = <3>;
+			qcom,pcs-chanid = <3>;
+			qcom,phy-mdio-addr = <7>;
+			qcom,poll-required = <1>;
+			qcom,rgmii-delay = <0>;
+			qcom,emulation = <0>;
+			qcom,forced-speed = <0>;
+			qcom,forced-duplex = <0xFF>;
+			qcom,mmds-mask = <0>;
+			qcom,socver = <0>;
+			local-mac-address = [000000000000];
+			mdiobus = <&mdio0>;
+		};
+
+		crypto1: crypto@38000000 {
+			compatible = "qcom,nss-crypto";
+			reg-names = "crypto_pbase", "bam_base";
+			reg = <0x38000000 0x20000>,
+			    <0x38004000 0x22000>;
+			resets = <&gcc CRYPTO_ENG1_RESET>,
+				 <&gcc CRYPTO_AHB_RESET>;
+			reset-names = "rst_eng", "rst_ahb";
+			clocks = <&gcc CE5_CORE_CLK>, <&gcc CE5_A_CLK>,
+				<&gcc CE5_H_CLK>;
+			clock-names = "ce5_core", "ce5_aclk", "ce5_hclk";
+			qcom,ee = <0>;
+		};
+
+		crypto2: crypto@38400000 {
+			compatible = "qcom,nss-crypto";
+			reg-names = "crypto_pbase", "bam_base";
+			reg = <0x38400000 0x20000>,
+			    <0x38404000 0x22000>;
+			resets = <&gcc CRYPTO_ENG2_RESET>;
+			reset-names = "rst_eng";
+			qcom,ee = <0>;
+		};
+
+		crypto3: crypto@38800000 {
+			compatible = "qcom,nss-crypto";
+			reg-names = "crypto_pbase", "bam_base";
+			reg = <0x38800000 0x20000>,
+			    <0x38804000 0x22000>;
+			resets = <&gcc CRYPTO_ENG3_RESET>;
+			reset-names = "rst_eng";
+			qcom,ee = <0>;
+		};
+
+		crypto4: crypto@38C00000 {
+			compatible = "qcom,nss-crypto";
+			reg-names = "crypto_pbase", "bam_base";
+			reg = <0x38C00000 0x20000>,
+			    <0x38C04000 0x22000>;
+			resets = <&gcc CRYPTO_ENG4_RESET>;
+			reset-names = "rst_eng";
+			qcom,ee = <0>;
+		};
+	};
+
+	amba {
+		/* eMMC */
+		sdcc@12400000 {
+			status = "disabled";
+			pinctrl-0 = <&sdcc1_pins>;
+			pinctrl-names = "default";
+		};
+
+		/* External micro SD card */
+		sdcc@12180000 {
+			status = "ok";
+			pinctrl-0 = <&sdcc3_pins>;
+			pinctrl-names = "default";
+			vmmc-supply = <&vcc_sdc3>;
+			cd-gpios  = <&qcom_pinmux 52 0>;
+			cd-inverted;
+			qcom-uhs-gpio = <61>;
+		};
+	};
+};
+
+&adm_dma {
+	status = "ok";
+};

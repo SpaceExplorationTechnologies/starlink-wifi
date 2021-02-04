@@ -1,0 +1,31 @@
+Index: openswan-2.6.38/linux/net/ipsec/ipsec_ocf.c
+===================================================================
+--- openswan-2.6.38.orig/linux/net/ipsec/ipsec_ocf.c	2013-11-15 19:06:05.953256556 +0530
++++ openswan-2.6.38/linux/net/ipsec/ipsec_ocf.c	2013-11-15 19:09:06.377254038 +0530
+@@ -59,7 +59,7 @@
+ 
+ /* tuning params for OCF */
+ 
+-int ipsec_ocf_batch = 1;
++int ipsec_ocf_batch = 0;
+ module_param(ipsec_ocf_batch,int,0644);
+ MODULE_PARM_DESC(ipsec_ocf_batch,
+ 	"Make OCF queue packets rather than process them immediately");
+@@ -736,7 +736,7 @@
+ 	crp->crp_olen = irs->skb->len; /* Total output length */
+ 	crp->crp_flags =
+ 			CRYPTO_F_SKBUF |
+-			(ipsec_ocf_cbimm ? CRYPTO_F_BATCH : 0) |
++			(ipsec_ocf_cbimm ? CRYPTO_F_CBIMM : 0) |
+ 			(ipsec_ocf_batch ? CRYPTO_F_BATCH : 0) |
+ 			0;
+ 	crp->crp_buf = (caddr_t) irs->skb;
+@@ -1162,7 +1162,7 @@
+ 	crp->crp_olen = ixs->skb->len; /* Total output length */
+ 	crp->crp_flags =
+ 			CRYPTO_F_SKBUF |
+-			(ipsec_ocf_cbimm ? CRYPTO_F_BATCH : 0) |
++			(ipsec_ocf_cbimm ? CRYPTO_F_CBIMM : 0) |
+ 			(ipsec_ocf_batch ? CRYPTO_F_BATCH : 0) |
+ 			0;
+ 	crp->crp_buf = (caddr_t) ixs->skb;

@@ -1,0 +1,70 @@
+diff --git a/ext/openwrt/scripts/functions/common/device_info b/ext/openwrt/scripts/functions/common/device_info
+index 2d3afd3..fb9f9ce 100755
+--- a/ext/openwrt/scripts/functions/common/device_info
++++ b/ext/openwrt/scripts/functions/common/device_info
+@@ -17,19 +17,27 @@ entry_execute_method_list_forcedinform="$entry_execute_method_list_forcedinform
+ entry_execute_method_root_DeviceInfo() {
+ 	case "$1" in ""|"$DMROOT."|"$DMROOT.DeviceInfo."*)
+ 		common_execute_method_obj "$DMROOT.DeviceInfo." "0"
+-		common_execute_method_param "$DMROOT.DeviceInfo.SpecVersion" "0" "echo 1.0" "" "" "1"
+-		common_execute_method_param "$DMROOT.DeviceInfo.ProvisioningCode" "1" "$UCI_GET easycwmp.@local[0].provisioning_code" "device_info_set_provisioningcode" "" "1"
+ 		common_execute_method_param "$DMROOT.DeviceInfo.Manufacturer" "0" "$UCI_GET easycwmp.@device[0].manufacturer" "" "" "1"
+-		common_execute_method_param "$DMROOT.DeviceInfo.ManufacturerOUI" "0" "$UCI_GET easycwmp.@device[0].oui" "" "" "1"
++		common_execute_method_param "$DMROOT.DeviceInfo.ManufacturerOUI" "0" "device_info_get_manufacturerOUI" "" "" "1"
++		common_execute_method_param "$DMROOT.DeviceInfo.ModelName" "0" "$UCI_GET easycwmp.@device[0].model_name" "" "" "1"
++		common_execute_method_param "$DMROOT.DeviceInfo.ModelNumber" "0" "$UCI_GET easycwmp.@device[0].model_number" "" "" "1"
+ 		common_execute_method_param "$DMROOT.DeviceInfo.ProductClass" "0" "$UCI_GET easycwmp.@device[0].product_class" "" "" "1"
+-		common_execute_method_param "$DMROOT.DeviceInfo.SerialNumber" "0" "$UCI_GET easycwmp.@device[0].serial_number" "" "" "1"
++		common_execute_method_param "$DMROOT.DeviceInfo.SerialNumber" "0" "device_info_get_serial" "" "" "1"
+ 		common_execute_method_param "$DMROOT.DeviceInfo.HardwareVersion" "0" "$UCI_GET easycwmp.@device[0].hardware_version" "" "" "1"
+ 		common_execute_method_param "$DMROOT.DeviceInfo.SoftwareVersion" "0" "$UCI_GET easycwmp.@device[0].software_version" "" "" "1"
+ 		common_execute_method_param "$DMROOT.DeviceInfo.UpTime" "0" "device_info_get_uptime" "" "xsd:unsignedInt"
+-		common_execute_method_param "$DMROOT.DeviceInfo.DeviceLog" "0" "dmesg | tail -n1"
++		common_execute_method_param "$DMROOT.DeviceInfo.ProcessorNumberOfEnteries" "0" "$UCI_GET easycwmp.@device[0].processor_count" "" "" "1"
+ 		common_execute_method_obj "$DMROOT.DeviceInfo.MemoryStatus." "0"
+-		common_execute_method_param "$DMROOT.DeviceInfo.MemoryStatus.Total" "0" "device_info_get_total_memory"
+-		common_execute_method_param "$DMROOT.DeviceInfo.MemoryStatus.Free" "0" "device_info_get_free_memory"
++		common_execute_method_param "$DMROOT.DeviceInfo.MemoryStatus.Total" "0" "device_info_get_total_memory" "" "" "1"
++		common_execute_method_param "$DMROOT.DeviceInfo.MemoryStatus.Free" "0" "device_info_get_free_memory" "" "" "1"
++		common_execute_method_obj "$DMROOT.DeviceInfo.ProcessStatus." "0"
++		common_execute_method_param "$DMROOT.DeviceInfo.ProcessStatus.CPUUsage" "0" "device_info_get_cpu_usage" "" "" "1"
++		common_execute_method_param "$DMROOT.DeviceInfo.ProcessStatus.ProcessNumberOfEntries" "0" "device_info_get_process_count" "" "" "1"
++		common_execute_method_obj "$DMROOT.DeviceInfo.NetworkProperties." "0"
++		common_execute_method_param "$DMROOT.DeviceInfo.NetworkProperties.MaxTCPWindowSize" "0" "device_info_get_max_tcp_win" "" "" "1"
++		common_execute_method_param "$DMROOT.DeviceInfo.NetworkProperties.TCPImplementation" "0" "device_info_get_tcp_implementation" "" "" "1"
++		common_execute_method_obj "$DMROOT.DeviceInfo.ProxierInfo." "0"
++		common_execute_method_param "$DMROOT.DeviceInfo.ProxierInfo.ManufacturerOUI" "0" "device_info_get_manufacturerOUI" "" "" "1"
+ 		return 0;
+ 		;;
+ 	esac
+@@ -57,3 +65,30 @@ device_info_set_provisioningcode() {
+ device_info_get_uptime() {
+ 	awk -F '.' '{ print $1 }' /proc/uptime
+ }
++
++device_info_get_cpu_usage() {
++        grep 'cpu ' /proc/stat | awk '{usage=($2+$3+$4+$7+$8+$9)/($2+$3+$4+$5+$6+$7+$8+$9)} END {print usage*100 "%"}'
++}
++
++device_info_get_process_count() {
++
++        ps > /tmp/ps.log
++        wc -l < /tmp/ps.log
++
++}
++
++device_info_get_max_tcp_win() {
++        cat /proc/sys/net/ipv4/tcp_rmem | awk '{print $3}'
++}
++
++device_info_get_tcp_implementation(){
++        cat /proc/sys/net/ipv4/tcp_congestion_control
++}
++
++device_info_get_manufacturerOUI(){
++         ifconfig | grep HWaddr |awk '{split($5,a,":"); print a[1],":",a[2],":",a[3]}'
++}
++
++device_info_get_serial(){
++        cat /proc/cpuinfo | grep 'Serial'
++}

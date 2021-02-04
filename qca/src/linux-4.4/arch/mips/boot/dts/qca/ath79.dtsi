@@ -1,0 +1,192 @@
+/* Copyright (c) 2016, The Linux Foundation. All rights reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
+
+/ {
+	compatible = "qca,ath79";
+
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	aliases {
+		spi0 = &spi_0;
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "mips,mips74Kc";
+			reg = <0>;
+		};
+	};
+
+	cpuintc: interrupt-controller {
+		compatible = "qca,ar9132-cpu-intc", "qca,ar7100-cpu-intc";
+
+		interrupt-controller;
+		#interrupt-cells = <1>;
+	};
+
+	ahb {
+		compatible = "simple-bus";
+		ranges;
+
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		interrupt-parent = <&cpuintc>;
+
+		apb {
+			compatible = "simple-bus";
+			ranges;
+
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			interrupt-parent = <&miscintc>;
+
+			ddr_ctrl: memory-controller@18000000 {
+				compatible = "qca,ar9132-ddr-controller",
+						"qca,ar7240-ddr-controller";
+				reg = <0x18000000 0x100>;
+
+				#qca,ddr-wb-channel-cells = <1>;
+			};
+
+			uart@18020000 {
+				compatible = "ns16550A", "serial8250";
+				reg = <0x18020000 0x20>;
+				interrupts = <3>;
+				interrupt-parent = <&miscintc>;
+				clocks = <&pll 3>;
+				clock-names = "uart";
+
+				reg-io-width = <4>;
+				reg-shift = <2>;
+				no-loopback-test;
+
+				status = "disabled";
+			};
+
+			gpio: gpio@18040000 {
+				compatible = "qca,ar9340-gpio",
+						"qca,ar7100-gpio";
+				reg = <0x18040000 0x30>;
+				interrupts = <2>;
+
+				ngpios = <23>;
+
+				gpio-controller;
+				#gpio-cells = <2>;
+
+				interrupt-controller;
+				#interrupt-cells = <2>;
+			};
+
+			pll: pll-controller@18050000 {
+				compatible = "qca,ar9132-ppl",
+						"qca,ar9130-pll";
+				reg = <0x18050000 0x20>;
+
+				clock-names = "ref";
+				/* The board must provides the ref clock */
+
+				#clock-cells = <1>;
+				clock-output-names = "cpu", "ddr", "ahb";
+			};
+
+			wdt@18060008 {
+				compatible = "qca,ar7130-wdt";
+				reg = <0x18060008 0x8>;
+
+				interrupts = <4>;
+
+				clocks = <&pll 2>;
+				clock-names = "wdt";
+			};
+
+			miscintc: interrupt-controller@18060010 {
+				compatible = "qca,ar7240-misc-intc", "qca,ar9132-misc-intc",
+					   "qca,ar7100-misc-intc";
+				reg = <0x18060010 0x8>;
+
+				interrupt-parent = <&cpuintc>;
+				interrupts = <6>;
+
+				interrupt-controller;
+				#interrupt-cells = <1>;
+			};
+
+			ip2_int: interrupt-controller@ip2_int {
+				compatible = "qca,ath79-ip2-intc";
+				interrupt-controller;
+				#interrupt-cells = <1>;
+				interrupt-parent = <&cpuintc>;
+				interrupts = <2>;
+			};
+
+			ip3_int: interrupt-controller@ip3_int {
+				compatible = "qca,ath79-ip3-intc";
+				interrupt-controller;
+				#interrupt-cells = <1>;
+				interrupt-parent = <&cpuintc>;
+				interrupts = <3>;
+			};
+
+			rst: reset-controller@1806001c {
+				compatible = "qca,ar9132-reset",
+						"qca,ar7100-reset";
+				reg = <0x1806001c 0x4>;
+
+				#reset-cells = <1>;
+			};
+
+			i2c0: i2c@18018000 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "snps,designware-i2c";
+				reg = <0x18018000 0x80>;
+				interrupt-parent = <&miscintc>;
+				interrupts = <24>;
+				is_old_version = <1>;
+				i2c-sck-gpio = <6>;
+				i2c-sda-gpio = <5>;
+				i2c-tx-fifo-depth = <16>;
+				i2c-rx-fifo-depth = <64>;
+				clocks = <&pll 3>;
+				clock-names = "ref";
+				status = "disabled";
+			};
+		};
+
+		spi_0: spi@1f000000 {
+			compatible = "qca,ar9132-spi", "qca,ar7100-spi";
+			reg = <0x1f000000 0x18>;
+
+			clocks = <&pll 2>;
+			clock-names = "ahb";
+
+			status = "disabled";
+
+			#address-cells = <1>;
+			#size-cells = <0>;
+			ath79,is-flash = <1>;
+			spi-max-frequency = <25000000>;
+		};
+	};
+};

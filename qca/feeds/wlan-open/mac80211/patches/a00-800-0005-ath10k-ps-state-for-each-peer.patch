@@ -1,0 +1,193 @@
+--- a/drivers/net/wireless/ath/ath10k/core.h
++++ b/drivers/net/wireless/ath/ath10k/core.h
+@@ -539,6 +539,7 @@ struct ath10k_sta {
+ #endif
+ 	struct ath10k_smart_ant_sta *smart_ant_sta;
+ 	u8 tpc;
++	u32 peer_ps_state;
+ };
+ 
+ #define ATH10K_VDEV_SETUP_TIMEOUT_HZ (5 * HZ)
+@@ -980,6 +981,7 @@ struct ath10k {
+ 	u32 low_5ghz_chan;
+ 	u32 high_5ghz_chan;
+ 	bool ani_enabled;
++	u8 ps_state_enable;
+ 
+ 	bool p2p;
+ 
+--- a/drivers/net/wireless/ath/ath10k/debug.c
++++ b/drivers/net/wireless/ath/ath10k/debug.c
+@@ -2442,6 +2442,66 @@ static const struct file_operations fops_tpc_stats_final = {
+ 	.llseek = default_llseek,
+ };
+ 
++static ssize_t ath10k_write_ps_state_enable(struct file *file,
++					    const char __user *user_buf,
++					    size_t count, loff_t *ppos)
++{
++	struct ath10k *ar = file->private_data;
++	int ret;
++	u32 param;
++	u8 ps_state_enable;
++
++	if (kstrtou8_from_user(user_buf, count, 0, &ps_state_enable))
++		return -EINVAL;
++
++	if (ps_state_enable > 1 || ps_state_enable < 0)
++		return -EINVAL;
++
++	mutex_lock(&ar->conf_mutex);
++
++	if (ar->ps_state_enable == ps_state_enable) {
++		ret = count;
++		goto exit;
++	}
++
++	param = ar->wmi.pdev_param->peer_sta_ps_statechg_enable;
++	ret = ath10k_wmi_pdev_set_param(ar, param, ps_state_enable);
++	if (ret) {
++		ath10k_warn(ar, "ps_state_enable_enable failed from debugfs: %d\n",
++			    ret);
++		goto exit;
++	}
++	ar->ps_state_enable = ps_state_enable;
++
++	ret = count;
++
++exit:
++	mutex_unlock(&ar->conf_mutex);
++
++	return ret;
++}
++
++static ssize_t ath10k_read_ps_state_enable(struct file *file, char __user *user_buf,
++					   size_t count, loff_t *ppos)
++{
++	struct ath10k *ar = file->private_data;
++	int len = 0;
++	char buf[32];
++
++	len = scnprintf(buf, sizeof(buf) - len, "%d\n",
++			ar->ps_state_enable);
++
++	return simple_read_from_buffer(user_buf, count, ppos, buf, len);
++}
++
++static const struct file_operations fops_ps_state_enable = {
++	.read = ath10k_read_ps_state_enable,
++	.write = ath10k_write_ps_state_enable,
++	.open = simple_open,
++	.owner = THIS_MODULE,
++	.llseek = default_llseek,
++};
++
+ int ath10k_debug_create(struct ath10k *ar)
+ {
+ 	ar->debug.cal_data = vzalloc(ATH10K_DEBUG_CAL_DATA_LEN);
+@@ -2583,6 +2643,9 @@ int ath10k_debug_register(struct ath10k *ar)
+ 				    ar->debug.debugfs_phy, ar,
+ 				    &fops_tpc_stats_final);
+ 
++	debugfs_create_file("ps_state_enable", S_IRUSR | S_IWUSR,
++			    ar->debug.debugfs_phy, ar, &fops_ps_state_enable);
++
+ 	return 0;
+ }
+ 
+--- a/drivers/net/wireless/ath/ath10k/debugfs_sta.c
++++ b/drivers/net/wireless/ath/ath10k/debugfs_sta.c
+@@ -1102,6 +1102,31 @@ static const struct file_operations fops_peer_tid_log = {
+ 	.llseek = default_llseek,
+ };
+ 
++static ssize_t ath10k_dbg_sta_read_peer_ps_state(struct file *file,
++						 char __user *user_buf,
++						 size_t count, loff_t *ppos)
++{
++	struct ieee80211_sta *sta = file->private_data;
++	struct ath10k_sta *arsta = (struct ath10k_sta *)sta->drv_priv;
++	struct ath10k *ar = arsta->arvif->ar;
++	char buf[20];
++	int len = 0;
++
++	mutex_lock(&ar->conf_mutex);
++	len = scnprintf(buf, sizeof(buf) - len, "%d\n",
++			arsta->peer_ps_state);
++	mutex_unlock(&ar->conf_mutex);
++
++	return simple_read_from_buffer(user_buf, count, ppos, buf, len);
++}
++
++static const struct file_operations fops_peer_ps_state = {
++	.open = simple_open,
++	.read = ath10k_dbg_sta_read_peer_ps_state,
++	.owner = THIS_MODULE,
++	.llseek = default_llseek,
++};
++
+ void ath10k_sta_add_debugfs(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
+ 			    struct ieee80211_sta *sta, struct dentry *dir)
+ {
+@@ -1118,4 +1143,5 @@ void ath10k_sta_add_debugfs(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
+ 	debugfs_create_file("tpc", S_IRUGO | S_IWUSR, dir, sta,
+ 			    &fops_set_tpc);
+ 	debugfs_create_file("peer_tid_log", S_IRUSR, dir, sta, &fops_peer_tid_log);
++	debugfs_create_file("peer_ps_state", S_IRUSR, dir, sta, &fops_peer_ps_state);
+ }
+--- a/drivers/net/wireless/ath/ath10k/wmi.c
++++ b/drivers/net/wireless/ath/ath10k/wmi.c
+@@ -4856,6 +4856,29 @@ ath10k_wmi_handle_tdls_peer_event(struct ath10k *ar, struct sk_buff *skb)
+ 	}
+ }
+ 
++void ath10k_wmi_event_peer_sta_ps_state_chg(struct ath10k *ar, struct sk_buff *skb)
++{
++	struct wmi_peer_sta_ps_state_chg_event *ev;
++	struct ieee80211_sta *sta;
++	struct ath10k_sta *arsta;
++	u8 peer_addr[ETH_ALEN];
++
++	ev = (struct wmi_peer_sta_ps_state_chg_event *)skb->data;
++	ether_addr_copy(peer_addr, (u8 *)__le32_to_cpu(ev->peer_macaddr.addr));
++
++	rcu_read_lock();
++	sta = ieee80211_find_sta_by_ifaddr(ar->hw, peer_addr, NULL);
++	if (!sta) {
++		ath10k_warn(ar, "failed to find station entry %pM\n",peer_addr);
++		goto exit;
++	}
++	arsta = (struct ath10k_sta *)sta->drv_priv;
++	arsta->peer_ps_state = __le32_to_cpu(ev->peer_ps_state);
++
++exit:
++	rcu_read_unlock();
++}
++
+ void ath10k_wmi_event_pdev_ftm_intg(struct ath10k *ar, struct sk_buff *skb)
+ {
+ 	ath10k_dbg(ar, ATH10K_DBG_WMI, "WMI_PDEV_FTM_INTG_EVENTID\n");
+@@ -5885,6 +5908,9 @@ static void ath10k_wmi_10_4_op_rx(struct ath10k *ar, struct sk_buff *skb)
+ 	case WMI_10_4_PDEV_TPC_TABLE_EVENTID:
+ 		ath10k_wmi_event_tpc_final_table(ar, skb);
+ 		break;
++	case WMI_10_4_PEER_STA_PS_STATECHG_EVENTID:
++		ath10k_wmi_event_peer_sta_ps_state_chg(ar, skb);
++		break;
+ 	default:
+ 		ath10k_warn(ar, "Unknown eventid: %d\n", id);
+ 		break;
+--- a/drivers/net/wireless/ath/ath10k/wmi.h
++++ b/drivers/net/wireless/ath/ath10k/wmi.h
+@@ -4059,6 +4059,11 @@ struct wmi_pdev_tpc_config_event {
+ 	u8 rates_array[WMI_TPC_RATE_MAX];
+ } __packed;
+ 
++struct wmi_peer_sta_ps_state_chg_event {
++	struct wmi_mac_addr peer_macaddr;
++	__le32 peer_ps_state;
++} __packed;
++
+ /* Transmit power scale factor. */
+ enum wmi_tp_scale {
+ 	WMI_TP_SCALE_MAX    = 0,	/* no scaling (default) */

@@ -1,0 +1,51 @@
+diff -Nur a/linux/include/openswan/ipsec_sa.h b/linux/include/openswan/ipsec_sa.h
+--- a/linux/include/openswan/ipsec_sa.h	2015-04-01 15:44:40.913488975 -0700
++++ b/linux/include/openswan/ipsec_sa.h	2015-04-01 15:46:12.961491293 -0700
+@@ -129,6 +129,7 @@
+ {
+ 	atomic_t	ips_refcount;	/* reference count for this struct */
+         int             ips_marked_deleted;     /* used with reference counting */
++	wait_queue_head_t ips_waitq;	/* waitq for this SA */
+ 	IPsecSAref_t	ips_ref;	/* reference table entry number */
+ 	IPsecSAref_t	ips_refhim;	/* ref of paired SA, if any */
+ 	struct ipsec_sa	*ips_next;	 	/* pointer to next xform */
+diff -Nur a/linux/net/ipsec/ipsec_sa.c b/linux/net/ipsec/ipsec_sa.c
+--- a/linux/net/ipsec/ipsec_sa.c	2015-04-01 15:44:40.917488975 -0700
++++ b/linux/net/ipsec/ipsec_sa.c	2015-04-01 15:48:29.685494736 -0700
+@@ -630,6 +630,10 @@
+ 			    ips);
+ 		/* it was zero */
+ 		ipsec_sa_wipe(ips);
++	} else {
++		if (waitqueue_active(&ips->ips_waitq)) {
++			wake_up_interruptible(&ips->ips_waitq);
++		}
+ 	}
+ 
+ 	return;
+@@ -1186,6 +1190,8 @@
+ 		    "calling init routine of %s%s%s\n",
+ 		    IPS_XFORM_NAME(ipsp));
+ 
++	init_waitqueue_head(&ipsp->ips_waitq);
++
+ 	switch(ipsp->ips_said.proto) {
+ #ifdef CONFIG_KLIPS_IPIP
+ 	case IPPROTO_IPIP: {
+diff -Nur a/linux/net/ipsec/pfkey_v2_parser.c b/linux/net/ipsec/pfkey_v2_parser.c
+--- a/linux/net/ipsec/pfkey_v2_parser.c	2015-04-01 15:44:40.917488975 -0700
++++ b/linux/net/ipsec/pfkey_v2_parser.c	2015-04-01 15:51:45.665499672 -0700
+@@ -954,6 +954,13 @@
+ 
+ 	ref = ipsp->ips_ref; /* save a copy of ref */
+ 
++	if (atomic_read(&ipsp->ips_refcount) > 4) {
++		spin_unlock_bh(&tdb_lock);
++		wait_event_interruptible(ipsp->ips_waitq,
++				(atomic_read(&ipsp->ips_refcount) <= 4));
++		spin_lock_bh(&tdb_lock);
++	}
++
+ 	/*
+ 	 * remove it from SAref tables
+ 	 *
