@@ -1,0 +1,89 @@
+Index: libweave-1.4/examples/provider/wifi_manager_mips.cc
+===================================================================
+--- libweave-1.4.orig/examples/provider/wifi_manager_mips.cc	2016-05-05 09:14:10.145555557 +0200
++++ libweave-1.4/examples/provider/wifi_manager_mips.cc	2016-05-05 09:23:55.973566556 +0200
+@@ -20,6 +20,7 @@
+ 
+ WifiImpl::WifiImpl(provider::TaskRunner* task_runner, EventNetworkImpl* network)
+     : task_runner_{task_runner}, network_{network} {
++  CHECK(IsWifi24Supported() || IsWifi50Supported());
+   CHECK_EQ(0u, getuid())
+       << "WiFi manager expects root access to control WiFi capabilities";
+   StopAccessPoint();
+@@ -50,8 +51,7 @@
+                        const std::string& passphrase,
+                        const DoneCallback& callback) {
+   network_->SetSimulateOffline(false);
+-  CHECK(!hostapd_started_);
+-  if (hostapd_started_) {
++  if (!hostapd_ssid_.empty()) {
+     ErrorPtr error;
+     Error::AddTo(&error, FROM_HERE, "busy", "Running Access Point.");
+     task_runner_->PostDelayedTask(
+@@ -64,8 +64,7 @@
+ }
+ 
+ void WifiImpl::StartAccessPoint(const std::string& ssid) {
+-  if (hostapd_started_)
+-    return;
++  CHECK(hostapd_ssid_.empty());
+ 
+   CHECK_EQ(0, std::system("uci set network.lan.ipaddr=192.168.1.1"));
+ 
+@@ -77,12 +76,12 @@
+ 
+   CHECK_EQ(0, std::system("uci commit"));
+   CHECK_EQ(0, std::system("wifi"));
+-  hostapd_started_ = true;
++  hostapd_ssid_ = ssid;
+ }
+ 
+ void WifiImpl::StopAccessPoint() {
+   CHECK_EQ(0, std::system("wifi down"));
+-  hostapd_started_ = false;
++  hostapd_ssid_.clear();
+ }
+ 
+ bool WifiImpl::HasWifiCapability() {
+@@ -90,11 +89,40 @@
+   ret = (std::system("uci show wireless | grep wifi-device") == 0);
+ 
+   if (ret)
+-    //TODO; radio interface number detection for multi-radio boards
+     CHECK_EQ(0, std::system("uci set wireless.radio0.disabled=0"));
+ 
+   return ret;
+ }
+ 
++bool WifiImpl::IsWifi24Supported() const {
++  bool ret;
++  ret = (std::system("iw list | grep Freq -A 1 | grep 2412") == 0);
++
++  return ret;
++};
++
++bool WifiImpl::IsWifi50Supported() const {
++  bool ret;
++  ret = (std::system("iw list | grep Freq -A 1 | grep 5180") == 0);
++
++  return ret;
++};
++
++std::string WifiImpl::GetConnectedSsid() const {
++  std::string ssid;
++  FILE *fp;
++  char buffer[128];
++
++  fp = popen("uci get wireless.@wifi-iface[0].ssid", "r");
++  while (fgets(buffer, sizeof(buffer), fp) != NULL) {
++    ssid = ssid + buffer;
++  }
++  pclose(fp);
++
++  return ssid;
++}
++
++
+ }  // namespace examples
+ }  // namespace weave
++

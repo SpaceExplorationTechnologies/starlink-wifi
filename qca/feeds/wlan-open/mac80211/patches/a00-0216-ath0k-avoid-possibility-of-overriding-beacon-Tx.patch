@@ -1,0 +1,51 @@
+--- a/drivers/net/wireless/ath/ath10k/mac.c
++++ b/drivers/net/wireless/ath/ath10k/mac.c
+@@ -6539,6 +6539,8 @@ static int ath10k_remain_on_channel(struct ieee80211_hw *hw,
+ 	struct wmi_start_scan_arg arg;
+ 	int ret = 0;
+ 	u32 scan_time_msec;
++	u32 dwell_time;
++	u32 scan_complete_delay = 0;
+ 
+ 	mutex_lock(&ar->conf_mutex);
+ 
+@@ -6571,7 +6573,17 @@ static int ath10k_remain_on_channel(struct ieee80211_hw *hw,
+ 	if (ret)
+ 		goto exit;
+ 
+-	scan_time_msec = ar->hw->wiphy->max_remain_on_channel_duration * 2;
++	if (vif->p2p) {
++		dwell_time = ar->hw->wiphy->max_remain_on_channel_duration * 2;
++	} else {
++		dwell_time = duration;
++		/* Include the room for scan complete delay in scheduling scan timout
++		 * worker. Otherwise, scan stop will be sent even before fw is done
++		 * with the off-channel scanning.
++		 */
++		scan_complete_delay = 10;
++	}
++	scan_time_msec =  ar->hw->wiphy->max_remain_on_channel_duration * 2;
+ 
+ 	memset(&arg, 0, sizeof(arg));
+ 	ath10k_wmi_start_scan_init(ar, &arg);
+@@ -6579,8 +6591,8 @@ static int ath10k_remain_on_channel(struct ieee80211_hw *hw,
+ 	arg.scan_id = ATH10K_SCAN_ID;
+ 	arg.n_channels = 1;
+ 	arg.channels[0] = chan->center_freq;
+-	arg.dwell_time_active = scan_time_msec;
+-	arg.dwell_time_passive = scan_time_msec;
++	arg.dwell_time_active = dwell_time;
++	arg.dwell_time_passive = dwell_time;
+ 	arg.max_scan_time = scan_time_msec;
+ 	arg.scan_ctrl_flags |= WMI_SCAN_FLAG_PASSIVE;
+ 	arg.scan_ctrl_flags |= WMI_SCAN_FILTER_PROBE_REQ;
+@@ -6608,7 +6620,8 @@ static int ath10k_remain_on_channel(struct ieee80211_hw *hw,
+ 	}
+ 
+ 	ieee80211_queue_delayed_work(ar->hw, &ar->scan.timeout,
+-				     msecs_to_jiffies(duration));
++				     msecs_to_jiffies(duration +
++					     	      scan_complete_delay));
+ 
+ 	ret = 0;
+ exit:

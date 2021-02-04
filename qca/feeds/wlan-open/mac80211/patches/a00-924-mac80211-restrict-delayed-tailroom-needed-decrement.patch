@@ -1,0 +1,14 @@
+Index: backports-20180329-3.14.77-7954640a/net/mac80211/key.c
+===================================================================
+--- backports-20180329-3.14.77-7954640a.orig/net/mac80211/key.c
++++ backports-20180329-3.14.77-7954640a/net/mac80211/key.c
+@@ -590,7 +590,8 @@ static void __ieee80211_key_destroy(stru
+ 
+ 		ieee80211_debugfs_key_remove(key);
+ 
+-		if (delay_tailroom) {
++		if (delay_tailroom &&
++		    sdata->vif.type == NL80211_IFTYPE_STATION) {
+ 			/* see ieee80211_delayed_tailroom_dec */
+ 			sdata->crypto_tx_tailroom_pending_dec++;
+ 			schedule_delayed_work(&sdata->dec_tailroom_needed_wk,

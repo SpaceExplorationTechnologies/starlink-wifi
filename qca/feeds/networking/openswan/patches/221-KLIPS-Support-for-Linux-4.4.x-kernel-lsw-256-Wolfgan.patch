@@ -1,0 +1,191 @@
+diff -Nur a/linux/include/openswan/ipsec_kversion.h openswan-2.6.41/linux/include/openswan/ipsec_kversion.h
+--- a/linux/include/openswan/ipsec_kversion.h	2016-10-14 17:43:01.629366679 -0700
++++ openswan-2.6.41/linux/include/openswan/ipsec_kversion.h	2016-10-14 17:50:01.241354256 -0700
+@@ -127,7 +127,9 @@
+ 
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,12)
+ # define HAVE_SOCK_ZAPPED
+-# if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24)
++# if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
++#  define NET_44_SKALLOC
++# elif LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24)
+ #  define NET_26_24_SKALLOC
+ # else
+ #  define NET_26_12_SKALLOC
+diff -Nur a/linux/include/openswan/pfkey.h openswan-2.6.41/linux/include/openswan/pfkey.h
+--- a/linux/include/openswan/pfkey.h	2016-10-14 17:43:01.629366679 -0700
++++ openswan-2.6.41/linux/include/openswan/pfkey.h	2016-10-14 17:50:41.905353052 -0700
+@@ -18,6 +18,7 @@
+ #define __NET_IPSEC_PF_KEY_H
+ 
+ #include "pfkeyv2.h"
++#include <linux/version.h>
+ #ifdef __KERNEL__
+ extern struct proto_ops pfkey_proto_ops;
+ typedef struct sock pfkey_sock;
+@@ -159,7 +160,11 @@
+ 	struct sock	*sk;
+ };
+ 
+-#define key_pid(sk) ((struct key_opt*)&((sk)->sk_protinfo))->key_pid
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
++# define key_pid(sk) ((struct key_opt*)&((sk)->sk_user_data))->key_pid
++#else
++# define key_pid(sk) ((struct key_opt*)&((sk)->sk_protinfo))->key_pid
++#endif
+ 
+ /* XXX-mcr this is not an alignment, this is because the count is in 64-bit
+  * words.
+diff -Nur a/linux/net/ipsec/ipsec_mast.c openswan-2.6.41/linux/net/ipsec/ipsec_mast.c
+--- a/linux/net/ipsec/ipsec_mast.c	2016-10-14 17:43:01.633366679 -0700
++++ openswan-2.6.41/linux/net/ipsec/ipsec_mast.c	2016-10-14 17:50:01.241354256 -0700
+@@ -108,7 +108,13 @@
+ static inline int ipsec_mast_xmit2(struct sk_buff *skb)
+ {
+ #ifdef NETDEV_25	/* 2.6 kernels */
+-	return dst_output(skb);
++
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
++       return dst_output(dev_net(skb->dev), skb->sk, skb);
++#else
++        return dst_output(skb);
++#endif
++
+ #else
+ 	return ip_send(skb);
+ #endif
+diff -Nur a/linux/net/ipsec/ipsec_tunnel.c openswan-2.6.41/linux/net/ipsec/ipsec_tunnel.c
+--- a/linux/net/ipsec/ipsec_tunnel.c	2016-10-14 17:43:01.629366679 -0700
++++ openswan-2.6.41/linux/net/ipsec/ipsec_tunnel.c	2016-10-14 17:50:01.241354256 -0700
+@@ -147,7 +147,13 @@
+ {
+ 
+ #ifdef NETDEV_25	/* 2.6 kernels */
++
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
++	return dst_output(dev_net(skb->dev), skb->sk, skb);
++#else
+ 	return dst_output(skb);
++#endif
++
+ #else
+ 	return ip_send(skb);
+ #endif
+diff -Nur a/linux/net/ipsec/ipsec_xmit.c openswan-2.6.41/linux/net/ipsec/ipsec_xmit.c
+--- a/linux/net/ipsec/ipsec_xmit.c	2016-10-14 17:43:01.633366679 -0700
++++ openswan-2.6.41/linux/net/ipsec/ipsec_xmit.c	2016-10-14 17:50:01.241354256 -0700
+@@ -2366,10 +2366,20 @@
+ 	}
+ }
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 1, 0)
+ static inline int ipsec_xmit_send2(struct sk_buff *skb)
++#elif LINUX_VERSION_CODE < KERNEL_VERSION(4, 4, 0)
++static inline int ipsec_xmit_send2(struct sock *sk, struct sk_buff *skb)
++#else
++static inline int ipsec_xmit_send2(struct net *net, struct sock *sk, struct sk_buff *skb)
++#endif
+ {
+ #ifdef NETDEV_25	/* 2.6 kernels */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
++	return dst_output(dev_net(skb->dev), sk, skb);
++#else
+ 	return dst_output(skb);
++#endif
+ #else
+ 	return ip_send(skb);
+ #endif
+@@ -2384,8 +2394,14 @@
+ 		skb->nfmark = 0;
+ #endif
+ #endif
+-	return ipsec_xmit_send2(skb);
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 1, 0)
++        return ipsec_xmit_send2(skb);
++#elif LINUX_VERSION_CODE < KERNEL_VERSION(4, 4, 0)
++	return ipsec_xmit_send2(skb->sk, skb);
++#else
++       return ipsec_xmit_send2(dev_net(skb->dev), skb->sk, skb);
++#endif
+ }
+ 
+ #ifdef NAT_TRAVERSAL
+@@ -2637,11 +2653,25 @@
+ 			err = ipsec_xmit_send2_mast(ixs->skb);
+ 
+ 		else if (ip_hdr(ixs->skb)->version == 6)
+-			err = NF_HOOK(PF_INET6, OSW_NF_INET_LOCAL_OUT, ixs->skb, NULL,
++			err = NF_HOOK(PF_INET6, OSW_NF_INET_LOCAL_OUT,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
++					dev_net(ixs->skb->dev),
++#endif
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 1, 0)
++					ixs->skb->sk,
++#endif
++					ixs->skb, NULL,
+ 					ixs->route ? ipsec_route_dst(ixs->route).dev : skb_dst(ixs->skb)->dev,
+ 					ipsec_xmit_send2);
+ 		else
+-			err = NF_HOOK(PF_INET, OSW_NF_INET_LOCAL_OUT, ixs->skb, NULL,
++			err = NF_HOOK(PF_INET, OSW_NF_INET_LOCAL_OUT,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
++					dev_net(ixs->skb->dev),
++#endif
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 1, 0)
++					ixs->skb->sk,
++#endif
++					ixs->skb, NULL,
+ 					ixs->route ? ipsec_route_dst(ixs->route).dev : skb_dst(ixs->skb)->dev,
+ 					ipsec_xmit_send2);
+ 
+diff -Nur a/linux/net/ipsec/pfkey_v2.c openswan-2.6.41/linux/net/ipsec/pfkey_v2.c
+--- a/linux/net/ipsec/pfkey_v2.c	2016-10-14 17:43:01.629366679 -0700
++++ openswan-2.6.41/linux/net/ipsec/pfkey_v2.c	2016-10-14 17:50:01.241354256 -0700
+@@ -106,7 +106,7 @@
+ 
+ int pfkey_msg_interp(struct sock *, struct sadb_msg *);
+ 
+-#ifdef NET_26_24_SKALLOC
++#if defined(NET_26_24_SKALLOC) || defined(NET_44_SKALLOC)
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38)
+ DEBUG_NO_STATIC int pfkey_create(struct net *net, struct socket *sock, int protocol, int kern);
+ #else
+@@ -675,8 +675,7 @@
+ 	return error;
+ }
+ 
+-#if defined(NET_26_12_SKALLOC) || defined(NET_26_24_SKALLOC)
+-
++#if defined(NET_26_12_SKALLOC) || defined(NET_26_24_SKALLOC) || defined(NET_44_SKALLOC)
+ static struct proto key_proto = {
+ 	.name	  = "KEY",
+ 	.owner	  = THIS_MODULE,
+@@ -684,7 +683,7 @@
+ 
+ };
+ #endif
+-#ifdef NET_26_24_SKALLOC
++#if defined(NET_26_24_SKALLOC) || defined(NET_44_SKALLOC)
+ DEBUG_NO_STATIC int
+ pfkey_create(struct net *net, struct socket *sock, int protocol
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38)
+@@ -748,6 +747,10 @@
+ 	KLIPS_INC_USE;
+ 
+ #ifdef NET_26
++
++#ifdef NET_44_SKALLOC
++       sk = (struct sock *)sk_alloc(net, PF_KEY, GFP_KERNEL, &key_proto, 0);
++#else
+ #ifdef NET_26_24_SKALLOC
+        sk=(struct sock *)sk_alloc(net, PF_KEY, GFP_KERNEL, &key_proto);
+ #else
+@@ -757,6 +760,7 @@
+ 	sk=(struct sock *)sk_alloc(PF_KEY, GFP_KERNEL, 1, NULL);
+ #endif
+ #endif
++#endif
+ #else
+ 	/* 2.4 interface */
+ 	sk=(struct sock *)sk_alloc(PF_KEY, GFP_KERNEL, 1);

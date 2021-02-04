@@ -1,0 +1,32 @@
+--- a/configure.ac
++++ b/configure.ac
+@@ -135,7 +135,7 @@
+
+ dnl check for libm, for sin()
+ LT_LIB_M
+-AC_SUBST(LIBM)
++AC_SUBST(LIBM, "")
+
+ AC_CHECK_FUNCS(clock_gettime, [], [
+   AC_CHECK_LIB(rt, clock_gettime, [
+--- a/gst/audiofx/audiochebband.c
++++ b/gst/audiofx/audiochebband.c
+@@ -79,7 +79,7 @@
+
+ #include <math.h>
+
+-#include "math_compat.h"
++//#include "math_compat.h"
+
+ #include "audiochebband.h"
+
+--- a/gst/audiofx/audiocheblimit.c
++++ b/gst/audiofx/audiocheblimit.c
+@@ -75,7 +75,7 @@
+
+ #include <math.h>
+
+-#include "math_compat.h"
++//#include "math_compat.h"
+
+ #include "audiocheblimit.h"

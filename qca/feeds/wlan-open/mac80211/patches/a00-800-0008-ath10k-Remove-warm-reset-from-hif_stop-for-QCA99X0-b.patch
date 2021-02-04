@@ -1,0 +1,40 @@
+--- a/drivers/net/wireless/ath/ath10k/pci.c
++++ b/drivers/net/wireless/ath/ath10k/pci.c
+@@ -2634,12 +2634,6 @@ static int ath10k_pci_warm_reset(struct ath10k *ar)
+ 	return 0;
+ }
+ 
+-static int ath10k_pci_qca99x0_soft_chip_reset(struct ath10k *ar)
+-{
+-	ath10k_pci_irq_disable(ar);
+-	return ath10k_pci_qca99x0_chip_reset(ar);
+-}
+-
+ static int ath10k_pci_safe_chip_reset(struct ath10k *ar)
+ {
+ 	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
+@@ -3516,21 +3510,21 @@ static int ath10k_pci_probe(struct pci_dev *pdev,
+ 	case QCA99X0_2_0_DEVICE_ID:
+ 		hw_rev = ATH10K_HW_QCA99X0;
+ 		pci_ps = false;
+-		pci_soft_reset = ath10k_pci_qca99x0_soft_chip_reset;
++		pci_soft_reset = NULL;;
+ 		pci_hard_reset = ath10k_pci_qca99x0_chip_reset;
+ 		targ_cpu_to_ce_addr = ath10k_pci_qca99x0_targ_cpu_to_ce_addr;
+ 		break;
+ 	case QCA9984_1_0_DEVICE_ID:
+ 		hw_rev = ATH10K_HW_QCA9984;
+ 		pci_ps = false;
+-		pci_soft_reset = ath10k_pci_qca99x0_soft_chip_reset;
++		pci_soft_reset = NULL;;
+ 		pci_hard_reset = ath10k_pci_qca99x0_chip_reset;
+ 		targ_cpu_to_ce_addr = ath10k_pci_qca99x0_targ_cpu_to_ce_addr;
+ 		break;
+ 	case QCA9888_2_0_DEVICE_ID:
+ 		hw_rev = ATH10K_HW_QCA9888;
+ 		pci_ps = false;
+-		pci_soft_reset = ath10k_pci_qca99x0_soft_chip_reset;
++		pci_soft_reset = NULL;;
+ 		pci_hard_reset = ath10k_pci_qca99x0_chip_reset;
+ 		targ_cpu_to_ce_addr = ath10k_pci_qca99x0_targ_cpu_to_ce_addr;
+ 		break;

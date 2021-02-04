@@ -1,0 +1,133 @@
+/* Copyright (c) 2016, The Linux Foundation. All rights reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
+
+#include "qcom-ipq4019-ap.dk07.1.dtsi"
+
+/ {
+	model = "Qualcomm Technologies, Inc. IPQ40xx/AP-DK07.1-C2";
+
+	soc {
+		pcie0: pci@40000000 {
+			status = "disabled";
+		};
+
+		pinctrl@0x01000000 {
+			serial_1_pins: serial1_pinmux {
+				mux {
+					pins = "gpio8", "gpio9";
+					function = "blsp_uart1";
+					bias-disable;
+				};
+			};
+
+			spi_0_pins: spi_0_pinmux {
+				mux {
+					pins = "gpio13", "gpio14", "gpio15";
+					function = "blsp_spi0";
+					bias-disable;
+				};
+				cs1 {
+					pins = "gpio12";
+					function = "gpio";
+				};
+				host_int1 {
+					pins = "gpio10";
+					function = "gpio";
+					input;
+				};
+				cs2 {
+					pins = "gpio45";
+					function = "gpio";
+				};
+				host_int2 {
+					pins = "gpio61";
+					function = "gpio";
+					input;
+				};
+				rst {
+					pins = "gpio36";
+					function = "gpio";
+					output-high;
+				};
+			};
+
+			wifi_0_pins: wifi1_pinmux {
+				mux_1 {
+					pins = "gpio37";
+					function="wifi0_wci";
+					bias-pull-up;
+					drive-cap = <DRV_CAP_QUARTER>;
+				};
+				mux_2 {
+					pins = "gpio43";
+					function="wifi_wci1";
+					bias-pull-up;
+					drive-cap = <DRV_CAP_QUARTER>;
+				};
+				mux_3 {
+					pins = "gpio42";
+					function="gpio";
+					bias-pull-down;
+					drive-cap = <DRV_CAP_QUARTER>;
+				};
+				mux_4 {
+					pins = "gpio40";
+					function="gpio";
+					bias-pull-down;
+					drive-cap = <DRV_CAP_QUARTER>;
+				};
+			};
+		};
+
+		serial@78b0000 {
+			pinctrl-0 = <&serial_1_pins>;
+			pinctrl-names = "default";
+			status = "ok";
+		};
+
+		spi_0: spi@78b5000 { /* BLSP1 QUP1 */
+			pinctrl-0 = <&spi_0_pins>;
+			pinctrl-names = "default";
+			status = "ok";
+
+			spidev0_0 {
+				compatible = "qca,spidev";
+				reg = <0>;
+				spi-max-frequency = <24000000>;
+			};
+			spidev0_1 {
+				compatible = "qca,spidev";
+				reg = <1>;
+				spi-max-frequency = <24000000>;
+			};
+
+		};
+
+		wifi0: wifi@a000000 {
+			pinctrl-0 = <&wifi_0_pins>;
+			pinctrl-names = "default";
+			btcoex_support = <1>;
+			coex_gpio_pin_1 = <40>;
+			coex_gpio_pin_2 = <42>;
+			coex_gpio_pin_3 = <37>;
+			coex_gpio_pin_4 = <43>;
+		};
+
+		wifi1: wifi@a800000 {
+			btcoex_support = <0>;
+		};
+	};
+};

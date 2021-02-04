@@ -1,0 +1,32 @@
+--- b/ctl_main.c
++++ a/ctl_main.c
+@@ -6,7 +6,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+-#include <sys/errno.h>
++#include <errno.h>
+ #include <getopt.h>
+ 
+ #include <net/if.h>
+--- a/ctl_socket_client.c
++++ b/ctl_socket_client.c
+@@ -28,7 +28,7 @@
+ #include <sys/socket.h>
+ #include <sys/un.h>
+ #include <unistd.h>
+-#include <sys/poll.h>
++#include <poll.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ 
+--- a/netif_utils.c
++++ b/netif_utils.c
+@@ -31,6 +31,7 @@
+ #include <stdint.h>
+ #include <sys/socket.h>
+ #include <sys/ioctl.h>
++#include <sys/types.h>
+ #include <fcntl.h>
+ #include <limits.h>
+ 

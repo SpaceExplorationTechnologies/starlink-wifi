@@ -1,0 +1,12 @@
+diff -Nur a/mcproxy/include/utils/mroute_socket.hpp mcproxy-2014-12-31-b7bd2d0809a0d1f177181c361b9a6c83e193b79a/mcproxy/include/utils/mroute_socket.hpp
+--- a/mcproxy/include/utils/mroute_socket.hpp	2018-02-05 15:39:30.940069573 -0800
++++ mcproxy-2014-12-31-b7bd2d0809a0d1f177181c361b9a6c83e193b79a/mcproxy/include/utils/mroute_socket.hpp	2018-02-05 15:41:26.080066165 -0800
+@@ -34,7 +34,7 @@
+ #define MROUTE_TTL_THRESHOLD 1
+ #define MROUTE_DEFAULT_TTL 1
+
+-#define ADD_SIGNED_NUM_U16(r,a) (r)+= (a); (r)= (r) & 0xffff + ((r)>>16)
++#define ADD_SIGNED_NUM_U16(r,a) (r)+= (a); (r)= ((r) & 0xffff) + ((r)>>16)
+
+ /**
+  * @brief Wrapper for a multicast socket with additional functions to manipulate Linux kernel tables.

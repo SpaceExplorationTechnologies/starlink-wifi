@@ -1,0 +1,18 @@
+--- a/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
++++ b/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
+@@ -209,6 +209,7 @@ if hwtype == "mac80211" then
+ 	if hw_modes.b then mode:value("11b", "802.11b") end
+ 	if hw_modes.g then mode:value("11g", "802.11g") end
+ 	if hw_modes.a then mode:value("11a", "802.11a") end
++	if hw_modes.ad then mode:value("11ad", "802.11ad") end
+ 
+ 	if htcaps then
+ 		if hw_modes.g and hw_modes.n then mode:value("11ng", "802.11g+n") end
+@@ -217,6 +218,7 @@ if hwtype == "mac80211" then
+ 		htmode = s:taboption("advanced", ListValue, "htmode", translate("HT mode"))
+ 		htmode:depends("hwmode", "11na")
+ 		htmode:depends("hwmode", "11ng")
++		htmode:depends("hwmode", "11ad")
+ 		htmode:value("HT20", "20MHz")
+ 		htmode:value("HT40-", translate("40MHz 2nd channel below"))
+ 		htmode:value("HT40+", translate("40MHz 2nd channel above"))

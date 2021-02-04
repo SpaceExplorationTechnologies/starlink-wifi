@@ -1,0 +1,42 @@
+Index: libweave-1.3/third_party/chromium/base/strings/string_number_conversions_unittest.cc
+===================================================================
+--- libweave-1.3.orig/third_party/chromium/base/strings/string_number_conversions_unittest.cc	2016-04-18 15:02:00.918042666 +0200
++++ libweave-1.3/third_party/chromium/base/strings/string_number_conversions_unittest.cc	2016-04-18 15:03:53.598465365 +0200
+@@ -724,12 +724,21 @@
+   }
+ 
+   // The following two values were seen in crashes in the wild.
++#ifdef ARCH_CPU_BIG_ENDIAN
++  const char input_bytes[8] = {'\x42', '\x73', '\x6d', '\xee', 0, 0, 0, 0};
++#else
+   const char input_bytes[8] = {0, 0, 0, 0, '\xee', '\x6d', '\x73', '\x42'};
++#endif
+   double input = 0;
+   memcpy(&input, input_bytes, arraysize(input_bytes));
+   EXPECT_EQ("1335179083776.0", DoubleToString(input));
++#ifdef ARCH_CPU_BIG_ENDIAN
++  const char input_bytes2[8] =
++      {'\x42', '\x73', '\x6c', '\xda', '\xa0', 0, 0, 0};
++#else
+   const char input_bytes2[8] =
+       {0, 0, 0, '\xa0', '\xda', '\x6c', '\x73', '\x42'};
++#endif
+   input = 0;
+   memcpy(&input, input_bytes2, arraysize(input_bytes2));
+   EXPECT_EQ("1334890332160.0", DoubleToString(input));
+Index: libweave-1.3/third_party/chromium/base/third_party/dmg_fp/dtoa.cc
+===================================================================
+--- libweave-1.3.orig/third_party/chromium/base/third_party/dmg_fp/dtoa.cc	2016-04-18 15:02:00.918042666 +0200
++++ libweave-1.3/third_party/chromium/base/third_party/dmg_fp/dtoa.cc	2016-04-18 15:02:00.914042652 +0200
+@@ -179,7 +179,11 @@
+  *	used for input more than STRTOD_DIGLIM digits long (default 40).
+  */
+ 
++#ifdef __mips__
++#define IEEE_MC68k
++#else
+ #define IEEE_8087
++#endif
+ #define NO_HEX_FP
+ 
+ #ifndef Long

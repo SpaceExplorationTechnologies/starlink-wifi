@@ -1,0 +1,401 @@
+diff --git a/bridge_ctl.h b/bridge_ctl.h
+index b0449ca..616a044 100644
+--- a/bridge_ctl.h
++++ b/bridge_ctl.h
+@@ -25,6 +25,14 @@
+ #ifndef BRIDGE_CTL_H
+ #define BRIDGE_CTL_H
+ 
++typedef enum {
++	AUTO_TOPOLOGY,
++	MANUAL_TOPOLOGY
++}topology_mode_t;
++
++void set_topology_mode(topology_mode_t mode);
++topology_mode_t get_topology_mode(void);
++
+ struct ifdata;
+ 
+ int init_bridge_ops(void);
+@@ -33,6 +41,8 @@ void bridge_get_configuration(void);
+ 
+ int bridge_set_state(int ifindex, int state);
+ 
++int bridge_notify_simple(int br_index, int if_index, int newlink, unsigned flags);
++
+ int bridge_notify(int br_index, int if_index, int newlink, unsigned flags);
+ 
+ void bridge_bpdu_rcv(int ifindex, const unsigned char *data, int len);
+diff --git a/bridge_track.c b/bridge_track.c
+index 289fc41..2967d08 100644
+--- a/bridge_track.c
++++ b/bridge_track.c
+@@ -476,6 +476,28 @@ static void set_if_up(struct ifdata *ifc, int up)
+ 
+ /*------------------------------------------------------------*/
+ 
++int bridge_notify_simple(int br_index, int if_index, int newlink,
++		  unsigned flags)
++{
++	struct ifdata *br = NULL;
++	struct ifdata *ifc = NULL;
++	int up;
++
++	if (br_index >= 0) {
++		br = find_if(br_index);
++		/* Bridge must be up if we get such notifications */
++		if (br && br->is_bridge && !br->up)
++			set_br_up(br, 1);
++	}
++
++	ifc = find_if(if_index);
++	up = (flags & (IFF_UP|IFF_RUNNING)) == (IFF_UP|IFF_RUNNING);
++	if (ifc && (!ifc->is_bridge) && ifc->up != up)
++		set_if_up(ifc, up);	/* And speed and duplex */
++
++	return 0;
++}
++
+ int bridge_notify(int br_index, int if_index, int newlink, 
+ 		  unsigned flags)
+ {
+@@ -976,5 +998,97 @@ int CTL_set_debug_level(int level)
+ 	return 0;
+ }
+ 
++int CTL_add_bridge(char *name)
++{
++	int br_index, up;
++	struct ifdata *br = NULL;
++
++	br_index = if_nametoindex(name);
++	if(br_index == 0) {
++		ERROR("bridge %s not exist", name);
++		return 0;
++	}
++
++	br = find_if(br_index);
++	if (br && !br->is_bridge) {
++		ERROR("Existed interface %s is not a bridge.", name);
++		return 0;
++	}
++
++	if (!br && is_bridge(name))
++		br = create_if(br_index, NULL);
++
++	if (!br) {
++		ERROR("Couldn't create data for bridge interface %s", name);
++		return 0;
++	}
++
++	up = get_link_status(name);
++	if(br->up != up)
++		set_br_up(br, up);
++
++	INFO("bridge %s created, if_index is %d, link status %d.", name, br_index, up);
++	return 0;
++}
++
++int CTL_add_bridge_port(char *br_name, char *pt_name)
++{
++	int br_index, if_index, up;
++	struct ifdata *br, *br_port;
++
++	br_index = if_nametoindex(br_name);
++	if(br_index == 0) {
++		ERROR("bridge %s not exist", br_name);
++		return 0;
++	}
++
++	if_index = if_nametoindex(pt_name);
++	if(if_index == 0) {
++		ERROR("bridge port %s not exist", pt_name);
++		return 0;
++	}
++
++	br = find_if(br_index);
++	if (br && !br->is_bridge) {
++		ERROR("Existed interface %s is not a bridge.", br_name);
++		return 0;
++	}
++
++	if (!br) {
++		ERROR("Couldn't find data for bridge interface %s", br_name);
++		return 0;
++	}
++
++	br_port = find_if(if_index);
++	if (br_port) {
++		if (br_port->is_bridge) {
++			ERROR("interface %s is a bridge, can't become a bridge port", pt_name);
++			return 0;
++		}
++
++		if (br_port->master != br) {
++			INFO("Device %d has come to bridge %d. Missed notify for deletion from bridge %d",
++				if_index, br_index, br_port->master->if_index);
++			delete_if(br_port);
++			br_port = NULL;
++		}
++	}
++
++	if (!br_port)
++		br_port = create_if(if_index, br);
++
++	if (!br_port) {
++		ERROR("Couldn't create data for interface %d (master %d)", if_index, br_index);
++		return 0;
++	}
++
++	up = get_link_status(pt_name);
++	if(br_port->up != up)
++		set_if_up(br_port, up);
++
++	INFO("bridge port %s created, master is %s, link status %d.", pt_name, br_name, up);
++	return 0;
++}
++
+ #undef CTL_CHECK_BRIDGE_PORT
+ #undef CTL_CHECK_BRIDGE
+diff --git a/brmon.c b/brmon.c
+index 4c4e490..96a1113 100644
+--- a/brmon.c
++++ b/brmon.c
+@@ -47,27 +47,12 @@ static int dump_msg(const struct sockaddr_nl *who, struct nlmsghdr *n,
+ 	if (len < 0)
+           return -1;
+ 
+-        if (ifi->ifi_family != AF_BRIDGE && ifi->ifi_family != AF_UNSPEC)
+-          return 0;
+-
+         if (n->nlmsg_type != RTM_NEWLINK &&
+             n->nlmsg_type != RTM_DELLINK)
+           return 0;
+ 
+ 	parse_rtattr(tb, IFLA_MAX, IFLA_RTA(ifi), len);
+ 
+-        /* Check if we got this from bonding */
+-        if (tb[IFLA_MASTER] && ifi->ifi_family != AF_BRIDGE)
+-           return 0;
+-
+-	/* Check if hearing our own state changes */
+-	if (n->nlmsg_type == RTM_NEWLINK && tb[IFLA_PROTINFO]) {
+-	   uint8_t state = *(uint8_t *)RTA_DATA(tb[IFLA_PROTINFO]);
+-
+-	   if (state != BR_STATE_DISABLED)
+-	      return 0;
+-	}
+-
+ 	if (tb[IFLA_IFNAME] == NULL) {
+ 	   fprintf(stderr, "BUG: nil ifname\n");
+ 	   return -1;
+@@ -87,10 +72,10 @@ static int dump_msg(const struct sockaddr_nl *who, struct nlmsghdr *n,
+ 	fprintf(fp, "\n");
+ 	fflush(fp);
+ 
+-
+-	bridge_notify(master, ifi->ifi_index,
+-		      (n->nlmsg_type == RTM_NEWLINK),
+-		      ifi->ifi_flags);
++	if(get_topology_mode() == AUTO_TOPOLOGY)
++		bridge_notify(master, ifi->ifi_index, (n->nlmsg_type == RTM_NEWLINK), ifi->ifi_flags);
++	else
++		bridge_notify_simple(master, ifi->ifi_index, (n->nlmsg_type == RTM_NEWLINK), ifi->ifi_flags);
+ 
+ 	return 0;
+ }
+diff --git a/ctl_cli_wrap.c b/ctl_cli_wrap.c
+index 72665a8..8ad65c4 100644
+--- a/ctl_cli_wrap.c
++++ b/ctl_cli_wrap.c
+@@ -33,6 +33,8 @@ CLIENT_SIDE_FUNCTION(enable_bridge_rstp)
+     CLIENT_SIDE_FUNCTION(get_port_state)
+     CLIENT_SIDE_FUNCTION(set_port_config)
+     CLIENT_SIDE_FUNCTION(set_debug_level)
++    CLIENT_SIDE_FUNCTION(add_bridge)
++    CLIENT_SIDE_FUNCTION(add_bridge_port)
+ #include <base.h>
+ const char *CTL_error_explanation(int err_no)
+ {
+diff --git a/ctl_functions.h b/ctl_functions.h
+index 9d630f6..4a04d62 100644
+--- a/ctl_functions.h
++++ b/ctl_functions.h
+@@ -42,6 +42,10 @@ int CTL_set_port_config(int br_index, int port_index, UID_STP_PORT_CFG_T * cfg);
+ 
+ int CTL_set_debug_level(int level);
+ 
++int CTL_add_bridge(char *name);
++
++int CTL_add_bridge_port(char *br_name, char *pt_name);
++
+ #define CTL_ERRORS \
+  CHOOSE(Err_Interface_not_a_bridge), \
+  CHOOSE(Err_Bridge_RSTP_not_enabled), \
+diff --git a/ctl_main.c b/ctl_main.c
+index 83dee9f..a90e185 100644
+--- a/ctl_main.c
++++ b/ctl_main.c
+@@ -728,6 +728,16 @@ static int cmd_debuglevel(int argc, char *const *argv)
+ 	return CTL_set_debug_level(getuint(argv[1]));
+ }
+ 
++static int cmd_addBridge(int argc, char *const *argv)
++{
++	return CTL_add_bridge(argv[1]);
++}
++
++static int cmd_addBridgePort(int argc, char *const *argv)
++{
++	return CTL_add_bridge_port(argv[1], argv[2]);
++}
++
+ struct command {
+ 	int nargs;
+ 	int optargs;
+@@ -770,6 +780,10 @@ static const struct command commands[] = {
+ 	{2, 0, "portmcheck", cmd_portmcheck,
+ 	 "<bridge> <port>\ttry to get back from STP to RSTP mode"},
+ 	{1, 0, "debuglevel", cmd_debuglevel, "<level>\t\tLevel of verbosity"},
++	{1, 0, "addBridge", cmd_addBridge,
++	 "<bridge>\tadd new bridge"},
++	{2, 0, "addBridgePort", cmd_addBridgePort,
++	 "<bridge> <port>\tadd new bridge port in an existed bridge"},
+ };
+ 
+ const struct command *command_lookup(const char *cmd)
+diff --git a/ctl_socket.c b/ctl_socket.c
+index f37e8b1..1438e5f 100644
+--- a/ctl_socket.c
++++ b/ctl_socket.c
+@@ -68,6 +68,8 @@ int handle_message(int cmd, void *inbuf, int lin, void *outbuf, int *lout)
+ 		SERVER_MESSAGE_CASE(get_port_state);
+ 		SERVER_MESSAGE_CASE(set_port_config);
+ 		SERVER_MESSAGE_CASE(set_debug_level);
++		SERVER_MESSAGE_CASE(add_bridge);
++		SERVER_MESSAGE_CASE(add_bridge_port);
+ 
+ 	default:
+ 		ERROR("CTL: Unknown command %d", cmd);
+diff --git a/ctl_socket.h b/ctl_socket.h
+index 089a717..a4b7c7a 100644
+--- a/ctl_socket.h
++++ b/ctl_socket.h
+@@ -149,6 +149,37 @@ struct set_debug_level_OUT {
+ #define set_debug_level_COPY_OUT ({ (void)0; })
+ #define set_debug_level_CALL (in->level)
+ 
++#if 0
++int CTL_add_bridge(char *name);
++#endif
++#define CMD_CODE_add_bridge 107
++#define add_bridge_ARGS (char *name)
++struct add_bridge_IN {
++	char name[64];
++};
++struct add_bridge_OUT {
++};
++#define add_bridge_COPY_IN \
++  ({ strncpy(in->name, name, sizeof(in->name)); })
++#define add_bridge_COPY_OUT ({ (void)0; })
++#define add_bridge_CALL (in->name)
++
++#if 0
++int CTL_add_bridge_port(char *br_name, char *pt_name);
++#endif
++#define CMD_CODE_add_bridge_port 108
++#define add_bridge_port_ARGS (char *br_name, char *pt_name)
++struct add_bridge_port_IN {
++	char br_name[64];
++	char pt_name[64];
++};
++struct add_bridge_port_OUT {
++};
++#define add_bridge_port_COPY_IN \
++  ({ strncpy(in->br_name, br_name, sizeof(in->br_name)); strncpy(in->pt_name, pt_name, sizeof(in->pt_name)); })
++#define add_bridge_port_COPY_OUT ({ (void)0; })
++#define add_bridge_port_CALL (in->br_name, in->pt_name)
++
+ /* General case part in ctl command server switch */
+ #define SERVER_MESSAGE_CASE(name) \
+ case CMD_CODE_ ## name : do { \
+diff --git a/main.c b/main.c
+index a8329b3..33eebec 100644
+--- a/main.c
++++ b/main.c
+@@ -41,6 +41,17 @@
+ static int become_daemon = 1;
+ static int is_daemon = 0;
+ int log_level = LOG_LEVEL_DEFAULT;
++static topology_mode_t topology_mode = MANUAL_TOPOLOGY;
++
++void set_topology_mode(topology_mode_t mode)
++{
++	topology_mode = mode;
++}
++
++topology_mode_t get_topology_mode(void)
++{
++	return topology_mode;
++}
+ 
+ static void handle_signal(int signo)
+ {
+@@ -63,8 +74,11 @@ static int setup_signals(void)
+ int main(int argc, char *argv[])
+ {
+ 	int c,ret;
+-	while ((c = getopt(argc, argv, "dv:")) != -1) {
++	while ((c = getopt(argc, argv, "adv:")) != -1) {
+ 		switch (c) {
++		case 'a':
++			set_topology_mode(AUTO_TOPOLOGY);
++			break;
+ 		case 'd':
+ 			become_daemon = 0;
+ 			break;
+diff --git a/netif_utils.c b/netif_utils.c
+index 719581c..b3e7baa 100644
+--- a/netif_utils.c
++++ b/netif_utils.c
+@@ -86,6 +86,27 @@ int ethtool_get_speed_duplex(char *ifname, int *speed, int *duplex)
+ 	return 0;
+ }
+ 
++int get_link_status(const char *name)
++{
++	int s = -1;
++	struct ifreq ifr = {};
++
++	if(!name) return 0;
++
++	if((s = socket(AF_INET, SOCK_DGRAM, 0)) <= 0) return 0;
++
++	strncpy(ifr.ifr_name, name, sizeof(ifr.ifr_name));
++
++	if(0 != ioctl(s, SIOCGIFFLAGS, &ifr)) {
++		close(s);
++		return 0;
++	}
++
++	close(s);
++
++	return ((ifr.ifr_flags & (IFF_UP|IFF_RUNNING)) == (IFF_UP|IFF_RUNNING));
++}
++
+ /********* Sysfs based utility functions *************/
+ 
+ /* This sysfs stuff might break with interface renames */
+diff --git a/netif_utils.h b/netif_utils.h
+index 99c99d5..cc45e02 100644
+--- a/netif_utils.h
++++ b/netif_utils.h
+@@ -32,6 +32,8 @@ int get_hwaddr(char *ifname, unsigned char *hwaddr);
+ 
+ int ethtool_get_speed_duplex(char *ifname, int *speed, int *duplex);
+ 
++int get_link_status(const char *name);
++
+ /********* Sysfs based utility functions *************/
+ int is_bridge(char *if_name);
+ 

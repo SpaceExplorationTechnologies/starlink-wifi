@@ -1,0 +1,19 @@
+* Qualcomm Technologies, Inc. IPQ40xx regulators
+
+Required properties:
+- compatible		: Must be "regulator-ipq40xx".
+- states		: Selection of available voltages and corresponding values
+- reg			: Register address for controlling LDO
+- mask			: Mask value for switching voltages
+Example:
+
+	vccq_sd0: regulator@0 {
+		compatible = "qcom,regulator-ipq40xx";
+		regulator-name = "SD0 VccQ";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <3000000>;
+		states = <3000000 0x3
+			1800000 0x1>;
+		reg = <0x01948000 0x4>;
+		mask = <0x3>;
+	};

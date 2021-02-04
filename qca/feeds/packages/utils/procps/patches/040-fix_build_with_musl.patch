@@ -1,0 +1,10 @@
+--- a/proc/readproc.c
++++ b/proc/readproc.c
+@@ -26,6 +26,7 @@
+ #include <sys/dir.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
++#include <limits.h>
+ 
+ // sometimes it's easier to do this manually, w/o gcc helping
+ #ifdef PROF

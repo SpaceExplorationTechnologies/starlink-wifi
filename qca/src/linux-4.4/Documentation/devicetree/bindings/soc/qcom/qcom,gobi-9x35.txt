@@ -1,0 +1,10 @@
+QCA GOBI-9X35
+
+GobiNet driver is used to communicate with Gobi modems
+using QMI protocol over usb interface
+
+Example for ipq40xx:
+			qcom,Gobi {
+				compatible = "qcom,gobi-9x35";
+				status = "ok"
+				};

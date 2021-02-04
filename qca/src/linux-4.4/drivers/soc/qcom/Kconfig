@@ -1,0 +1,275 @@
+#
+# QCOM Soc drivers
+#
+config QCOM_GSBI
+        tristate "QCOM General Serial Bus Interface"
+        depends on ARCH_QCOM
+        select MFD_SYSCON
+        help
+          Say y here to enable GSBI support.  The GSBI provides control
+          functions for connecting the underlying serial UART, SPI, and I2C
+          devices to the output pins.
+
+config QCOM_PM
+	bool "Qualcomm Power Management"
+	depends on ARCH_QCOM && !ARM64
+	select QCOM_SCM
+	help
+	  QCOM Platform specific power driver to manage cores and L2 low power
+	  modes. It interface with various system drivers to put the cores in
+	  low power modes.
+
+config QCOM_SMEM
+	tristate "Qualcomm Shared Memory Manager (SMEM)"
+	depends on ARCH_QCOM
+	depends on HWSPINLOCK
+	help
+	  Say y here to enable support for the Qualcomm Shared Memory Manager.
+	  The driver provides an interface to items in a heap shared among all
+	  processors in a Qualcomm platform.
+
+config QCOM_SMD
+	tristate "Qualcomm Shared Memory Driver (SMD)"
+	depends on QCOM_SMEM
+	help
+	  Say y here to enable support for the Qualcomm Shared Memory Driver
+	  providing communication channels to remote processors in Qualcomm
+	  platforms.
+
+config QCOM_SMD_RPM
+	tristate "Qualcomm Resource Power Manager (RPM) over SMD"
+	depends on QCOM_SMD && OF
+	help
+	  If you say yes to this option, support will be included for the
+	  Resource Power Manager system found in the Qualcomm 8974 based
+	  devices.
+
+	  This is required to access many regulators, clocks and bus
+	  frequencies controlled by the RPM on these devices.
+
+	  Say M here if you want to include support for the Qualcomm RPM as a
+	  module. This will build a module called "qcom-smd-rpm".
+
+config QCOM_SMEM_STATE
+	bool
+
+config QCOM_SMP2P
+	bool "Qualcomm Shared Memory Point to Point support"
+	depends on QCOM_SMEM
+	select QCOM_SMEM_STATE
+	help
+	  Say yes here to support the Qualcomm Shared Memory Point to Point
+	  protocol.
+
+config MSM_GLINK
+	bool "Generic Link (G-Link)"
+	help
+	 G-Link is a generic link transport that replaces SMD.  It is used
+	 within a System-on-Chip (SoC) for communication between both internal
+	 processors and external peripherals.  The actual physical transport
+	 is handled by transport plug-ins that can be individually enabled and
+	 configured separately.
+
+config MSM_GLINK_LOOPBACK_SERVER
+	bool "Generic Link (G-Link) Loopback Server"
+	help
+	 G-Link Loopback Server that enable loopback test framework to test
+	 and validate the G-Link protocol stack. It support both local and
+	 remote clients to configure the loopback server and echo back the
+	 data received from the clients.
+
+config MSM_GLINK_SMEM_NATIVE_XPRT
+	depends on QCOM_SMEM
+	depends on MSM_GLINK
+	bool "Generic Link (G-Link) SMEM Native Transport"
+	help
+	 G-Link SMEM Native Transport is a G-Link Transport plug-in.  It allows
+	 G-Link communication to remote entities through a shared memory
+	 physical transport.  The nature of shared memory limits this G-Link
+	 transport to only connecting with entities internal to the
+	 System-on-Chip.
+
+config MSM_GLINK_PKT
+	bool "Enable device interface for GLINK packet channels"
+	depends on MSM_GLINK
+	help
+	 G-link packet driver provides the interface for the userspace
+	 clients to communicate over G-Link via device nodes.
+	 This enable the usersapce clients to read and write to
+	 some glink packets channel.
+
+config GLINK_DEBUG_FS
+	bool "Enable Generic Link (G-Link) debugfs support"
+	depends on MSM_GLINK
+	help
+	 This enables debugfs support for G-Link.
+
+config MSM_IPC_ROUTER_GLINK_XPRT
+	depends on MSM_GLINK
+	depends on IPC_ROUTER
+	bool "MSM GLINK XPRT Layer"
+	help
+	 GLINK Transport Layer that enables IPC Router communication within
+	 a System-on-Chip(SoC). When the GLINK channels become available,
+	 this layer registers a transport with IPC Router and enable
+	 message exchange.
+
+config MSM_IPC_ROUTER_MHI_XPRT
+	depends on MSM_MHI
+	depends on IPC_ROUTER
+	bool "MSM MHI XPRT Layer"
+	help
+	 MHI Transport Layer that enables off-chip communication of
+	 IPC Router. When the MHI endpoint becomes available, this layer
+	 registers the transport with IPC Router and enable message
+	 exchange.
+
+config MSM_SMEM
+	depends on ARCH_QCOM
+	depends on HWSPINLOCK_QCOM
+	bool "MSM Shared Memory (SMEM)"
+	help
+	 Support for the shared memory interface between the various
+	 processors in the System on a Chip (SoC) which allows basic
+	 inter-processor communication.
+
+config MSM_QMI_INTERFACE
+	 depends on IPC_ROUTER
+	 depends on QMI_ENCDEC
+	 bool "MSM QMI Interface Library"
+	 help
+	  Library to send and receive QMI messages over IPC Router.
+	  This library provides interface functions to the kernel drivers
+	  to perform QMI message marshaling and transport them over IPC
+	  Router.
+
+config MSM_TEST_QMI_CLIENT
+	depends on MSM_QMI_INTERFACE
+	tristate "MSM TEST QMI CLIENT"
+	help
+	  The sample QMI client provides a test code for QMI usage. The
+	  test_service client driver uses QMI interface library to send
+	  and receive QMI messages over IPC Router. The test code sends
+	  a synchronous QMI request to the test_service and handles the
+	  QMI responses.
+
+config MSM_RPM_GLINK
+	tristate "QCA Resource Power Manager (RPM) over GLINK"
+	depends on MSM_GLINK && OF
+	help
+	 If you say yes to this option, support will be included for the
+	 Resource Power Manager system found in the Qualcomm 8974 based
+	 devices.
+
+	 This is required to access many regulators, clocks and bus
+	 frequencies controlled by the RPM on these devices.
+
+	 Say M here if you want to include support for the QCA RPM as a
+	 module. This will build a module called "qcom-rpm-glink".
+
+config MSM_RPM_LOG
+	tristate "QCOM Resource Power Manager Log Driver"
+	depends on MFD_QCOM_RPM
+	help
+	 This option enables a driver which can read from a circular buffer
+	 of messages produced by the RPM. These messages provide diagnostic
+	 information about RPM operation. The driver outputs the messages
+	 via a debugfs node.
+
+config QCOM_RESTART_REASON
+	bool "Write restart reason on reboot"
+	depends on ARCH_QCOM
+	help
+	Say y here to enable writing restart reason. This adds a reboot handler
+	to write the restart reason command to distinguish between normal and
+	abnormal reboots. This also registers for panic notification so that
+	magic cookies can be set for download mode.
+	If unsure, say N
+
+config QCOM_DLOAD_MODE
+	bool "Enable download mode on crashes"
+	depends on ARCH_QCOM
+	default n
+	help
+	This makes the SoC enter download mode when it resets
+	due to a kernel panic. Note that this doesn't by itself
+	make the kernel reboot on a kernel panic - that must be
+	enabled via another mechanism.
+	If unsure, say N
+
+config QCOM_DLOAD_MODE_APPSBL
+	bool "Application bootloader based download mode handling"
+	depends on QCOM_DLOAD_MODE
+	default n
+	help
+
+config IPQ_TCSR
+        tristate "Qualcomm Technologies Inc Top Control and Status Registers"
+        depends on ARCH_QCOM
+        help
+          Say y here to enable TCSR support.  The TCSR provides control
+          functions for various peripherals.
+
+config QCOM_CACHE_DUMP
+        bool "QCOM cache dumping support"
+        depends on ARCH_QCOM
+        help
+          Say y here to enable cache dumping support. This adds infrastructure
+          to dump the L1 and L2 caches to an allocated buffer. This allows for
+          analysis of the caches in case cache corruption is suspected.
+          If unsure, say N
+
+config QCOM_CACHE_DUMP_ON_PANIC
+        bool "Dump caches on panic"
+        depends on QCOM_CACHE_DUMP
+        help
+          By default, the caches are flushed on panic. This means that trying to
+          look at them in a RAM dump will give useless data. Select this if you
+          want to dump the L1 and L2 caches on panic before any flush occurs.
+          If unsure, say N
+
+if ARCH_QCOM
+
+config QCOM_MEMORY_DUMP_V2
+	bool "QCOM Memory Dump V2 Support"
+	help
+	  This enables memory dump feature. It allows various client
+	  subsystems to register respective dump regions. At the time
+	  of deadlocks or cpu hangs these dump regions are captured to
+	  give a snapshot of the system at the time of the crash.
+
+endif # ARCH_QCOM
+
+config IPQ_SUBSYSTEM_RESTART
+	bool "IPQ Subsystem Restart"
+	help
+	  This option enables the IPQ subsystem restart framework.
+
+	  The IPQ subsystem restart framework provides support to boot,
+	  shutdown, and restart subsystems with a reference counted API.
+	  It also notifies userspace of transitions between these states via
+	  sysfs.
+
+config IPQ_SUBSYSTEM_RESTART_TEST
+	tristate "IPQ SSR test module"
+	help
+	  This option enables the IPQ SSR test module.
+
+config IPQ_SUBSYSTEM_DUMP
+	bool "IPQ Subsystem Dump Collection"
+        depends on IPQ807X_REMOTEPROC
+	help
+	 This option enables the IPQ subsytem dump collection.
+
+	 The IPQ subsystem dump collection provides the support to collect the
+	 subsytem dump based on its memory region provided in device tree.
+	 It also notifies the userspace of the dump collection event, which can
+	 be configured in hotplug daemon.
+
+config QCOM_TZ_LOG
+	tristate "Trust Zone (TZ) Log Driver"
+	depends on DEBUG_FS
+	help
+	  This option enables a driver with a debugfs interface for messages
+	  produced by the Secure code (Trust zone). These messages provide
+	  diagnostic information about TZ operation.

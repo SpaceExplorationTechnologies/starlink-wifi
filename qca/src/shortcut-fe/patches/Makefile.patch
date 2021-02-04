@@ -1,0 +1,10 @@
+diff --git a/net/Makefile b/net/Makefile
+index 6865dab..a8f0091 100644
+--- a/net/Makefile
++++ b/net/Makefile
+@@ -71,3 +71,5 @@ obj-$(CONFIG_BATMAN_ADV)	+= batman-adv/
+ obj-$(CONFIG_NFC)		+= nfc/
+ obj-$(CONFIG_OPENVSWITCH)	+= openvswitch/
+ obj-$(CONFIG_NET_ACTIVITY_STATS)		+= activity_stats.o
++obj-$(CONFIG_SHORTCUT_FE)	+= shortcut-fe/
++

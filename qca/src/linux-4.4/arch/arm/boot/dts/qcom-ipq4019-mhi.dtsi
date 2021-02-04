@@ -1,0 +1,82 @@
+/*
+ * Copyright (c) 2017, The Linux Foundation. All rights reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+
+/ {
+	aliases {
+		mhi1 = &mhi_wlan;
+	};
+
+	soc {
+		wifi3: wifi3@f00000 {
+			compatible  = "qcom,cnss-qca6290";
+			qcom,mhi = <&mhi_wlan>;
+			qcom,wlan-ramdump-dynamic = <0x400000>;
+			status = "ok";
+		};
+
+		mhi: qcom,mhi {
+			compatible = "qcom,mhi";
+		};
+
+		mhi_wlan: qcom,mhi@1 {
+			compatible = "qcom,mhi";
+			qcom,pci-dev_id = <0x1100>;
+			qcom,pci-domain = <0>;
+			qcom,pci-bus = <1>;
+			qcom,pci-slot = <0>;
+			qcom,mhi-address-window = <0x0 0x80000000 0x1 0xFFFFFFFF>;
+
+			/* RUMI Specific param */
+			qcom,mhi-ready-timeout = <600000>;
+			qcom,bhi-poll-timeout = <600000>;
+			qcom,bhi-alignment = <0x40000>;
+
+			/* firmware transfer */
+			qcom,mhi-manage-boot;
+			qcom,mhi-fw-image = "amss.bin";
+			qcom,mhi-max-sbl = <0x40000>;
+			qcom,mhi-sg-size = <0x80000>;
+
+			/* mhi cntxt parameters */
+			mhi-chan-cfg-0 = <0x0 0x80 0x1 0x92>;
+			mhi-chan-cfg-1 = <0x1 0x80 0x1 0xa2>;
+			mhi-chan-cfg-4 = <0x4 0x80 0x1 0x92>;
+			mhi-chan-cfg-5 = <0x5 0x80 0x1 0xa2>;
+			mhi-chan-cfg-16 = <0x10 0x40 0x1 0x92>;
+			mhi-chan-cfg-17 = <0x11 0x40 0x1 0xa2>;
+			mhi-event-rings = <2>;
+			mhi-event-cfg-0 = <0xa 0x0 0x1 0 1 0x31>;
+			mhi-event-cfg-1 = <0x80 0x1 0x1 0 1 0x31>;
+		};
+
+		qcom,ipc_router_external_wlan_xprt {
+			compatible = "qcom,ipc_router_mhi_xprt";
+			qcom,mhi = <&mhi_wlan>;
+			qcom,out-chan-id = <16>;
+			qcom,in-chan-id = <17>;
+			qcom,xprt-remote = "external-wlan";
+			qcom,xprt-linkid = <1>;
+			qcom,xprt-version = <3>;
+		};
+
+		qcom,diag@0 {
+			compatible = "qcom,diag";
+			qcom,mhi = <&mhi_wlan>;
+			status = "ok";
+		};
+	};
+};

@@ -1,0 +1,224 @@
+length_0_0 2048 
+checksum_0_0 0xd257 
+eeprom_version_0_0 0x1 
+template_version_0_0 0x1 
+extBoardId_0_0 0x1 
+ExtHeaderFuture_0_0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 
+flag1_5G_0_0 0x0 
+flag2_5G_0_0 0x57 
+flag3_5G_0_0 0x2 
+refDesignId_5G_0_0 0x2 
+reservedFlag_5G_0_0 0x0 0x0 0x0 
+dpdRfbMode_5G__0_0 0x1 
+dpdTrainingSample_5G__0_0 0x0 
+dpdHeavyClipEnable_5G__0_0 0x0 
+dpdQuickDrop_5G__0_0 0x0 
+dpdTargetLvlHi_5G__0_0 51 
+dpdTargetLvlLow_5G__0_0 51 
+dpdTargetLvlWeak_5G__0_0 51 
+dpdPwrHi_5G__0_0 -12 
+dpdPwrLow_5G__0_0 -14 
+dpdPwrWeak_5G__0_0 -14 
+dpdEnable_5G__0_0 1 
+dpdSqLimit_5G__0_0 60 
+dpdSqBestLimit_5G__0_0 20 
+dpdCorexRange_5G__0_0 6 
+dpdForceClock_TxRadioBW_5G__0_0 0 
+dpdAm2AmMask_5G__0_0 0x0 
+dpdAm2PmMask_5G__0_0 0x0 
+dpdHt40Mask_5G__0_0 0x0 
+dpdTrainingBW_5G__0_0 3 
+dpdAgc2Settling_5G__0_0 20 
+dpdDebugMode_5G__0_0 0 
+dpdXpaOn_5G__0_0 0x0 
+dpdLNASETTING_5G__0_0 0x0 
+paprdShortCal_5G__0_0 1 
+disableDPDStartfreq_5G__0_0 0 
+disableDPDEndfreq_5G__0_0 0 
+xlnaGain_5G__0_0 0x9 
+xlnaGain_5G__1_0 0x9 
+xlnaGain_5G__2_0 0x9 
+xlnaGain_5G__3_0 0x9 
+pad0_5G__0_0 0x0 
+rttChannel_t4_dyn20_5G_0_0_0 -180 0 0 
+rttChannel_t4mt2_dyn20_5G_0_0_0 -251 -403 -403 
+rttChannel_t4_dyn20_5G_1_0_0 -129 0 0 
+rttChannel_t4mt2_dyn20_5G_1_0_0 -188 -343 -343 
+txGainIdx_lnaGain_5G__0_0 pasetting:5 txgainIdx:5 
+loopbackDelay_numCorrStages_5G__0_0 loopbackDelay:15 numCorrStages:4 
+xlnaOn_xpaOn_xlnaStatePhaseComp_5G__0_0 xlnaOn:1 xpaOn:0 xlnaStatePhaseComp:0 
+txChainSteps_5G__0_0 8 1 1 2 4 8 
+rxChainSteps_5G__0_0 2 4 8 8 1 1 
+computeSteps_5G__0_0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+lnaGainPhaseComp_5G__0_0 0 0 0 0 0 0 
+ibfCalFreqPiers_5G__0_0 76 96 100 140 144 208 212 216 0 0 0 0 
+ibfCalData_5G__0_0 -40 -80 0 -70 20 -70 -70 -70 0 0 0 0 
+ibfCalData_5G__1_0 -140 -190 -50 -160 10 180 160 160 0 0 0 0 
+ibfCalData_5G__2_0 10 -80 150 -80 -170 -70 -90 -110 0 0 0 0 
+heavyClipFactorQam_5G__0_0 -112 -112 118 90 84 84 76 70 56 0 
+heavyClipCompFactorQam_5G__0_0 16 16 8 0 0 0 0 0 0 0 
+heavyClipFactorQamNonHtDup40_5G__0_0 56 41 37 35 34 34 31 0 0 0 
+heavyClipCompFactorQamNonHtDup40_5G__0_0 -10 -31 -35 -8 -2 -2 21 0 0 0 
+heavyClipFactorQamNonHtDup80_5G__0_0 56 41 37 35 34 34 34 31 0 0 
+heavyClipCompFactorQamNonHtDup80_5G__0_0 -8 -27 -34 2 4 4 -3 0 0 0 
+heavyClipEnableBitMap_5G__0_0 0x7 
+heavyClipUsePreEmp_5G__0_0 1 
+heavyClipBackoffPwr2x_5G__0_0 0 
+heavyClipFactorQam_40Mhz_5G__0_0 -112 -112 118 96 84 84 76 70 56 0 
+heavyClipCompFactorQam_40Mhz_5G__0_0 12 12 4 0 0 0 0 0 0 0 
+heavyClipFactorQam_80Mhz_5G__0_0 102 102 90 86 84 84 76 70 56 0 
+heavyClipCompFactorQam_80Mhz_5G__0_0 -4 -4 -15 0 0 0 0 0 0 0 
+alutFuture_5G 0 0 
+rtt_freq_list_5G__0_0 36 149 
+rttChannel_t4_dyn40_5G_0_0_0 -144 0 0 
+rttChannel_t4mt2_dyn40_5G_0_0_0 -212 -331 -331 
+rttChannel_t4_dyn40_5G_0_1_0 -286 0 0 
+rttChannel_t4mt2_dyn40_5G_0_1_0 0 -209 -209 
+rttChannel_t4_dyn40_5G_1_0_0 -76 0 0 
+rttChannel_t4mt2_dyn40_5G_1_0_0 -141 -275 -177 
+rttChannel_t4_dyn40_5G_1_1_0 -202 0 0 
+rttChannel_t4mt2_dyn40_5G_1_1_0 0 -177 -176 
+rttBase_txDelay_dyn40_5G_0_0 5710 5710 5710 
+rttBase_rxDelay_dyn40_5G_0_0 2551 2524 2524 
+rttBase_sifsDelay_dyn40_5G_0_0 168625 0 168625 
+rttBase_txDelay_dyn40_5G_1_0 6520 4240 4240 
+rttBase_rxDelay_dyn40_5G_1_0 3533 2050 2050 
+rttBase_sifsDelay_dyn40_5G_1_0 168625 168625 168625 
+rttBase_txDelay_dyn20_5G_0_0 5710 5710 5710 
+rttBase_rxDelay_dyn20_5G_0_0 3860 3868 3868 
+rttBase_sifsDelay_dyn20_5G_0_0 168625 168625 168625 
+rttHC_txDelay_dyn40_5G_0_0 257 254 254 
+reserved_dyn40_5G_0_0 0 
+rttHC_sifsDelay_dyn40_5G_0_0 -1750 -1750 -1750 
+rttHC_txDelay_dyn40_5G_1_0 867 246 246 
+reserved_dyn40_5G_1_0 0 
+rttHC_sifsDelay_dyn40_5G_1_0 -1750 -500 -500 
+rttHC_txDelay_dyn20_5G_0_0 317 330 648 
+reserved_dyn20_5G_0_0 0 
+rttHC_sifsDelay_dyn20_5G_0_0 -1750 -1750 -1750 
+rttMisc_txDelayDPD_dyn40_5G_0_0 656 664 664 
+rttMisc_rxDelayNotch_dyn40_5G_0_0 270 273 273 
+rttMisc_txDelayDPD_dyn40_5G_1_0 0 648 648 
+rttMisc_rxDelayNotch_dyn40_5G_1_0 281 258 258 
+dpdTargetAgc2LUT_5G__0_0 -13 -13 -13 
+dpdTargetAgc2LUT_5G__1_0 -13 -13 -13 
+dpdTargetAgc2LUT_5G__2_0 -13 -13 -13 
+dpdTargetAgc2LUT_5G__3_0 -13 -13 -13 
+dpdTargetAgc2LUT_5G__4_0 -13 -13 -13 
+dpdTargetAgc2LUT_5G__5_0 -13 -13 -13 
+dpdTargetAgc2LUT_5G__6_0 0 0 0 
+dpdTargetAgc2LUT_5G__7_0 0 0 0 
+rttMisc_txDelayDPD_dyn20_5G_0_0 656 672 672 
+rttMisc_rxDelayNotch_dyn20_5G_0_0 386 386 386 
+paBiasSetting__2G_0_0 0x0 0x0 0x0 0x0 
+ForceDacGain__2G_0_0 0 
+eBDF_Reserved_5G__0_0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+flag1_2G_2G__0_0 0x0 
+flag2_2G_2G__0_0 0x17 
+flag3_2G_2G__0_0 0x0 
+refDesignId_2G_2G__0_0 0x1 
+reservedFlag_2G_2G__0_0 0x0 0x0 0x0 
+dpdRfbMode_2G__0_0 0x1 
+dpdTrainingSample_2G__0_0 0x0 
+dpdHeavyClipEnable_2G__0_0 0x0 
+dpdQuickDrop_2G__0_0 0x0 
+dpdTargetLvlHi_2G__0_0 51 
+dpdTargetLvlLow_2G__0_0 51 
+dpdTargetLvlWeak_2G__0_0 51 
+dpdPwrHi_2G__0_0 -12 
+dpdPwrLow_2G__0_0 -14 
+dpdPwrWeak_2G__0_0 -14 
+dpdEnable_2G__0_0 1 
+dpdSqLimit_2G__0_0 60 
+dpdSqBestLimit_2G__0_0 20 
+dpdCorexRange_2G__0_0 12 
+dpdForceClock_TxRadioBW_2G__0_0 0 
+dpdAm2AmMask_2G__0_0 0x0 
+dpdAm2PmMask_2G__0_0 0x0 
+dpdHt40Mask_2G__0_0 0x0 
+dpdTrainingBW_2G__0_0 3 
+dpdAgc2Settling_2G__0_0 20 
+dpdDebugMode_2G__0_0 0 
+dpdXpaOn_2G__0_0 0x0 
+dpdLNASETTING_2G__0_0 0x0 
+paprdShortCal_2G__0_0 1 
+disableDPDStartfreq_2G__0_0 0 
+disableDPDEndfreq_2G__0_0 0 
+xlnaGain_2G__0_0 0xb 
+xlnaGain_2G__1_0 0xb 
+xlnaGain_2G__2_0 0xb 
+xlnaGain_2G__3_0 0xb 
+pad0_2G__0_0 0x0 
+rttChannel_t4_dyn20_2G_0_0_0 43 0 0 
+rttChannel_t4mt2_dyn20_2G_0_0_0 -772 -718 0 
+rttChannel_t4_dyn20_2G_1_0_0 0 0 0 
+rttChannel_t4mt2_dyn20_2G_1_0_0 0 0 0 
+txGainIdx_lnaGain_2G__0_0 pasetting:5 txgainIdx:5 
+loopbackDelay_numCorrStages_2G__0_0 loopbackDelay:15 numCorrStages:4 
+xlnaOn_xpaOn_xlnaStatePhaseComp_2G__0_0 xlnaOn:1 xpaOn:0 xlnaStatePhaseComp:0 
+txChainSteps_2G__0_0 1 1 1 2 4 8 
+rxChainSteps_2G__0_0 2 4 8 1 1 1 
+computeSteps_2G__0_0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+lnaGainPhaseComp_2G__0_0 0 0 0 0 0 0 
+ibfCalFreqPiers_2G__0_0 112 182 0 0 0 0 0 0 0 0 0 0 
+ibfCalData_2G__0_0 80 60 0 0 0 0 0 0 0 0 0 0 
+ibfCalData_2G__1_0 50 0 0 0 0 0 0 0 0 0 0 0 
+ibfCalData_2G__2_0 -50 -110 0 0 0 0 0 0 0 0 0 0 
+heavyClipFactorQam_2G__0_0 -112 -112 118 118 84 84 76 70 56 0 
+heavyClipCompFactorQam_2G__0_0 11 11 6 6 0 0 0 0 0 0 
+heavyClipFactorQamNonHtDup40_2G__0_0 56 41 37 35 34 34 31 0 0 0 
+heavyClipCompFactorQamNonHtDup40_2G__0_0 -4 -22 -28 -32 -33 -33 -40 0 0 0 
+heavyClipFactorQamNonHtDup80_2G__0_0 56 41 37 35 34 34 34 31 0 0 
+heavyClipCompFactorQamNonHtDup80_2G__0_0 9 -9 -15 -19 -21 -21 -27 0 0 0 
+heavyClipEnableBitMap_2G__0_0 0x7 
+heavyClipUsePreEmp_2G__0_0 1 
+heavyClipBackoffPwr2x_2G__0_0 0 
+heavyClipFactorQam_40Mhz_2G__0_0 -112 -112 118 118 84 84 76 70 56 0 
+heavyClipCompFactorQam_40Mhz_2G__0_0 11 11 6 6 0 0 0 0 0 0 
+heavyClipFactorQam_80Mhz_2G__0_0 0 0 0 0 0 0 0 0 0 0 
+heavyClipCompFactorQam_80Mhz_2G__0_0 0 0 0 0 0 0 0 0 0 0 
+alutFuture_2G 0 0 
+rtt_freq_list_2G__0_0 10 12 
+rttChannel_t4_dyn40_2G_0_0_0 -31 0 0 
+rttChannel_t4mt2_dyn40_2G_0_0_0 -350 -353 0 
+rttChannel_t4_dyn40_2G_0_1_0 3276 0 0 
+rttChannel_t4mt2_dyn40_2G_0_1_0 0 -1434 0 
+rttChannel_t4_dyn40_2G_1_0_0 0 0 0 
+rttChannel_t4mt2_dyn40_2G_1_0_0 0 0 0 
+rttChannel_t4_dyn40_2G_1_1_0 0 0 0 
+rttChannel_t4mt2_dyn40_2G_1_1_0 0 0 0 
+rttBase_txDelay_dyn40_2G_0_0 -9856 -9856 -9856 
+rttBase_rxDelay_dyn40_2G_0_0 -13163 -13189 -13189 
+rttBase_sifsDelay_dyn40_2G_0_0 165500 165500 165500 
+rttBase_txDelay_dyn40_2G_1_0 -11236 -8986 -8986 
+rttBase_rxDelay_dyn40_2G_1_0 -12094 -13571 -13571 
+rttBase_sifsDelay_dyn40_2G_1_0 165500 165200 165200 
+rttBase_txDelay_dyn20_2G_0_0 -9856 -9856 -9856 
+rttBase_rxDelay_dyn20_2G_0_0 -11827 -11811 -11811 
+rttBase_sifsDelay_dyn20_2G_0_0 165500 165500 165500 
+rttHC_txDelay_dyn40_2G_0_0 258 256 256 
+reserved_dyn40_2G_0_0 0 
+rttHC_sifsDelay_dyn40_2G_0_0 -1750 -1750 -1750 
+rttHC_txDelay_dyn40_2G_1_0 -1402 2012 2012 
+reserved_dyn40_2G_1_0 0 
+rttHC_sifsDelay_dyn40_2G_1_0 -1750 -500 -500 
+rttHC_txDelay_dyn20_2G_0_0 250 250 250 
+reserved_dyn20_2G_0_0 0 
+rttHC_sifsDelay_dyn20_2G_0_0 -1750 -1750 -1750 
+rttMisc_txDelayDPD_dyn40_2G_0_0 703 699 699 
+rttMisc_rxDelayNotch_dyn40_2G_0_0 265 267 267 
+rttMisc_txDelayDPD_dyn40_2G_1_0 0 2930 2930 
+rttMisc_rxDelayNotch_dyn40_2G_1_0 269 254 254 
+dpdTargetAgc2LUT_2G__0_0 -13 -13 -13 
+dpdTargetAgc2LUT_2G__1_0 -13 -13 -13 
+dpdTargetAgc2LUT_2G__2_0 -13 -13 -13 
+dpdTargetAgc2LUT_2G__3_0 -13 -13 -13 
+dpdTargetAgc2LUT_2G__4_0 -13 -13 -13 
+dpdTargetAgc2LUT_2G__5_0 -13 -13 -13 
+dpdTargetAgc2LUT_2G__6_0 0 0 0 
+dpdTargetAgc2LUT_2G__7_0 0 0 0 
+rttMisc_txDelayDPD_dyn20_2G_0_0 0 0 0 
+rttMisc_rxDelayNotch_dyn20_2G_0_0 0 0 0 
+paBiasSetting__2G_0_0 0x0 0x0 0x0 0x0 
+ForceDacGain__2G_0_0 0 
+eBDF_Reserved_2G__0_0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 

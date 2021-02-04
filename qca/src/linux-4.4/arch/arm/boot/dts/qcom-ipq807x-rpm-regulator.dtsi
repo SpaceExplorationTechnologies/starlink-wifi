@@ -1,0 +1,308 @@
+/*
+ * Copyright (c) 2016, The Linux Foundation. All rights reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+&rpm_bus {
+	rpm-regulator-smpa1 {
+		compatible = "qcom,rpm-glink-regulator-resource";
+		qcom,resource-name = "smpa";
+		qcom,resource-id = <1>;
+		qcom,regulator-type = <1>;
+		qcom,hpm-min-load = <100000>;
+		status = "disabled";
+
+		ipq807x_s1_corner: regulator-s1 {
+			compatible = "qcom,rpm-glink-regulator";
+			regulator-name = "ipq807x_s1";
+			qcom,set = <3>;
+			regulator-min-microvolt = <670000>;
+			regulator-max-microvolt = <990000>;
+			qcom,always-send-voltage;
+			status = "disabled";
+		};
+	};
+
+	rpm-regulator-smpa2 {
+		compatible = "qcom,rpm-glink-regulator-resource";
+		qcom,resource-name = "smpa";
+		qcom,resource-id = <2>;
+		qcom,regulator-type = <1>;
+		qcom,hpm-min-load = <100000>;
+		status = "disabled";
+
+		ipq807x_s2_corner: regulator-s2 {
+			compatible = "qcom,rpm-glink-regulator";
+			regulator-name = "ipq807x_s2";
+			qcom,set = <3>;
+			status = "disabled";
+		};
+	};
+
+	rpm-regulator-smpa3 {
+		compatible = "qcom,rpm-glink-regulator-resource";
+		qcom,resource-name = "smpa";
+		qcom,resource-id = <3>;
+		qcom,regulator-type = <1>;
+		qcom,hpm-min-load = <100000>;
+		status = "disabled";
+
+		ipq807x_s3_corner: regulator-s3 {
+			compatible = "qcom,rpm-glink-regulator";
+			regulator-name = "ipq807x_s3";
+			qcom,set = <3>;
+			status = "disabled";
+		};
+	};
+
+	rpm-regulator-smpa4 {
+		compatible = "qcom,rpm-glink-regulator-resource";
+		qcom,resource-name = "smpa";
+		qcom,resource-id = <4>;
+		qcom,regulator-type = <1>;
+		qcom,hpm-min-load = <100000>;
+		status = "disabled";
+
+		ipq807x_s4_corner: regulator-s4 {
+			compatible = "qcom,rpm-glink-regulator";
+			regulator-name = "ipq807x_s4";
+			qcom,set = <3>;
+			status = "disabled";
+		};
+	};
+
+	rpm-regulator-smpa5 {
+		compatible = "qcom,rpm-glink-regulator-resource";
+		qcom,resource-name = "smpa";
+		qcom,resource-id = <5>;
+		qcom,regulator-type = <1>;
+		qcom,hpm-min-load = <100000>;
+		status = "disabled";
+
+		ipq807x_s5_corner: regulator-s5 {
+			compatible = "qcom,rpm-glink-regulator";
+			regulator-name = "ipq807x_s5";
+			qcom,set = <3>;
+			status = "disabled";
+		};
+	};
+
+	rpm-regulator-ldoa1 {
+		compatible = "qcom,rpm-glink-regulator-resource";
+		qcom,resource-name = "ldoa";
+		qcom,resource-id = <1>;
+		qcom,regulator-type = <0>;
+		qcom,hpm-min-load = <10000>;
+		status = "disabled";
+
+		ipq807x_l1_corner: regulator-l1 {
+			compatible = "qcom,rpm-glink-regulator";
+			regulator-name = "ipq807x_l1";
+			qcom,set = <3>;
+			status = "disabled";
+		};
+	};
+
+	rpm-regulator-ldoa2 {
+		compatible = "qcom,rpm-glink-regulator-resource";
+		qcom,resource-name = "ldoa";
+		qcom,resource-id = <2>;
+		qcom,regulator-type = <0>;
+		qcom,hpm-min-load = <10000>;
+		status = "disabled";
+
+		ipq807x_l2_corner: regulator-l2 {
+			compatible = "qcom,rpm-glink-regulator";
+			regulator-name = "ipq807x_l2";
+			qcom,set = <3>;
+			status = "disabled";
+		};
+	};
+
+	rpm-regulator-ldoa3 {
+		compatible = "qcom,rpm-glink-regulator-resource";
+		qcom,resource-name = "ldoa";
+		qcom,resource-id = <3>;
+		qcom,regulator-type = <0>;
+		qcom,hpm-min-load = <10000>;
+		status = "disabled";
+
+		ipq807x_l3_corner: regulator-l3 {
+			compatible = "qcom,rpm-glink-regulator";
+			regulator-name = "ipq807x_l3";
+			qcom,set = <3>;
+			status = "disabled";
+		};
+	};
+
+	rpm-regulator-ldoa4 {
+		compatible = "qcom,rpm-glink-regulator-resource";
+		qcom,resource-name = "ldoa";
+		qcom,resource-id = <4>;
+		qcom,regulator-type = <0>;
+		qcom,hpm-min-load = <10000>;
+		status = "disabled";
+
+		ipq807x_l4_corner: regulator-l4 {
+			compatible = "qcom,rpm-glink-regulator";
+			regulator-name = "ipq807x_l4";
+			qcom,set = <3>;
+			status = "disabled";
+		};
+	};
+
+	rpm-regulator-ldoa5 {
+		compatible = "qcom,rpm-glink-regulator-resource";
+		qcom,resource-name = "ldoa";
+		qcom,resource-id = <5>;
+		qcom,regulator-type = <0>;
+		qcom,hpm-min-load = <10000>;
+		status = "disabled";
+
+		ipq807x_l5_corner: regulator-l5 {
+			compatible = "qcom,rpm-glink-regulator";
+			regulator-name = "ipq807x_l5";
+			qcom,set = <3>;
+			status = "disabled";
+		};
+	};
+
+	rpm-regulator-ldoa6 {
+		compatible = "qcom,rpm-glink-regulator-resource";
+		qcom,resource-name = "ldoa";
+		qcom,resource-id = <6>;
+		qcom,regulator-type = <0>;
+		qcom,hpm-min-load = <10000>;
+		status = "disabled";
+
+		ipq807x_l6_corner: regulator-l6 {
+			compatible = "qcom,rpm-glink-regulator";
+			regulator-name = "ipq807x_l6";
+			qcom,set = <3>;
+			status = "disabled";
+		};
+	};
+
+	rpm-regulator-ldoa7 {
+		compatible = "qcom,rpm-glink-regulator-resource";
+		qcom,resource-name = "ldoa";
+		qcom,resource-id = <7>;
+		qcom,regulator-type = <0>;
+		qcom,hpm-min-load = <10000>;
+		status = "disabled";
+
+		ipq807x_l7_corner: regulator-l7 {
+			compatible = "qcom,rpm-glink-regulator";
+			regulator-name = "ipq807x_l7";
+			qcom,set = <3>;
+			status = "disabled";
+		};
+	};
+
+	rpm-regulator-ldoa8 {
+		compatible = "qcom,rpm-glink-regulator-resource";
+		qcom,resource-name = "ldoa";
+		qcom,resource-id = <8>;
+		qcom,regulator-type = <0>;
+		qcom,hpm-min-load = <5000>;
+		status = "disabled";
+
+		ipq807x_l8_corner: regulator-l8 {
+			compatible = "qcom,rpm-glink-regulator";
+			regulator-name = "ipq807x_l8";
+			qcom,set = <3>;
+			status = "disabled";
+		};
+	};
+
+	rpm-regulator-ldoa9 {
+		compatible = "qcom,rpm-glink-regulator-resource";
+		qcom,resource-name = "ldoa";
+		qcom,resource-id = <9>;
+		qcom,regulator-type = <0>;
+		qcom,hpm-min-load = <10000>;
+		status = "disabled";
+
+		ipq807x_l9_corner: regulator-l9 {
+			compatible = "qcom,rpm-glink-regulator";
+			regulator-name = "ipq807x_l9";
+			qcom,set = <3>;
+			status = "disabled";
+		};
+	};
+
+	rpm-regulator-ldoa10 {
+		compatible = "qcom,rpm-glink-regulator-resource";
+		qcom,resource-name = "ldoa";
+		qcom,resource-id = <10>;
+		qcom,regulator-type = <0>;
+		qcom,hpm-min-load = <10000>;
+		status = "disabled";
+
+		ipq807x_l10_corner: regulator-l10 {
+			compatible = "qcom,rpm-glink-regulator";
+			regulator-name = "ipq807x_l10";
+			qcom,set = <3>;
+			status = "disabled";
+		};
+	};
+
+	rpm-regulator-ldoa11 {
+		compatible = "qcom,rpm-glink-regulator-resource";
+		qcom,resource-name = "ldoa";
+		qcom,resource-id = <11>;
+		qcom,regulator-type = <0>;
+		qcom,hpm-min-load = <10000>;
+		status = "disabled";
+
+		ipq807x_l11_corner: regulator-l11 {
+			compatible = "qcom,rpm-glink-regulator";
+			regulator-name = "ipq807x_l11";
+			qcom,set = <3>;
+			status = "disabled";
+		};
+	};
+
+	rpm-regulator-ldoa12 {
+		compatible = "qcom,rpm-glink-regulator-resource";
+		qcom,resource-name = "ldoa";
+		qcom,resource-id = <12>;
+		qcom,regulator-type = <0>;
+		qcom,hpm-min-load = <10000>;
+		status = "disabled";
+
+		ipq807x_l12_corner: regulator-l12 {
+			compatible = "qcom,rpm-glink-regulator";
+			regulator-name = "ipq807x_l12";
+			qcom,set = <3>;
+			status = "disabled";
+		};
+	};
+
+	rpm-regulator-ldoa13 {
+		compatible = "qcom,rpm-glink-regulator-resource";
+		qcom,resource-name = "ldoa";
+		qcom,resource-id = <13>;
+		qcom,regulator-type = <0>;
+		qcom,hpm-min-load = <10000>;
+		status = "disabled";
+
+		ipq807x_l13_corner: regulator-l13 {
+			compatible = "qcom,rpm-glink-regulator";
+			regulator-name = "ipq807x_l13";
+			qcom,set = <3>;
+			status = "disabled";
+		};
+	};
+};

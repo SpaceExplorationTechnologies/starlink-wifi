@@ -1,0 +1,182 @@
+#
+# Copyright (c) 2013, The Linux Foundation. All rights reserved.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 and
+# only version 2 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# A script to concatenate 1st stage f/w and u-boot.
+# The 1st stage f/w is padded with 0xff upto a nand
+# flash page size. The page size can be passed as an
+# option
+#
+
+fn=2fw
+op=$fn.bin		# Default o/p file name
+ho=$fn.txt		# hexdump output
+tf=$fn.tmp		# temp/intermediate file
+
+ps=2048			# Nand page size
+
+UTILPATH=${UTILPATH:-../utility/bin}
+
+#
+# The following load and entry point addresses are
+# in the uncached space, so that the boot-rom can
+# avoid the cache invalidation overhead ...
+#
+e1=bd004000		# 1st fw entry point
+l1=bd004000		# 1st fw load address
+
+e2=a0100000		# 2nd fw entry point
+l2=a0100000		# 2nd fw load address
+
+f1=rombootdrv.bin	# 1st firmware file
+f2=u-boot.bin		# 2nd firmware file
+
+hs=16			# header size: entry, load addr, fw size, checksum
+db=0			# debug
+
+usage()
+{
+	cmd=`basename $0`
+
+	cat << EOF
+
+Usage: $cmd [ options ]
+
+	Options:				Default value
+	-----------------------------------------------------
+		-1	1st fw file		$f1
+		-2	2nd fw file		$f2
+		-d	debug
+		-e1	f/w 1 entry point	$e1 (uncached)
+		-e2	f/w 2 entry point	$e1 (   ''   )
+		-h	help
+		-l1	f/w 1 load address	$l1 (   ''   )
+		-l2	f/w 2 load address	$l1 (   ''   )
+		-o	output file		$op
+		-p	Nand Page size		$ps (bytes)
+
+	Note:	Entry point and load address will be assumed as hex.
+		Donot prefix '0x'
+
+EOF
+	exit 1
+}
+
+prep_file()
+{
+	pad=`ls -l $1 | awk '{print $5}'`
+	pad=$((pad + hs))
+	sz=$pad
+	pad=$((ps - (pad % ps)))
+	sz=$((sz + pad))
+
+	cat $1 > $tf
+	if [ $? -ne 0 ]; then
+		echo "Cannot create temp file $tf"
+		exit 1
+	fi
+
+	if [ $db -ne 0 ]; then
+		set +x
+	fi
+
+	while [ $pad -gt 0 ];
+	do
+		/usr/bin/printf '\xff'
+		pad=$((pad - 1))
+	done >> $tf
+
+	if [ $db -ne 0 ]; then
+		set -x
+	fi
+
+	ep=`/bin/echo -n $2 | cut -c1-8 | sed 's/../\\\\x&/g'`
+	la=`/bin/echo -n $3 | cut -c1-8 | sed 's/../\\\\x&/g'`
+	sz=`printf "%08x" $sz | cut -c1-8 | sed 's/../\\\\x&/g'`
+	cs=`${UTILPATH}/checksum $tf swap | sed 's/../\\\\x&/g'`
+
+	#
+	# Remember to update 'hs' if something gets added here...
+	#
+	/usr/bin/printf $ep >> $op
+	/usr/bin/printf $la >> $op
+	/usr/bin/printf $sz >> $op
+	/usr/bin/printf $cs >> $op
+
+	cat $tf >> $op
+	rm $tf
+}
+
+#
+# Parse command line options
+#
+while [ $# -gt 0 ]; #{
+do
+	case $1 in #{
+		"-1")	f1=$2;	shift; shift;;
+		"-2")	f2=$2;	shift; shift;;
+
+		"-d")	db=1;	shift;;
+		"-h")	usage;;
+
+		"-e1")	e1=$2;	shift; shift;;
+		"-l1")	l1=$2;	shift; shift;;
+
+		"-e2")	e2=$2;	shift; shift;;
+		"-l2")	l2=$2;	shift; shift;;
+
+		"-o")	op=$2;	shift; shift;;
+		"-p")	ps=$2;	shift; shift;;
+
+		*) usage;;
+	esac #}
+done #}
+
+if [ $db -ne 0 ]; then
+	set -x
+fi
+
+#
+# Validate
+#
+if [ $ps -lt 1024 ]; then
+	echo "Invalid pagesize $ps"
+	exit 1
+fi
+
+if [ ! -f $f1 ]; then
+	echo "First f/w file not present"
+	exit 1
+fi
+
+if [ ! -f $f2 ]; then
+	echo "Second f/w ($f2) file not present"
+	exit 1
+fi
+
+> $op	# blank out the output file
+if [ $? -ne 0 ]; then
+	echo "Cannot create $op"
+	exit 1
+fi
+
+#
+# Create the files
+#
+prep_file $f1 $e1 $l1
+
+prep_file $f2 $e2 $l2
+
+if [ $db -ne 0 ]; then
+	set +x
+fi
+
+hexdump -C -v $op > $ho

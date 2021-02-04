@@ -1,0 +1,10 @@
+--- a/configure.ac
++++ b/configure.ac
+@@ -140,7 +140,7 @@
+
+ dnl check for libm, for sin() etc.
+ LT_LIB_M
+-AC_SUBST(LIBM)
++AC_SUBST(LIBM, "")
+
+ AC_FUNC_MMAP

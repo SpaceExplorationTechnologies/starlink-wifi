@@ -1,0 +1,97 @@
+/* Copyright (c) 2016, The Linux Foundation. All rights reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
+#include "qcom-ipq4019-ap.dk04.1.dtsi"
+/{
+	model = "Qualcomm Technologies, Inc. IPQ40xx/AP-DK06.1-C1";
+	soc {
+		mdio@90000 {
+			status = "ok";
+			pinctrl-0 = <&mdio_pins>;
+			pinctrl-names = "default";
+			phy-reset-gpio = <&tlmm 19 0>;
+			bias-disable;
+		};
+
+		sdhc_1: sdhci@7824000 {
+			status = "disabled";
+		};
+
+		qcom,Gobi {
+			compatible = "qcom,gobi-9x35";
+			status = "ok";
+		};
+
+		qcom: ledc@1937000  {
+			qcom,tcsr_ledc_values = <0x320193 0x1A72004A 0x10 0x0 \
+				0x0 0xFFFFFFFF 0x80 0x6 0x7D0010 \
+				0x0 0x10482090 0x3FFFDFC>;
+		};
+
+		gpio_keys {
+			compatible = "gpio-keys";
+			button@1 {
+				label = "wps";
+				linux,code = <KEY_WPS_BUTTON>;
+				gpios = <&tlmm 52 GPIO_ACTIVE_LOW>;
+				linux,input-type = <1>;
+			};
+			button@2 {
+				label = "reset";
+				linux,code = <KEY_RESTART>;
+				gpios = <&tlmm 18 GPIO_ACTIVE_LOW>;
+				linux,input-type = <1>;
+			};
+		};
+
+		ess-switch@c000000 {
+			led_source@0 {
+				led = <0x3>;     /*led number */
+				source = <0x1>;  /*source id 1 */
+				mode = "normal"; /*on,off,blink,normal */
+				speed = "all";   /*10M,100M,1000M,all */
+				freq = "auto";   /*2Hz,4Hz,8Hz,auto*/
+			};
+			led_source@1 {
+				led = <0x4>;     /*led number */
+				source = <0x4>;  /*source id 4 */
+				mode = "normal"; /*on,off,blink,normal */
+				speed = "all";   /*10M,100M,1000M,all */
+				freq = "auto";   /*2Hz,4Hz,8Hz,auto*/
+			};
+			led_source@2 {
+				led = <0x0>;     /*led number */
+				source = <0x7>;  /*source id 7 */
+				mode = "normal"; /*on,off,blink,normal */
+				speed = "all";   /*10M,100M,1000M,all */
+				freq = "auto";   /*2Hz,4Hz,8Hz,auto*/
+			};
+			led_source@3 {
+				led = <0x5>;     /*led number */
+				source = <0xa>;  /*source id 10 */
+				mode = "normal"; /*on,off,blink,normal */
+				speed = "all";   /*10M,100M,1000M,all */
+				freq = "auto";   /*2Hz,4Hz,8Hz,auto*/
+			};
+			led_source@4 {
+				led = <0x6>;     /*led number */
+				source = <0xd>;  /*source id 13 */
+				mode = "normal"; /*on,off,blink,normal */
+				speed = "all";   /*10M,100M,1000M,all */
+				freq = "auto";   /*2Hz,4Hz,8Hz,auto*/
+			};
+		};
+	};
+};

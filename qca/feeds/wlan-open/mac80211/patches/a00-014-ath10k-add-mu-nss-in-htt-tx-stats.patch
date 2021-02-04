@@ -1,0 +1,44 @@
+From 5f77413317108223a76c4af7eb49633507b1ccb4 Mon Sep 17 00:00:00 2001
+From: Venkateswara Naralasetty <vnaralas@codeaurora.org>
+Date: Thu, 1 Mar 2018 17:58:14 +0530
+Subject: [PATCH] nu nss patch
+
+---
+ drivers/net/wireless/ath/ath10k/debug_htt_stats.c | 8 ++++++++
+ drivers/net/wireless/ath/ath10k/debug_htt_stats.h | 1 +
+ 2 files changed, 9 insertions(+)
+
+diff --git a/drivers/net/wireless/ath/ath10k/debug_htt_stats.c b/drivers/net/wireless/ath/ath10k/debug_htt_stats.c
+index 4b9330d..0346135 100644
+--- a/drivers/net/wireless/ath/ath10k/debug_htt_stats.c
++++ b/drivers/net/wireless/ath/ath10k/debug_htt_stats.c
+@@ -719,6 +719,14 @@ static void ath10k_htt_10_4_tx_rate_info_stats_fill(struct htt_10_4_tx_rate_info
+ 	for (i = 1; i <= ARRAY_SIZE(stats->nss); i++)
+ 		len += scnprintf(buf + len, buf_len - len, "%dx%d\t%-7d ",
+ 				 i, i, le32_to_cpu(stats->nss[i - 1]));
++
++	len += scnprintf(buf + len, buf_len - len, "\n\n%30s",
++			 "MU NSS counts : ");
++
++	for (i = 1; i <= ARRAY_SIZE(stats->mu_nss); i++)
++		len += scnprintf(buf + len, buf_len - len, "%dx%d\t%-7d ",
++				 i, i, le32_to_cpu(stats->mu_nss[i - 1]));
++
+ 	len += scnprintf(buf + len, buf_len - len, "\n\n%30s",
+ 			 "BW counts (0..3) : ");
+ 
+diff --git a/drivers/net/wireless/ath/ath10k/debug_htt_stats.h b/drivers/net/wireless/ath/ath10k/debug_htt_stats.h
+index 338e4ba..d41ac48 100644
+--- a/drivers/net/wireless/ath/ath10k/debug_htt_stats.h
++++ b/drivers/net/wireless/ath/ath10k/debug_htt_stats.h
+@@ -192,6 +192,7 @@ struct htt_10_4_tx_rate_info {
+ 	__le32 rts_cnt;
+ 	__le32 ack_rssi;
+ 	__le32 mu_mcs[10];
++	__le32 mu_nss[2];
+ } __packed;
+ 
+ #define DBG_STATS_MAX_HWQ_NUM 10
+-- 
+2.7.4
+

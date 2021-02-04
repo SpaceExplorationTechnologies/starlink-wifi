@@ -1,0 +1,115 @@
+diff --git a/qca_switch.c b/qca_switch.c
+index ad7c77a..6914404 100644
+--- a/qca_switch.c
++++ b/qca_switch.c
+@@ -50,8 +50,8 @@ struct txAtherosHeader
+ 
+ static unsigned short atheros_header_type;
+ 
+-static int cpu_port = -1;
+-static int mirrot_port = -1;
++static struct qca_switch_port_attr cpu_port = {-1, 0};
++static struct qca_switch_port_attr mirrot_port = {-1, 0};
+ 
+ /*switch driver API start*/
+ int switch_driver_fd = -1;
+@@ -274,12 +274,12 @@ int qca_switch_flush_fdb(struct switch_port *sw_port)
+ 	if (sw_uk_exec(SW_API_FDB_DELPORT, 0, sw_port->priv.port_num, 0))
+ 		return -1;
+ 
+-	if (cpu_port >= 0) {
+-		sw_uk_exec(SW_API_FDB_DELPORT, 0, cpu_port, 0);
++	if (cpu_port.port >= 0) {
++		sw_uk_exec(SW_API_FDB_DELPORT, 0, cpu_port.port, 0);
+ 	}
+ 
+-	if (mirrot_port >= 0) {
+-		sw_uk_exec(SW_API_FDB_DELPORT, 0, mirrot_port, 0);
++	if (mirrot_port.port >= 0) {
++		sw_uk_exec(SW_API_FDB_DELPORT, 0, mirrot_port.port, 0);
+ 	}
+ 
+ 	qca_switch_flush_data_channel_fdb(sw_port);
+@@ -355,26 +355,30 @@ int qca_switch_enable_rx_tx_bpdu(void)
+ 	if(run_cmd(cmd, result, sizeof(result)) <= 0)
+ 		return -1;
+ 
+-	if(sscanf(result, "%d %d", &cpu_port, &mirrot_port) <= 0)
++	if(sscanf(result, "%d:%d %d:%d", &cpu_port.port, &cpu_port.sw_mk_hd, &mirrot_port.port, &mirrot_port.sw_mk_hd) <= 0)
+ 		return -1;
+ 
+ 	/*set atheros header type, a raw socket will listen on this ethernet type to receive bpdu from switch*/
+ 	sw_uk_exec(SW_API_HEADER_TYPE_SET, 0, 1, qca_switch_get_atheros_header_type());
+ 
+-	if(cpu_port >= 0) {
+-		/*accept management packet with atheros header on cpu port(0)*/
+-		sw_uk_exec(SW_API_PT_RXHDR_SET, 0, cpu_port, 1);
+-		/*when output management packet on cpu port(0), insert atheros header*/
+-		sw_uk_exec(SW_API_PT_TXHDR_SET, 0, cpu_port, 1);
++	if(cpu_port.port >= 0) {
++		if (!cpu_port.sw_mk_hd) {
++			/*accept management packet with atheros header on cpu port(0)*/
++			sw_uk_exec(SW_API_PT_RXHDR_SET, 0, cpu_port.port, 1);
++			/*when output management packet on cpu port(0), insert atheros header*/
++			sw_uk_exec(SW_API_PT_TXHDR_SET, 0, cpu_port.port, 1);
++		}
+ 	}
+ 
+-	if(mirrot_port >= 0) {
+-		/*accept management packet with atheros header on cpu port(6)*/
+-		sw_uk_exec(SW_API_PT_RXHDR_SET, 0, mirrot_port, 1);
+-		/*when output management packet on cpu port(6), insert atheros header*/
+-		sw_uk_exec(SW_API_PT_TXHDR_SET, 0, mirrot_port, 1);
++	if(mirrot_port.port >= 0) {
++		if (!mirrot_port.sw_mk_hd) {
++			/*accept management packet with atheros header on cpu port(6)*/
++			sw_uk_exec(SW_API_PT_RXHDR_SET, 0, mirrot_port.port, 1);
++			/*when output management packet on cpu port(6), insert atheros header*/
++			sw_uk_exec(SW_API_PT_TXHDR_SET, 0, mirrot_port.port, 1);
++		}
+ 		/*set mirror port to cpu port(6)*/
+-		sw_uk_exec(SW_API_MIRROR_ANALY_PT_SET, 0, mirrot_port);
++		sw_uk_exec(SW_API_MIRROR_ANALY_PT_SET, 0, mirrot_port.port);
+ 	}
+ 
+ 	/*add a reserved fdb entry to capture bpdu on switch, then redirect it to Linux*/
+@@ -388,14 +392,18 @@ int qca_switch_disable_rx_tx_bpdu(void)
+ {
+ 	sw_uk_exec(SW_API_HEADER_TYPE_SET, 0, 0, 0);
+ 
+-	if(cpu_port >= 0) {
+-		sw_uk_exec(SW_API_PT_RXHDR_SET, 0, cpu_port, 0);
+-		sw_uk_exec(SW_API_PT_TXHDR_SET, 0, cpu_port, 0);
++	if(cpu_port.port >= 0) {
++		if (!cpu_port.sw_mk_hd) {
++			sw_uk_exec(SW_API_PT_RXHDR_SET, 0, cpu_port.port, 0);
++			sw_uk_exec(SW_API_PT_TXHDR_SET, 0, cpu_port.port, 0);
++		}
+ 	}
+ 
+-	if(mirrot_port >= 0) {
+-		sw_uk_exec(SW_API_PT_RXHDR_SET, 0, mirrot_port, 0);
+-		sw_uk_exec(SW_API_PT_TXHDR_SET, 0, mirrot_port, 0);
++	if(mirrot_port.port >= 0) {
++		if (!mirrot_port.sw_mk_hd) {
++			sw_uk_exec(SW_API_PT_RXHDR_SET, 0, mirrot_port.port, 0);
++			sw_uk_exec(SW_API_PT_TXHDR_SET, 0, mirrot_port.port, 0);
++		}
+ 	}
+ 
+ 	sw_uk_exec(SW_API_FDB_RESV_DEL, 0, (a_uint32_t)&resv_entry);
+diff --git a/qca_switch.h b/qca_switch.h
+index 4f581ee..8a61284 100644
+--- a/qca_switch.h
++++ b/qca_switch.h
+@@ -66,4 +66,10 @@ enum
+ 	QCA_STP_STATE_LEARN,
+ 	QCA_STP_STATE_FORWARD
+ };
++
++struct qca_switch_port_attr {
++	int port;
++	int sw_mk_hd;		/* Atheros header is made by software rather than hardware */
++};
++
+ #endif /* QCA_SWITCH_H */

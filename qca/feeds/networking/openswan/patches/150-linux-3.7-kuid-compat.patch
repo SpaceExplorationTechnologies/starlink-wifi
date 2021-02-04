@@ -1,0 +1,41 @@
+--- a/linux/net/ipsec/pfkey_v2.c
++++ b/linux/net/ipsec/pfkey_v2.c
+@@ -738,7 +738,7 @@ pfkey_create(struct socket *sock, int pr
+ 	sk->sk_family = PF_KEY;
+ /*	sk->num = protocol; */
+ 	sk->sk_protocol = protocol;
+-	key_pid(sk) = current_uid();
++	key_pid(sk) = IPSEC_FROM_KUIDT(current_uid());
+ 
+ #ifdef HAVE_SOCKET_WQ
+ 	KLIPS_PRINT(debug_pfkey,
+--- a/linux/include/openswan/ipsec_kversion.h
++++ b/linux/include/openswan/ipsec_kversion.h
+@@ -614,6 +614,16 @@
+ # define DEFINE_RWLOCK(x) rwlock_t x = RW_LOCK_UNLOCKED
+ #endif
+ 
++/*
++ * kuid_t <=> uint32_t conversion
++ */
++
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,7,0)
++#  define IPSEC_FROM_KUIDT(x) from_kuid(current_user_ns(), x)
++#else
++#  define IPSEC_FROM_KUIDT(x) (x)
++#endif
++
+ 
+ #endif /* _OPENSWAN_KVERSIONS_H */
+ 
+--- a/linux/net/ipsec/pfkey_v2_parser.c
++++ b/linux/net/ipsec/pfkey_v2_parser.c
+@@ -1481,7 +1481,7 @@ pfkey_register_reply(int satype, struct
+ 							  satype,
+ 							  0,
+ 							  sadb_msg? sadb_msg->sadb_msg_seq : ++pfkey_msg_seq,
+-							  sadb_msg? sadb_msg->sadb_msg_pid: current_uid()),
++							  sadb_msg? sadb_msg->sadb_msg_pid: IPSEC_FROM_KUIDT(current_uid())),
+ 			      extensions_reply) &&
+ 	     (alg_num_a ? pfkey_safe_build(error = pfkey_supported_build(&extensions_reply[K_SADB_EXT_SUPPORTED_AUTH],
+ 									K_SADB_EXT_SUPPORTED_AUTH,

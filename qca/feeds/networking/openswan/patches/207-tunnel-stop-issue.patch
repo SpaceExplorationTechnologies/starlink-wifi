@@ -1,0 +1,35 @@
+diff -Nur b/linux/include/openswan/pfkeyv2.h a/linux/include/openswan/pfkeyv2.h
+--- b/linux/include/openswan/pfkeyv2.h	2015-03-03 13:04:29.000000000 +0530
++++ a/linux/include/openswan/pfkeyv2.h	2015-03-03 12:53:14.000000000 +0530
+@@ -250,6 +250,7 @@
+ #define SADB_X_SAFLAGS_CLEARFLOW	4
+ #define SADB_X_SAFLAGS_INFLOW		8
+ #define SADB_X_SAFLAGS_POLICYONLY       16  /* suppress eroute creation */
++#define SADB_X_SAFLAGS_DELETIONPENDING	32
+
+ /* not obvious, but these are the same values as used in isakmp,
+  * and in freeswan/ipsec_policy.h. If you need to add any, they
+diff -Nur b/linux/net/ipsec/ipsec_sa.c a/linux/net/ipsec/ipsec_sa.c
+--- b/linux/net/ipsec/ipsec_sa.c	2015-03-03 13:04:29.000000000 +0530
++++ a/linux/net/ipsec/ipsec_sa.c	2015-03-03 12:52:26.000000000 +0530
+@@ -554,7 +554,7 @@
+	for (; ips; ips = ips->ips_hnext) {
+		if ((ips->ips_said.spi == said->spi) &&
+		    (ip_address_cmp(&ips->ips_said.dst, &said->dst) == 0) &&
+-		    (ips->ips_said.proto == said->proto)) {
++		    (ips->ips_said.proto == said->proto) && !(ips->ips_flags & SADB_X_SAFLAGS_DELETIONPENDING)) {
+			ipsec_sa_get(ips, type);
+			return ips;
+		}
+diff -Nur b/linux/net/ipsec/pfkey_v2_parser.c a/linux/net/ipsec/pfkey_v2_parser.c
+--- b/linux/net/ipsec/pfkey_v2_parser.c	2015-03-03 13:04:29.000000000 +0530
++++ a/linux/net/ipsec/pfkey_v2_parser.c	2015-03-03 12:52:46.000000000 +0530
+@@ -954,6 +954,8 @@
+
+	ref = ipsp->ips_ref; /* save a copy of ref */
+
++	ipsp->ips_flags |= SADB_X_SAFLAGS_DELETIONPENDING;
++
+	if (atomic_read(&ipsp->ips_refcount) > 4) {
+		spin_unlock_bh(&tdb_lock);
+		wait_event_interruptible(ipsp->ips_waitq, (atomic_read(&ipsp->ips_refcount) <= 4));

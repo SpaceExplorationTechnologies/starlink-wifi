@@ -1,0 +1,11 @@
+--- a/drivers/net/wireless/ath/ath9k/btcoex.h
++++ b/drivers/net/wireless/ath/ath9k/btcoex.h
+@@ -28,7 +28,7 @@
+ #define ATH_BTPRIORITY_GPIO_9300     8
+ 
+ #define ATH_BTCOEX_DEF_BT_PERIOD  45
+-#define ATH_BTCOEX_DEF_DUTY_CYCLE 55
++#define ATH_BTCOEX_DEF_DUTY_CYCLE 70
+ #define ATH_BTCOEX_BTSCAN_DUTY_CYCLE 90
+ #define ATH_BTCOEX_BMISS_THRESH   50
+ 

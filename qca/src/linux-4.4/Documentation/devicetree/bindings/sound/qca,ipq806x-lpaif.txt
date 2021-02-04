@@ -1,0 +1,26 @@
+qca,ipq806x-lpaif
+
+LPA_IF driver for IPQ806x
+
+Required properties:
+
+  - compatible     : "qca,ipq806x-lpaif"
+  - reg		   : should have the pcm register address, length
+  - interrupts	   : should have the LPA_IF interrupt number
+  - clocks	   : should have the pcm bit clock
+  - clock-names    : should be "pcm_bit_clk"
+  - resets	   : references to the reset controllers
+  - reset-names	   : should be "lcc_pcm_reset"
+
+Example:
+
+lpaif: lpaif@28100000 {
+	compatible = "qca,ipq806x-lpaif";
+	reg = <0x28100000 0xFFFF>;
+	interrupts = <0 85 0>;
+	clocks = <&lcc PCM_CLK>;
+	clock-names = "pcm_bit_clk";
+	resets = <&lcc LCC_PCM_RESET>;
+	reset-names = "lcc_pcm_reset";
+};
+

@@ -1,0 +1,15 @@
+diff --git a/mcproxy/src/proxy/querier.cpp b/mcproxy/src/proxy/querier.cpp
+index 9e6c322..5016f92 100644
+--- a/mcproxy/src/proxy/querier.cpp
++++ b/mcproxy/src/proxy/querier.cpp
+@@ -726,7 +726,9 @@ void querier::send_Q(const addr_storage& gaddr, gaddr_info& ginfo)
+             auto rtimer = std::make_shared<retransmit_group_timer_msg>(m_if_index, gaddr, llqi);
+             ginfo.group_retransmission_timer = rtimer;
+             m_timing->add_time(llqi, m_msg_worker, rtimer);
+-        }
++        } else {
++            ginfo.group_retransmission_timer = nullptr;
++	}
+ 
+         m_sender->send_mc_addr_specific_query(m_if_index, m_timers_values, gaddr, ginfo.shared_filter_timer->is_remaining_time_greater_than(m_timers_values.get_last_listener_query_time()));
+ 

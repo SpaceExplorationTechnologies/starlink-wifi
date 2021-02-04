@@ -1,0 +1,25 @@
+--- a/net/mac80211/rx.c
++++ b/net/mac80211/rx.c
+@@ -2348,13 +2348,7 @@ ieee80211_deliver_skb(struct ieee80211_rx_data *rx)
+ 		}
+ 	}
+ 
+-#if !defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) || defined(CPTCFG_MAC80211_NSS_SUPPORT)
+-	if (skb
+-#if CPTCFG_MAC80211_NSS_SUPPORT
+-	    && sdata->nssctx)
+-#else
+-	    )
+-#endif
++	if (skb)
+ 	{
+ 		/* 'align' will only take the values 0 or 2 here since all
+ 		 * frames are required to be aligned to 2-byte boundaries
+@@ -2378,7 +2372,6 @@ ieee80211_deliver_skb(struct ieee80211_rx_data *rx)
+ 			}
+ 		}
+ 	}
+-#endif
+ 
+ 	if (skb) {
+ 		/* deliver to local stack */

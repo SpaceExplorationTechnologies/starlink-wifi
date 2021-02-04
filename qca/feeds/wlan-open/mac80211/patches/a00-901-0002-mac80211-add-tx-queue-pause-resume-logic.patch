@@ -1,0 +1,58 @@
+Index: backports-20180329-3.14.77-7954640a/net/mac80211/tx.c
+===================================================================
+--- backports-20180329-3.14.77-7954640a.orig/net/mac80211/tx.c
++++ backports-20180329-3.14.77-7954640a/net/mac80211/tx.c
+@@ -1560,6 +1560,11 @@ static bool ieee80211_queue_skb(struct i
+ 	if (!txqi)
+ 		return false;
+ 
++	if (local->txqs_stopped) {
++		kfree_skb(skb);
++		return true;
++	}
++
+ 	spin_lock_bh(&fq->lock);
+ 	ieee80211_txq_enqueue(local, txqi, skb);
+ 	spin_unlock_bh(&fq->lock);
+Index: backports-20180329-3.14.77-7954640a/net/mac80211/ieee80211_i.h
+===================================================================
+--- backports-20180329-3.14.77-7954640a.orig/net/mac80211/ieee80211_i.h
++++ backports-20180329-3.14.77-7954640a/net/mac80211/ieee80211_i.h
+@@ -1145,6 +1145,11 @@ struct ieee80211_local {
+ 	/* also used to protect ampdu_ac_queue and amdpu_ac_stop_refcnt */
+ 	spinlock_t queue_stop_reason_lock;
+ 
++	/* pause/resume logic for intermediate software queues,
++	 * applicable when wake_tx_queue is defined.
++	 */
++	unsigned long txqs_stopped;
++
+ 	int open_count;
+ 	int monitors, cooked_mntrs;
+ 	/* number of interfaces with corresponding FIF_ flags */
+Index: backports-20180329-3.14.77-7954640a/net/mac80211/util.c
+===================================================================
+--- backports-20180329-3.14.77-7954640a.orig/net/mac80211/util.c
++++ backports-20180329-3.14.77-7954640a/net/mac80211/util.c
+@@ -297,6 +297,9 @@ static void __ieee80211_wake_queue(struc
+ 	if (local->q_stop_reasons[queue][reason] == 0)
+ 		__clear_bit(reason, &local->queue_stop_reasons[queue]);
+ 
++	if (local->ops->wake_tx_queue)
++		__clear_bit(reason, &local->txqs_stopped);
++
+ 	if (local->queue_stop_reasons[queue] != 0)
+ 		/* someone still has this queue stopped */
+ 		return;
+@@ -350,8 +353,10 @@ static void __ieee80211_stop_queue(struc
+ 	if (__test_and_set_bit(reason, &local->queue_stop_reasons[queue]))
+ 		return;
+ 
+-	if (local->ops->wake_tx_queue)
++	if (local->ops->wake_tx_queue) {
++		__set_bit(reason, &local->txqs_stopped);
+ 		return;
++	}
+ 
+ 	if (local->hw.queues < IEEE80211_NUM_ACS)
+ 		n_acs = 1;

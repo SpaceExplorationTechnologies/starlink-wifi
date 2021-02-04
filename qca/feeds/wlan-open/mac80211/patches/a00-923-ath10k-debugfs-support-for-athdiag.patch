@@ -1,0 +1,74 @@
+--- a/drivers/net/wireless/ath/ath10k/debug.c
++++ b/drivers/net/wireless/ath/ath10k/debug.c
+@@ -2723,6 +2723,61 @@ static const struct file_operations fops
+         .llseek = default_llseek,
+ };
+ 
++static ssize_t ath10k_debug_athdiag_write(struct file *file,
++					  const char __user *user_buf,
++					  size_t count, loff_t *ppos)
++{
++	struct ath10k *ar = file->private_data;
++	int ret;
++	u32 value = *((u32 *)user_buf);
++
++	if ((count == 4) && ((*ppos & 3) == 0)) {
++		if (*ppos >= DRAM_BASE_ADDRESS) {
++			ath10k_hif_diag_write(ar, *ppos, (u8 *)user_buf, sizeof(u32));
++			if (ret)
++				return -EIO;
++		} else
++			ath10k_hif_write32(ar, *ppos, value);
++	} else {
++		ret = ath10k_hif_diag_write(ar, *ppos, (u8 *)user_buf, count);
++		if (ret)
++			return -EIO;
++	}
++
++	return count;
++}
++
++static ssize_t ath10k_debug_athdiag_read(struct file *file,
++					 char __user *user_buf,
++					 size_t count, loff_t *ppos)
++{
++	struct ath10k *ar = file->private_data;
++	int ret;
++
++	if ((count == 4) && ((*ppos & 3) == 0)) {
++		if (*ppos >= DRAM_BASE_ADDRESS) {
++			ath10k_hif_diag_read(ar, *ppos, (u8 *)user_buf, sizeof(u32));
++			if (ret)
++				return -EIO;
++		} else
++			*((u32 *)user_buf) = ath10k_hif_read32(ar, *ppos);
++	} else {
++		ret = ath10k_hif_diag_read(ar, *ppos, (u8 *)user_buf, count);
++		if (ret)
++			return -EIO;
++	}
++
++	return count;
++}
++
++static const struct file_operations fops_athdiag = {
++	.read = ath10k_debug_athdiag_read,
++	.write = ath10k_debug_athdiag_write,
++	.open = simple_open,
++	.owner = THIS_MODULE,
++	.llseek = default_llseek,
++};
++
+ int ath10k_debug_create(struct ath10k *ar)
+ {
+ 	ar->debug.cal_data = vzalloc(ATH10K_DEBUG_CAL_DATA_LEN);
+@@ -2882,6 +2937,9 @@ int ath10k_debug_register(struct ath10k
+ 				    ar->debug.debugfs_phy,
+ 				    ar, &fops_cfr_enable);
+ 
++	debugfs_create_file("athdiag", S_IRUSR | S_IWUSR,
++			    ar->debug.debugfs_phy, ar, &fops_athdiag);
++
+ 	return 0;
+ }
+ 

@@ -1,0 +1,32 @@
+config SYS_CPU
+       default "ipq807x"
+
+config SYS_BOARD
+       default "ipq807x"
+
+config SYS_VENDOR
+       default "qca/arm"
+
+config SYS_CONFIG_NAME
+       default "ipq807x"
+
+config IPQ807x_I2C
+	bool "Enable i2c support for ipq807x"
+
+config USB_XHCI_IPQ
+	bool "ipq807x usb support for ipq807x"
+
+config PCI_IPQ
+	bool "ipq807x pci support for ipq807x"
+
+config QCA_AQUANTIA_PHY
+	bool "Enable Aquantia PHY support for ipq807x"
+
+config QCA8033_PHY
+	bool "Enable QCA8033 PHY support for ipq807x"
+
+config QCA8081_PHY
+	bool "Enable QCA8081 PHY support for ipq807x"
+
+config QCA8075_PHY
+	bool "Enable QCA8075 PHY support for ipq807x"

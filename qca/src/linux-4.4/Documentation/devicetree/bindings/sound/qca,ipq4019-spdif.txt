@@ -1,0 +1,35 @@
+* Qualcomm Technologies IPQ4019 ASoC SPDIF driver
+
+This node models the Qualcomm Technologies IPQ4019 ASoC SPDIF driver
+
+Required properties:
+
+- compatible	 : "qca,ipq4019-spdif"
+- dma-tx-channel : should have the mbox tx channel id
+- dma-rx-channel : should have the mbox rx channel id
+- stereo-tx-port : should have the stereo tx id
+- stereo-rx-port : should have the stereo tx id
+- clocks	 : should have the audio tx bit clock, tx master clock,
+		   spdif clock, spdif divider clock, spdif in fast clock
+- clock-names	 : should be "audio_tx_bclk", "audio_tx_mclk", "audio_spdif_src",
+		   "audio_spdif_div2", "audio_spdifinfast_src"
+
+Example:
+spdif: spdif@0 {
+	compatible = "qca,ipq4019-spdif";
+	dma-tx-channel = <MBOX0_TX_ID>;
+	dma-rx-channel = <MBOX3_RX_ID>;
+	stereo-tx-port = <STEREO0_ID>;
+	stereo-rx-port = <STEREO3_ID>;
+	clocks = <&adcc ADCC_TXB_CLK_SRC>,
+		<&adcc ADCC_TXM_CLK_SRC>,
+		<&adcc ADCC_SPDIF_SRC>,
+		<&adcc ADCC_SPDIFDIV2_SRC>,
+		<&adcc ADCC_AUDIO_SPDIFINFAST_SRC>;
+	clock-names = "audio_tx_bclk",
+		"audio_tx_mclk",
+		"audio_spdif_src",
+		"audio_spdif_div2",
+		"audio_spdifinfast_src";
+	status = "disabled";
+};

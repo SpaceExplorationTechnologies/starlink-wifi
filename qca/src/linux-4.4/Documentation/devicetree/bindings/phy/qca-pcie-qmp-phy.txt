@@ -1,0 +1,58 @@
+* PCIe QMP PHY controller
+
+PCIe PHY nodes are defined to describe on-chip PCIe Physical layer controllers.
+Each PCIe PHY controller should have its own node.
+
+- compatible:
+	Usage: required
+	Value type: <stringlist>
+	Definition: Value should contain "qca,pcie-phy"
+
+- reg:
+	Usage: required
+	Value type: <prop-encoded-array>
+	Definition: Offset and length of the PCIe PHY registers
+
+- #phy-cells:
+	Usage: required
+	Value type: <u32>
+	Definition: Must be zero
+
+- clocks:
+	Usage: required
+	Value type: <prop-encoded-array>
+	Definition: A list of phandles and clock specifier pair, one
+		    for each entry in clock-names property
+
+- clock-names:
+	Usage: required
+	Value type: <stringlist>
+	Definition: Should contain "core" for PHY core clock
+
+- resets:
+	Usage: required
+	Value type: <phandle>
+	Definition: List of phandle and reset specifier pairs as listed
+		    in reset-names property
+
+- reset-names:
+	Usage: required
+	Value type: <stringlist>
+	Definition: Should contain "core" for PHY core reset
+
+
+* Example
+
+	pcie_phy0: phy@86000 {
+		compatible = "qca,pcie-phy";
+		reg = <0x86000 0x1000>;
+		#phy-cells = <0>;
+		clocks = <&gcc GCC_PCIE0_PIPE_CLK>;
+		clock-names = "pipe_clk";
+		resets = <&gcc GCC_PCIE0_PHY_BCR>,
+			<&gcc GCC_PCIE1PHY_PHY_BCR>;
+		reset-names = "phy"
+				"phy_phy";
+	};
+
+

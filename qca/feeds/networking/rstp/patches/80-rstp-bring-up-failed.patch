@@ -1,0 +1,11 @@
+diff -Nur a/ctl_socket_client.c b/ctl_socket_client.c
+--- a/ctl_socket_client.c	2015-05-20 16:17:57.458267282 -0700
++++ b/ctl_socket_client.c	2015-05-20 16:18:23.270267932 -0700
+@@ -96,6 +96,7 @@
+ 	msg.msg_control = NULL;
+ 	msg.msg_controllen = 0;
+ 
++	mhdr.res = 0;
+ 	mhdr.cmd = cmd;
+ 	mhdr.lin = lin;
+ 	mhdr.lout = lout != NULL ? *lout : 0;

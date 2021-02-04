@@ -1,0 +1,34 @@
+diff -Nur a/packaging/utils/setlocalversion b/packaging/utils/setlocalversion
+--- a/packaging/utils/setlocalversion	2015-02-17 17:44:41.766074122 -0800
++++ b/packaging/utils/setlocalversion	2015-02-17 17:45:25.170074479 -0800
+@@ -16,12 +16,29 @@
+ # Check for git and a git repo.
+ if head=`git rev-parse --verify HEAD 2>/dev/null`; then
+ 
+-        if descr=`git describe --tags --dirty 2>/dev/null` ; then
++        # assume we have a recent enough git
++        if descr=`git describe --dirty 2>/dev/null` ; then
+                 descr=${descr#v}
+                 printf '%s' "$descr"
+                 exit 0
+         fi
+ 
++        # maybe we're just missing support for --dirty (pre git 1.6.6)
++        dirty=
++        if git diff-files 2>/dev/null | read dummy ; then
++                dirty=-dirty
++        fi
++
++        if descr=`git describe 2>/dev/null` ; then
++                # git-describe was added in git 1.5.0
++                descr=${descr#v}
++                printf '%s%s' $descr $dirty
++
++        else
++                # if we don't ahve git-describe keep it simple
++                head=`echo "$head" | cut -c1-8`
++                printf "%s-g%s%s" $baseversion $head $dirty
++	fi
+ else
+         printf "$baseversion"
+ fi

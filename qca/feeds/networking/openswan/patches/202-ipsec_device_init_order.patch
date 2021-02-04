@@ -1,0 +1,20 @@
+diff -Nur a/linux/net/ipsec/ipsec_tunnel.c openswan-2.6.38/linux/net/ipsec/ipsec_tunnel.c
+--- a/linux/net/ipsec/ipsec_tunnel.c	2014-07-16 10:24:21.424778816 +0800
++++ openswan-2.6.38/linux/net/ipsec/ipsec_tunnel.c	2014-07-16 10:24:53.492779418 +0800
+@@ -2250,7 +2250,6 @@
+ 	
+ 	/* reference and hold the device reference */
+ 	ipsec_dev_hold(dev_ipsec);
+-	ipsecdevices[vifentry]=dev_ipsec;
+ 	
+ 	if (register_netdev(dev_ipsec) != 0) {
+ 		KLIPS_PRINT(1 || debug_tunnel & DB_TN_INIT,
+@@ -2264,6 +2263,8 @@
+ 			    "registering device %s succeeded, continuing...\n",
+ 			    dev_ipsec->name);
+ 	}
++	
++	ipsecdevices[vifentry]=dev_ipsec;
+ 	return 0;
+ }
+ 	

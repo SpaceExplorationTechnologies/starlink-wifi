@@ -1,0 +1,14 @@
+Index: dhcp-4.3.3/bind/Makefile.in
+===================================================================
+--- dhcp-4.3.3.orig/bind/Makefile.in	2017-05-30 19:53:17.879566989 +0530
++++ dhcp-4.3.3/bind/Makefile.in	2017-05-30 20:01:36.629121656 +0530
+@@ -30,7 +30,8 @@
+ 	--without-openssl --without-libxml2 --enable-exportlib \
+ 	--with-gssapi=no --enable-threads=no @BINDCONFIG@ \
+ 	--with-export-includedir=${binddir}/include \
+-	--with-export-libdir=${binddir}/lib
++	--with-export-libdir=${binddir}/lib \
++	--with-randomdev=/dev/urandom
+ 
+ @BIND_ATF_FALSE@cleandirs = ./lib ./include
+ @BIND_ATF_TRUE@cleandirs = ./lib ./include ./atf

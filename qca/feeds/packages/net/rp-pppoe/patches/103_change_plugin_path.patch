@@ -1,0 +1,13 @@
+diff -Nur a/src/Makefile.in rp-pppoe-3.11/src/Makefile.in
+--- a/src/Makefile.in	2015-10-05 14:23:46.749796554 -0700
++++ rp-pppoe-3.11/src/Makefile.in	2015-10-05 14:24:51.885798194 -0700
+@@ -48,8 +48,7 @@
+ @LIC_MAKEFILE_INCLUDE@
+ 
+ # Kernel-mode plugin gets installed here.
+-PLUGIN_DIR=/etc/ppp/plugins
+-PLUGIN_PATH=$(PLUGIN_DIR)/rp-pppoe.so
++PLUGIN_PATH=rp-pppoe.so
+ 
+ # Configuration file paths
+ PPPOESERVER_PPPD_OPTIONS=/etc/ppp/pppoe-server-options

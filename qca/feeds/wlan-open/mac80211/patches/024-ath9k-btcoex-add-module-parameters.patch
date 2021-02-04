@@ -1,0 +1,152 @@
+--- a/drivers/net/wireless/ath/ath.h
++++ b/drivers/net/wireless/ath/ath.h
+@@ -179,6 +179,14 @@ struct ath_common {
+ 	const struct ath_ps_ops *ps_ops;
+ 
+ 	bool btcoex_enabled;
++	int priority_time;
++	int first_slot_time;
++	int wl_active_time;
++	int wl_qc_time;
++	int time_extend;
++	int ack_cts;
++	int btcoex_period;
++	int btcoex_duty_cycle;
+ 	bool disable_ani;
+ 	bool bt_ant_diversity;
+ 
+--- a/drivers/net/wireless/ath/ath9k/btcoex.c
++++ b/drivers/net/wireless/ath/ath9k/btcoex.c
+@@ -58,6 +58,7 @@ static const u32 mci_wlan_weights[ATH_BTCOEX_STOMP_MAX]
+ 
+ void ath9k_hw_init_btcoex_hw(struct ath_hw *ah, int qnum)
+ {
++	struct ath_common *common = ath9k_hw_common(ah);
+ 	struct ath_btcoex_hw *btcoex_hw = &ah->btcoex_hw;
+ 	const struct ath_btcoex_config ath_bt_config = {
+ 		.bt_time_extend = 0,
+@@ -80,12 +81,12 @@ void ath9k_hw_init_btcoex_hw(struct ath_hw *ah, int qnum)
+ 		rxclear_polarity = !ath_bt_config.bt_rxclear_polarity;
+ 
+ 	if (AR_SREV_SOC(ah)) {
+-		first_slot_time = 0x12;
+-		time_extend = 0xa;
++		first_slot_time = common->first_slot_time;
++		time_extend = common->time_extend;
+ 
+ 		btcoex_hw->bt_coex_mode3 =
+-			SM(ath_bt_config.wl_active_time, AR_BT_WL_ACTIVE_TIME) |
+-			SM(ath_bt_config.wl_qc_time, AR_BT_WL_QC_TIME);
++			SM(common->wl_active_time, AR_BT_WL_ACTIVE_TIME) |
++			SM(common->wl_qc_time, AR_BT_WL_QC_TIME);
+ 
+ 		btcoex_hw->bt_coex_mode2 =
+ 			AR_BT_PROTECT_BT_AFTER_WAKEUP |
+@@ -319,6 +320,7 @@ EXPORT_SYMBOL(ath9k_hw_btcoex_set_weight);
+ 
+ static void ath9k_hw_btcoex_enable_3wire(struct ath_hw *ah)
+ {
++	struct ath_common *common = ath9k_hw_common(ah);
+ 	struct ath_btcoex_hw *btcoex = &ah->btcoex_hw;
+ 	u32  val;
+ 	int i;
+@@ -351,7 +353,7 @@ static void ath9k_hw_btcoex_enable_3wire(struct ath_hw *ah)
+ 		REG_WRITE(ah, 0x50040, val);
+ 	}
+ 
+-	REG_RMW_FIELD(ah, AR_QUIET1, AR_QUIET1_QUIET_ACK_CTS_ENABLE, 0);
++	REG_RMW_FIELD(ah, AR_QUIET1, AR_QUIET1_QUIET_ACK_CTS_ENABLE, common->ack_cts);
+ 	REG_RMW_FIELD(ah, AR_PCU_MISC, AR_PCU_BT_ANT_PREVENT_RX, 0);
+ 
+ 	ath9k_hw_gpio_request_out(ah, btcoex->wlanactive_gpio,
+--- a/drivers/net/wireless/ath/ath9k/gpio.c
++++ b/drivers/net/wireless/ath/ath9k/gpio.c
+@@ -358,9 +358,11 @@ static void ath_btcoex_no_stomp_timer(struct timer_list *t)
+ static void ath_init_btcoex_timer(struct ath_softc *sc)
+ {
+ 	struct ath_btcoex *btcoex = &sc->btcoex;
++	struct ath_hw *ah = sc->sc_ah;
++	struct ath_common *common = ath9k_hw_common(ah);
+ 
+-	btcoex->btcoex_period = ATH_BTCOEX_DEF_BT_PERIOD;
+-	btcoex->btcoex_no_stomp = (100 - ATH_BTCOEX_DEF_DUTY_CYCLE) *
++	btcoex->btcoex_period = common->btcoex_period;
++	btcoex->btcoex_no_stomp = (100 - common->btcoex_duty_cycle) *
+ 		btcoex->btcoex_period / 100;
+ 	btcoex->btscan_no_stomp = (100 - ATH_BTCOEX_BTSCAN_DUTY_CYCLE) *
+ 				   btcoex->btcoex_period / 100;
+--- a/drivers/net/wireless/ath/ath9k/init.c
++++ b/drivers/net/wireless/ath/ath9k/init.c
+@@ -60,6 +60,38 @@ static int ath9k_btcoex_enable;
+ module_param_named(btcoex_enable, ath9k_btcoex_enable, int, 0444);
+ MODULE_PARM_DESC(btcoex_enable, "Enable wifi-BT coexistence");
+ 
++static int ath9k_priority_time = 2;
++module_param_named(priority_time, ath9k_priority_time, int, 0444);
++MODULE_PARM_DESC(priority_time, "PTA priority time");
++
++static int ath9k_first_slot_time = 0x12;
++module_param_named(first_slot_time, ath9k_first_slot_time, int, 0444);
++MODULE_PARM_DESC(first_slot_time, "PTA first slot time");
++
++static int ath9k_wl_active_time = 0;
++module_param_named(wl_active_time, ath9k_wl_active_time, int, 0444);
++MODULE_PARM_DESC(wl_active_time, "PTA wl active time");
++
++static int ath9k_wl_qc_time = 0;
++module_param_named(wl_qc_time, ath9k_wl_qc_time, int, 0444);
++MODULE_PARM_DESC(wl_qc_time, "PTA wl qc time");
++
++static int ath9k_time_extend = 0xa;
++module_param_named(time_extend, ath9k_time_extend, int, 0444);
++MODULE_PARM_DESC(time_extend, "PTA time extend");
++
++static int ath9k_ack_cts = 0;
++module_param_named(ack_cts, ath9k_ack_cts, int, 0444);
++MODULE_PARM_DESC(ack_cts, "PTA ACK CTS");
++
++static int ath9k_btcoex_period = 45;
++module_param_named(btcoex_period, ath9k_btcoex_period, int, 0444);
++MODULE_PARM_DESC(btcoex_period, "PTA btcoex period");
++
++static int ath9k_btcoex_duty_cycle = 10;
++module_param_named(btcoex_duty_cycle, ath9k_btcoex_duty_cycle, int, 0444);
++MODULE_PARM_DESC(btcoex_duty_cycle, "PTA btcoex duty cycle");
++
+ static int ath9k_bt_ant_diversity;
+ module_param_named(bt_ant_diversity, ath9k_bt_ant_diversity, int, 0444);
+ MODULE_PARM_DESC(bt_ant_diversity, "Enable WLAN/BT RX antenna diversity");
+@@ -696,8 +728,33 @@ static int ath9k_init_softc(u16 devid, struct ath_softc *sc,
+ 	common->priv = sc;
+ 	common->debug_mask = ath9k_debug;
+ 	common->btcoex_enabled = ath9k_btcoex_enable == 1;
++	common->priority_time = ath9k_priority_time;
++	common->first_slot_time = ath9k_first_slot_time;
++	common->wl_active_time = ath9k_wl_active_time;
++	common->wl_qc_time = ath9k_wl_qc_time;
++	common->time_extend = ath9k_time_extend;
++	common->ack_cts = ath9k_ack_cts;
++	common->btcoex_period = ath9k_btcoex_period;
++	common->btcoex_duty_cycle = ath9k_btcoex_duty_cycle;
+ 	common->disable_ani = false;
+ 
++	printk("###################################################\n");
++	printk("BTCOEX:%s\n"
++		"\tpriority_time:%d\n"
++		"\tfirst_slot_time:%d\n"
++		"\twl_active_time:%d\n"
++		"\twl_qc_time:%d\n"
++		"\ttime_extend:%d\n"
++		"\tack_cts:%d\n"
++		"\tbtcoex_period:%d\n"
++		"\tbtcoex_duty_cycle:%d\n",
++		common->btcoex_enabled ? "Enabled" : "Disabled",
++		common->priority_time, common->first_slot_time,
++		common->wl_active_time, common->wl_qc_time,
++		common->time_extend, common->ack_cts,
++		common->btcoex_period, common->btcoex_duty_cycle);
++	printk("###################################################\n");
++
+ 	/*
+ 	 * Platform quirks.
+ 	 */

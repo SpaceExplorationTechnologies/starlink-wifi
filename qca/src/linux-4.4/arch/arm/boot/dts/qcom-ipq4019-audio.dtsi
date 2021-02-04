@@ -1,0 +1,242 @@
+/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
+
+#include <dt-bindings/sound/ipq4019-audio.h>
+#include <dt-bindings/clock/qca,adcc-ipq4019.h>
+
+/ {
+	soc {
+		audio: audio@7700000 {
+			compatible = "qca,ipq4019-audio-adss";
+			reg = <0x7700000 0x34>,
+				<0x7707000 0x20>;
+			resets = <&gcc AUDIO_BLK_ARES>;
+			reset-names = "blk_rst";
+			status = "disabled";
+		};
+
+		pcm: pcm@7704000 {
+			compatible = "qca,ipq4019-pcm";
+			reg = <0x7704000 0x2000>;
+			dma-tx-channel = <MBOX3_TX_ID>;
+			dma-rx-channel = <MBOX0_RX_ID>;
+			stereo-tx-port = <STEREO3_ID>;
+			stereo-rx-port = <STEREO0_ID>;
+			clocks = <&adcc ADCC_PCM_CLK_SRC>;
+			clock-names = "audio_pcm_clk";
+			status = "disabled";
+		};
+
+		mbox0: mbox@7708000 {
+			dma-index = <0>;
+			compatible = "qca,ipq4019-mbox";
+			reg = <0x7708000 0x1000>;
+			interrupts = <0 156 0>;
+			tx-channel = <MBOX0_TX_ID>;
+			rx-channel = <MBOX0_RX_ID>;
+			status = "disabled";
+		};
+
+		mbox1: mbox@770a000 {
+			dma-index = <1>;
+			compatible = "qca,ipq4019-mbox";
+			reg = <0x770A000 0x1000>;
+			interrupts = <0 157 0>;
+			tx-channel = <MBOX1_TX_ID>;
+			status = "disabled";
+		};
+
+		mbox2: mbox@770c000 {
+			dma-index = <2>;
+			compatible = "qca,ipq4019-mbox";
+			reg = <0x770C000 0x1000>;
+			interrupts = <0 158 0>;
+			tx-channel = <MBOX2_TX_ID>;
+			status = "disabled";
+		};
+
+		mbox3: mbox@770e000 {
+			dma-index = <3>;
+			compatible = "qca,ipq4019-mbox";
+			reg = <0x770E000 0x1000>;
+			interrupts = <0 159 0>;
+			tx-channel = <MBOX3_TX_ID>;
+			rx-channel = <MBOX3_RX_ID>;
+			status = "disabled";
+		};
+
+		mbox4: mbox@7706000 {
+			dma-index = <4>;
+			compatible = "qca,ipq4019-mbox";
+			reg = <0x7706000 0x1000>;
+			interrupts = <0 163 0>;
+			rx-channel = <MBOX_SPDIF_RX_ID>;
+			status = "disabled";
+		};
+
+		stereo0: stereo@7709000 {
+			stereo-index = <STEREO0_ID>;
+			compatible = "qca,ipq4019-stereo";
+			reg = <0x7709000 0x1000>;
+			status = "disabled";
+		};
+
+		stereo1: stereo@770b000 {
+			stereo-index = <STEREO1_ID>;
+			compatible = "qca,ipq4019-stereo";
+			reg = <0x770B000 0x1000>;
+			status = "disabled";
+		};
+
+		stereo2: stereo@770d000 {
+			stereo-index = <STEREO2_ID>;
+			compatible = "qca,ipq4019-stereo";
+			reg = <0x770D000 0x1000>;
+			status = "disabled";
+		};
+
+		stereo3: stereo@770f000 {
+			stereo-index = <STEREO3_ID>;
+			compatible = "qca,ipq4019-stereo";
+			reg = <0x770F000 0x1000>;
+			status = "disabled";
+		};
+
+		i2splatform: qca-pcm-i2s@7709000 {
+			compatible = "qca,ipq4019-pcm-i2s";
+			reg = <0x7709000 0x1000>;
+			status = "disabled";
+		};
+
+		i2s: ipq4019-pcm-i2s@0 {
+			compatible = "qca,ipq4019-i2s";
+			dma-tx-channel = <MBOX0_TX_ID>;
+			stereo-tx-port = <STEREO0_ID>;
+			dma-rx-channel = <MBOX3_RX_ID>;
+			stereo-rx-port = <STEREO3_ID>;
+			clocks = <&adcc ADCC_TXB_CLK_SRC>,
+				<&adcc ADCC_TXM_CLK_SRC>,
+				<&adcc ADCC_RXB_CLK_SRC>,
+				<&adcc ADCC_RXM_CLK_SRC>;
+			clock-names = "audio_tx_bclk",
+				"audio_tx_mclk",
+				"audio_rx_bclk",
+				"audio_rx_mclk";
+			status = "disabled";
+		};
+
+		i2s1platform: qca-pcm-i2s1@770b000 {
+			compatible = "qca,ipq4019-pcm-i2s1";
+			reg = <0x770b000 0x1000>;
+			status = "disabled";
+		};
+
+		i2s1: ipq4019-pcm-i2s1@0 {
+			compatible = "qca,ipq4019-i2s1";
+			dma-tx-channel = <MBOX1_TX_ID>;
+			stereo-tx-port = <STEREO1_ID>;
+			clocks = <&adcc ADCC_TXB_CLK_SRC>,
+				<&adcc ADCC_TXM_CLK_SRC>,
+				<&adcc ADCC_RXB_CLK_SRC>,
+				<&adcc ADCC_RXM_CLK_SRC>;
+			clock-names = "audio_tx_bclk",
+				"audio_tx_mclk",
+				"audio_rx_bclk",
+				"audio_rx_mclk";
+			status = "disabled";
+		};
+
+		i2s2platform: qca-pcm-i2s2@770d000 {
+			compatible = "qca,ipq4019-pcm-i2s2";
+			reg = <0x770d000 0x1000>;
+			status = "disabled";
+		};
+
+		i2s2: ipq4019-pcm-i2s2@0 {
+			compatible = "qca,ipq4019-i2s2";
+			dma-tx-channel = <MBOX2_TX_ID>;
+			stereo-tx-port = <STEREO2_ID>;
+			clocks = <&adcc ADCC_TXB_CLK_SRC>,
+				<&adcc ADCC_TXM_CLK_SRC>,
+				<&adcc ADCC_RXB_CLK_SRC>,
+				<&adcc ADCC_RXM_CLK_SRC>;
+			clock-names = "audio_tx_bclk",
+				"audio_tx_mclk",
+				"audio_rx_bclk",
+				"audio_rx_mclk";
+			status = "disabled";
+		};
+
+		tdmplatform: qca-pcm-tdm@7709000 {
+			compatible = "qca,ipq4019-pcm-tdm";
+			reg = <0x7709000 0x1000>;
+			status = "disabled";
+		};
+
+		tdm: tdm@0 {
+			compatible = "qca,ipq4019-tdm";
+			dma-tx-channel = <MBOX0_TX_ID>;
+			dma-rx-channel = <MBOX3_RX_ID>;
+			stereo-tx-port = <STEREO0_ID>;
+			stereo-rx-port = <STEREO3_ID>;
+			clocks = <&adcc ADCC_TXB_CLK_SRC>,
+				<&adcc ADCC_TXM_CLK_SRC>,
+				<&adcc ADCC_RXB_CLK_SRC>,
+				<&adcc ADCC_RXM_CLK_SRC>;
+			clock-names = "audio_tx_bclk",
+				"audio_tx_mclk",
+				"audio_rx_bclk",
+				"audio_rx_mclk";
+			status = "disabled";
+		};
+
+		spdifplatform: qca-pcm-spdif@7707000 {
+			compatible = "qca,ipq4019-pcm-spdif";
+			reg = <0x7707000 0x1000>;
+			status = "disabled";
+		};
+
+		spdif: spdif@0 {
+			compatible = "qca,ipq4019-spdif";
+			dma-tx-channel = <MBOX0_TX_ID>;
+			dma-rx-channel = <MBOX_SPDIF_RX_ID>;
+			stereo-tx-port = <STEREO0_ID>;
+			clocks = <&adcc ADCC_TXB_CLK_SRC>,
+				<&adcc ADCC_TXM_CLK_SRC>,
+				<&adcc ADCC_SPDIF_SRC>,
+				<&adcc ADCC_SPDIFDIV2_SRC >,
+				<&adcc ADCC_AUDIO_SPDIFINFAST_SRC>;
+			clock-names = "audio_tx_bclk",
+				"audio_tx_mclk",
+				"audio_spdif_src",
+				"audio_spdif_div2",
+				"audio_spdifinfast_src";
+			status = "disabled";
+		};
+
+		sound: sound@0 {
+			compatible = "qca,ipq4019-audio";
+			status = "disabled";
+		};
+
+		pcm_lb: pcm_lb@0 {
+			compatible = "qca,ipq4019-pcm-lb";
+			status = "disabled";
+		};
+	};
+};
+
+

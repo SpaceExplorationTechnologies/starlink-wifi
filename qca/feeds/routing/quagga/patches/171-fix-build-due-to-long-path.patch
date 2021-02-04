@@ -1,0 +1,8 @@
+--- a/vtysh/extract.pl.in
++++ b/vtysh/extract.pl.in
+@@ -1,4 +1,4 @@
+-#! @PERL@
++#! /usr/bin/perl
+ ##
+ ## @configure_input@
+ ##

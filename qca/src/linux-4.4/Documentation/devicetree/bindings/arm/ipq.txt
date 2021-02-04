@@ -1,0 +1,30 @@
+QCA IPQ device tree bindings
+------------------------------
+
+System on Chip
+
+Device tree must specify which SoC it uses, with one of the following
+compatible strings
+
+	"qcom,ipq807x"
+	"qcom,ipq8064"
+	"qcom,ipq8062"
+Platform
+
+Device tree must specify which Platform it uses, with one of the following
+compatible strings
+	"qcom,ipq807x-hk01"
+	"qcom,ipq807x-hk02"
+	"qcom,ipq807x-hk07"
+	"qcom,ipq807x-hk08"
+	"qcom,ipq807x-hk09"
+	"qcom,ipq807x-ac01.1"
+	"qcom,ipq807x-ac01.2"
+	"qcom,ipq8064-ap160"
+	"qcom,ipq8064-ap160_2xx"
+	"qcom,ipq8064-ap161"
+	"qcom,ipq8064-db149"
+	"qcom,ipq8062-ap145"
+	"qcom,ipq8062-ap145_1xx"
+	"qcom,ipq8064-ap148"
+	"qcom,ipq8064-ap148_1xx"

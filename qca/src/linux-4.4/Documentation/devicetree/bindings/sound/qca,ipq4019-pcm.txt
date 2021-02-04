@@ -1,0 +1,25 @@
+qca,ipq4019-pcm
+
+VOIP PCM driver for IPQ4019
+
+Required properties:
+
+  - compatible     : "qca,ipq4019-pcm"
+  - reg		   : should have the pcm register address, length
+  - dma-tx-channel : should have the mbox tx channel id
+  - dma-rx-channel : should have the mbox rx channel id
+  - stereo-tx-port : should have the stereo tx id
+  - stereo-rx-port : should have the stereo rx id
+
+
+Example:
+
+pcm: pcm_@7704000 {
+        compatible = "qca,ipq4019-pcm";
+	reg = <0x7704000 0x2000>;
+	dma-tx-channel = <MBOX3_TX_ID>;
+	dma-rx-channel = <MBOX0_RX_ID>;
+	stereo-tx-port = <STEREO3_ID>;
+	stereo-rx-port = <STEREO0_ID>;
+	status = "disabled";
+};

@@ -1,0 +1,148 @@
+/*
+ * Copyright (c) 2016, The Linux Foundation. All rights reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+/ {
+	soc {
+		#address-cells = <0x00000001>;
+		#size-cells = <0x00000001>;
+		ranges = <0x00000000 0x00000000 0x00000000 0xffffffff>;
+		compatible = "simple-bus";
+		pinctrl@1000000 {
+			compatible = "qcom,msm8916-pinctrl";
+			reg = <0x01000000 0x00300000>;
+			interrupts = <0x00000000 0x000000d0 0x00000000>;
+			pmx-uartconsole {
+				qcom,pins = <0x00000035 0x00000004 0x00000035 \
+					0x00000005>;
+				qcom,num-grp-pins = <0x00000002>;
+				qcom,pin-func = <0x00000002>;
+				label = "uart-console";
+				uart-console {
+					drive-strength = <0x00000002>;
+					bias-pull-down;
+					linux,phandle = <0x000000bf>;
+					phandle = <0x000000bf>;
+				};
+			};
+			blsp1_uart1_active {
+				qcom,pins = <0x00000035 0x00000000 0x00000035 \
+					0x00000001 0x00000035 0x00000002 \
+					0x00000035 0x00000003>;
+				qcom,num-grp-pins = <0x00000004>;
+				qcom,pin-func = <0x00000002>;
+				label = "blsp1_uart1_active";
+				default {
+					drive-strength = <0x00000010>;
+					bias-disable;
+					linux,phandle = <0x000000c2>;
+					phandle = <0x000000c2>;
+				};
+			};
+			blsp1_uart1_sleep {
+				qcom,pins = <0x00000035 0x00000000 0x00000035 \
+					0x00000001 0x00000035 0x00000002 \
+					0x00000035 0x00000003>;
+				qcom,num-grp-pins = <0x00000004>;
+				qcom,pin-func = <0x00000000>;
+				label = "blsp1_uart1_sleep";
+				sleep {
+					drive-strength = <0x00000002>;
+					bias-disable;
+					linux,phandle = <0x000000c1>;
+					phandle = <0x000000c1>;
+				};
+			};
+		};
+		interrupt-controller@b000000 {
+			compatible = "qcom,msm-qgic2";
+			interrupt-controller;
+			#interrupt-cells = <0x00000003>;
+			reg = <0x0b000000 0x00001000 0x0b002000 0x00001000>;
+			linux,phandle = <0x00000001>;
+			phandle = <0x00000001>;
+		};
+		timer {
+			compatible = "arm,armv8-timer";
+			interrupts = <0x00000001 0x00000002 0x0000ff08 \
+				0x00000001 0x00000003 0x0000ff08 0x00000001 \
+				0x00000004 0x0000ff08 0x00000001 0x00000001 \
+				0x0000ff08>;
+			clock-frequency = <0x0124f800>;
+		};
+		timer@b120000 {
+			#address-cells = <0x00000001>;
+			#size-cells = <0x00000001>;
+			ranges;
+			compatible = "arm,armv7-timer-mem";
+			reg = <0x0b120000 0x00001000>;
+			clock-frequency = <0x0124f800>;
+			frame@b121000 {
+				frame-number = <0x00000000>;
+				interrupts = <0x00000000 0x00000008 0x00000004 \
+					0x00000000 0x00000007 \
+					0x00000004>;
+				reg = <0x0b121000 0x00001000 0x0b122000 \
+					0x00001000>;
+			};
+			frame@b123000 {
+				frame-number = <0x00000001>;
+				interrupts = <0x00000000 0x00000009 0x00000004>;
+				reg = <0x0b123000 0x00001000>;
+				status = "disabled";
+			};
+			frame@b124000 {
+				frame-number = <0x00000002>;
+				interrupts = <0x00000000 0x0000000a 0x00000004>;
+				reg = <0x0b124000 0x00001000>;
+				status = "disabled";
+			};
+			frame@b125000 {
+				frame-number = <0x00000003>;
+				interrupts = <0x00000000 0x0000000b 0x00000004>;
+				reg = <0x0b125000 0x00001000>;
+				status = "disabled";
+			};
+			frame@b126000 {
+				frame-number = <0x00000004>;
+				interrupts = <0x00000000 0x0000000c 0x00000004>;
+				reg = <0x0b126000 0x00001000>;
+				status = "disabled";
+			};
+			frame@b127000 {
+				frame-number = <0x00000005>;
+				interrupts = <0x00000000 0x0000000d 0x00000004>;
+				reg = <0x0b127000 0x00001000>;
+				status = "disabled";
+			};
+			frame@b128000 {
+				frame-number = <0x00000006>;
+				interrupts = <0x00000000 0x0000000e 0x00000004>;
+				reg = <0x0b128000 0x00001000>;
+				status = "disabled";
+			};
+		};
+		serial@78b0000 {
+			compatible = "qcom,msm-uartdm-v1.4", "qcom,msm-uartdm";
+			reg = <0x078b0000 0x00000200>;
+			interrupts = <0x00000000 0x0000006c 0x00000000>;
+			status = "ok";
+			clocks = <0x0000001c 0xf8a61c96 0x0000001c 0x8caa5b4f>;
+			clock-names = "core", "iface";
+			pinctrl-names = "default";
+			pinctrl-0 = <0x000000bf>;
+		};
+	};
+};

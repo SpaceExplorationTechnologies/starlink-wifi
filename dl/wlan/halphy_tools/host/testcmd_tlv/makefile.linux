@@ -1,0 +1,110 @@
+CC =$(TOOLPREFIX)gcc
+ifeq ($(A_SIM_UTF), y)
+LD =$(TOOLPREFIX)gcc
+else
+LD =$(TOOLPREFIX)ld
+endif
+#CMN_INCLUDE_DIR = ../../../../include
+#CMN_INCLUDE_DIR = ../../include
+HALPHY_TOOLS_COMPONENT_DIR ?= ../..
+TLV2P0_ROOT = $(HALPHY_TOOLS_COMPONENT_DIR)/common/tlv2p0
+TLV2P0_INC_DIR = $(TLV2P0_ROOT)/include
+TLV1_INC_DIR = $(HALPHY_TOOLS_COMPONENT_DIR)/include/tlv1
+OS_INC_DIR = $(HALPHY_TOOLS_COMPONENT_DIR)/host/os/include
+OS_LINUX_DIR = $(HALPHY_TOOLS_COMPONENT_DIR)/host/os/linux
+HALPHY_TOOLS_INCLUDE = $(HALPHY_TOOLS_COMPONENT_DIR)/include
+
+#WLAN_INC_DIR = $(WLAN_TOP)
+TARGET_CFLAGS  +=  -Wall -D_DEBUG -DLINUX -DLinux -DTEST_STANDALONE -D_FOR_HOST_TESTING -D_PARSER_BIN_CMD_STREAM_API_ONLY -DUSED_BY_HOST -D_HOST_SIM_TESTING -D_CAL_PWR_AS_API
+TARGET_CFLAGS += -DFCC_INCLUDED -D_OTA_TOOL -DSUPPORT_VHT -DARCH_BIG_ENDIAN -D_HOSTTOOLS_AR98XX
+TARGET_CFLAGS += -I$(HALPHY_TOOLS_COMPONENT_DIR)/host/os/linux/include -I$(HALPHY_TOOLS_COMPONENT_DIR)/host/os/linux/DevdrvIf -I$(CMN_INCLUDE_DIR) -I$(HALPHY_TOOLS_COMPONENT_DIR)/include -I$(TLV2P0_INC_DIR) -I$(TLV1_INC_DIR) -I$(OS_INC_DIR) -I$(OS_LINUX_DIR)/include -I$(MAC_CORE_INC_DIR) -I$(PROTOCOL_INC_DIR) -I$(HALPHY_TOOLS_INCLUDE)
+TARGET_CFLAGS += -g
+
+ifeq ($(TARGET),AR9888) # {
+TARGET_CFLAGS += -D_HOSTTOOLS_AR98XX
+endif # }
+
+ifeq ($(TARGET),AR6320) # {
+TARGET_CFLAGS += -D_HOSTTOOLS_AR6320
+endif # }
+
+TARGET_LDFLAGS	+= -L$(HALPHY_TOOLS_COMPONENT_DIR)/host/utf_utilities/libtlvutil/Linux/ -ltlvutil -lrt -lpthread -ldl
+TARGET_LDFLAGS	+= -L$(HALPHY_TOOLS_COMPONENT_DIR)/host/utf_utilities/libtlvutil/genParmTemplate/outputTemplate/Linux/ -ltlvtemplate
+#TARGET_LDFLAGS += -L./addnl_inst/ -lrsnrpz -lnrp
+TARGET_LDFLAGS	+= -L$(TLV2P0_ROOT)/tlvcmdrsp/Linux/ -ltlvcmdrsp
+TARGET_LDFLAGS	+= -L$(TLV2P0_ROOT)/cmdParser/Linux/ -ltlvparser
+#TARGET_LDFLAGS	+= -L$(TLV2P0_ROOT)/TLVCmdRsp/Linux/ -ltlvcmdrsp
+TARGET_LDFLAGS	+= -L$(TLV2P0_ROOT)/cmdEncoder/Linux/ -ltlvencoder
+
+ifeq ($(A_SIM_UTF), y)
+TARGET_CFLAGS += -m32 -DUTFSIM
+TARGET_LDFLAGS += -m32
+endif
+
+LIBTLV_DIR  = $(HALPHY_TOOLS_COMPONENT_DIR)/host/utf_utilities/libtlvutil/
+#LIBTLV2p0_DIR  = $(HALPHY_TOOLS_COMPONENT_DIR)/host/tools/systemtools/tools/convergedFramework/
+
+UTF_UTILITIES_COMMON_DIR = $(HALPHY_TOOLS_COMPONENT_DIR)/host/utf_utilities/common
+
+VPATH	:= . $(UTF_UTILITIES_COMMON_DIR) $(OS_LINUX_DIR)/DevdrvIf
+#EXTRA_SRCS := testUtil.c eepromUtil_ar6004.c addnl_inst/rsnrpzBurstAv.c
+EXTRA_SRCS := testUtil.c addnl_inst/rsnrpzBurstAv.c
+
+ifeq ($(OS),)
+OS := Linux
+endif
+
+ifeq ($(DEBUG),1)
+    TARGET_CFLAGS += -g
+endif
+
+BIN_TC   = $(OS)/athtestcmd
+
+SRCS_TC := athtestcmd.c processRsp.c os_if.c
+ifeq ($(A_SIM_UTF), y)
+SRCS_TC += os_if_sim.c
+endif
+
+OBJS_TC := $(patsubst %.c,$(OS)/%.o,$(SRCS_TC))
+
+BIN_TXPWR   = $(OS)/calTxPwr_v2.out
+SRCS_TXPWR := mInst.c calTxPwr_v2.c $(EXTRA_SRCS)
+OBJS_TXPWR :=  $(patsubst %.c,$(OS)/%.o,$(SRCS_TXPWR))
+export C_FLAGS:=$(TARGET_CFLAGS)
+export LD_FLAGS:=$(TARGET_LDFLAGS)
+#all: dirs $(BIN_TC) $(BIN_TXPWR)
+all: dirs $(BIN_TC)
+#all: dirs $(BIN_TXPWR)
+
+dirs:
+	mkdir -p $(OS)
+	mkdir -p $(OS)/addnl_inst
+	cd $(LIBTLV_DIR);$(MAKE) -f makefile.Linux clean
+	cd $(LIBTLV_DIR);$(MAKE) -f makefile.Linux all
+	cp $(HALPHY_TOOLS_COMPONENT_DIR)/host/utf_utilities/libtlvutil/Linux/libtlvutil.so $(OS)
+	cp $(HALPHY_TOOLS_COMPONENT_DIR)/host/utf_utilities/libtlvutil/genParmTemplate/outputTemplate/Linux/libtlvtemplate.so $(OS)
+	cd $(TLV2P0_ROOT)/tlvcmdrsp;$(MAKE) -f makefile.Linux clean
+	cd $(TLV2P0_ROOT)/tlvcmdrsp;$(MAKE) -f makefile.Linux all
+	cd $(TLV2P0_ROOT)/cmdEncoder;$(MAKE) -f makefile.Linux clean
+	cd $(TLV2P0_ROOT)/cmdEncoder;$(MAKE) -f makefile.Linux all
+	cd $(TLV2P0_ROOT)/cmdParser;$(MAKE) -f makefile.Linux clean
+	cd $(TLV2P0_ROOT)/cmdParser;$(MAKE) -f makefile.Linux all
+	cp $(TLV2P0_ROOT)/cmdParser/Linux/libtlvparser.so $(OS)
+	cp $(TLV2P0_ROOT)/cmdEncoder/Linux/libtlvencoder.so $(OS)
+	cp $(TLV2P0_ROOT)/tlvcmdrsp/Linux/libtlvcmdrsp.so $(OS)
+
+$(BIN_TC): $(OBJS_TC)
+	$(CC) $(TARGET_CFLAGS) $(OBJS_TC) $(TARGET_LDFLAGS) -o $@
+
+$(BIN_TXPWR): $(OBJS_TXPWR)
+	$(CC) $(TARGET_CFLAGS) $(OBJS_TXPWR) $(TARGET_LDFLAGS) -o $@
+
+$(OS)/%.o : %.c
+	$(CC) -c $(TARGET_CFLAGS) $< -o $@
+
+clean:
+	rm -rf $(OS)
+	cd $(LIBTLV_DIR);$(MAKE) -f makefile.Linux clean
+
+.PHONY:
+	clean all

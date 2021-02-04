@@ -1,0 +1,39 @@
+CC = gcc
+LD = ld
+MDK_ROOT = $(WORKAREA)/host/tools/systemtools
+CFLAGS   =  -I. -I../include -I../genParmTemplate/.output -DDEBUG -DLINUX -DLinux -DTEST_STANDALONE -I$(MDK_ROOT)/src2/include -I$(MDK_ROOT)/include -I$(WORKAREA)/include/systemtools/common -D_HOST_SIM_TESTING
+
+LDFLAGS	= 
+COMMON_DIR = ../common 
+VPATH	:= ../genParmTemplate/.output $(COMMON_DIR)
+#EXTRA_SRCS := _cmd_txParmTxtTemplate.c _cmd_rxParmTxtTemplate.c _cmd_calParmTxtTemplate.c _cmd_calDoneParmTxtTemplate.c testUtil.c 
+EXTRA_SRCS := _cmd_txParmTxtTemplate.c _cmd_rxParmTxtTemplate.c _cmd_calParmTxtTemplate.c testUtil.c 
+
+ifeq ($(OS),)
+OS := Linux
+endif
+
+ifeq ($(DEBUG),1)
+    CFLAGS += -g
+endif
+
+GENTESTSEQ        = $(OS)/genTestSeq.out
+SRCS_GENTESTSEQ  := genTestSeqUtil.c cmdParmsTemplate.c $(EXTRA_SRCS)
+OBJS_GENTESTSEQ  :=  $(patsubst %.c,$(OS)/%.o,$(SRCS_GENTESTSEQ))
+
+all: dirs $(GENTESTSEQ) 
+
+dirs:
+	mkdir -p $(OS)
+
+$(GENTESTSEQ): $(OBJS_GENTESTSEQ) 
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJS_GENTESTSEQ)
+
+$(OS)/%.o : %.c
+	$(CC) -c $(CFLAGS) $< -o $@
+
+clean:
+	rm -rf $(OS) 
+
+.PHONY:
+	clean all

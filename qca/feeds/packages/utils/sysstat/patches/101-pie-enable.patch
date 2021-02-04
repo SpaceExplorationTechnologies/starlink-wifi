@@ -1,0 +1,21 @@
+Index: sysstat-11.0.4/Makefile.in
+===================================================================
+--- sysstat-11.0.4.orig/Makefile.in
++++ sysstat-11.0.4/Makefile.in
+@@ -74,6 +74,7 @@ DFLAGS = @DFLAGS@
+ LFLAGS = @STRIP@
+ DFLAGS += -DSA_DIR=\"$(SA_DIR)\" -DSADC_PATH=\"$(SADC_PATH)\"
+ DFLAGS += $(DFSENSORS)
++LDFLAGS += @LDFLAGS@
+ 
+ # Commands
+ ifndef MSGFMT
+@@ -161,7 +162,7 @@ NLSPOT= $(NLSPO:.po=.pot)
+ 	$(CC) -o $@ -c $(CFLAGS) $(DFLAGS) $<
+ 
+ % : %.o
+-	$(CC) -o $@ $(CFLAGS) $^ $(LFLAGS)
++	$(CC) -o $@ $(LDFLAGS) $(CFLAGS) $^ $(LFLAGS)
+ 
+ all: sadc sar sadf iostat mpstat pidstat nfsiostat-sysstat cifsiostat locales
+ 

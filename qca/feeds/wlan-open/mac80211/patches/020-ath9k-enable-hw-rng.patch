@@ -1,0 +1,11 @@
+--- a/drivers/net/wireless/ath/ath9k/Kconfig
++++ b/drivers/net/wireless/ath/ath9k/Kconfig
+@@ -188,7 +188,7 @@ config ATH9K_HWRNG
+ 	depends on !KERNEL_3_17
+ 	bool "Random number generator support"
+ 	depends on ATH9K && (HW_RANDOM = y || HW_RANDOM = ATH9K)
+-	default n
++	default y
+ 	---help---
+ 	  This option incorporates the ADC register output as a source of
+ 	  randomness into Linux entropy pool (/dev/urandom and /dev/random)

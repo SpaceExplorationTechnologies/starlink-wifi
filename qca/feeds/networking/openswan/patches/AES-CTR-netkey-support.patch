@@ -1,0 +1,240 @@
+diff -bur openswan-original/lib/libopenswan/kernel_alg.c openswan-Mar14-working/lib/libopenswan/kernel_alg.c
+--- openswan-original/lib/libopenswan/kernel_alg.c	2017-03-14 17:57:18.984599859 +0530
++++ openswan-Mar14-working/lib/libopenswan/kernel_alg.c	2017-03-14 19:08:32.672536518 +0530
+@@ -345,6 +345,9 @@
+                     case ESP_AES:
+                               keylen=128/BITS_PER_BYTE;
+                               break;
++		    case ESP_AES_CTR:
++			      keylen=160/BITS_PER_BYTE;
++			      break;
+           }
+ none:
+           DBG(DBG_KLIPS, DBG_log("kernel_alg_esp_enc_keylen():"
+diff -bur openswan-original/linux/include/openswan/ipsec_xform.h openswan-Mar14-working/linux/include/openswan/ipsec_xform.h
+--- openswan-original/linux/include/openswan/ipsec_xform.h	2017-03-14 17:57:18.960599724 +0530
++++ openswan-Mar14-working/linux/include/openswan/ipsec_xform.h	2017-03-14 19:08:32.628536271 +0530
+@@ -135,6 +135,7 @@
+ 	(x)->ips_encalg == ESP_NULL ? "_NULL" : \
+ 	(x)->ips_encalg == ESP_3DES ? "_3DES" : \
+ 	(x)->ips_encalg == ESP_AES ? "_AES" : \
++	(x)->ips_encalg == ESP_AES_CTR ? "_AES_CTR" : \
+ 	(x)->ips_encalg == ESP_SERPENT ? "_SERPENT" : \
+ 	(x)->ips_encalg == ESP_TWOFISH ? "_TWOFISH" : \
+ 	enc_name_id(x->ips_encalg)/* "_UNKNOWN_encr" */, \
+diff -bur openswan-original/linux/net/ipsec/alg/ipsec_alg_cryptoapi.c openswan-Mar14-working/linux/net/ipsec/alg/ipsec_alg_cryptoapi.c
+--- openswan-original/linux/net/ipsec/alg/ipsec_alg_cryptoapi.c	2017-03-14 17:57:18.960599724 +0530
++++ openswan-Mar14-working/linux/net/ipsec/alg/ipsec_alg_cryptoapi.c	2017-03-14 19:08:32.632536293 +0530
+@@ -81,6 +81,7 @@
+ #include <linux/mm.h>
+
+ #define CIPHERNAME_AES		"aes"
++#define CIPHERNAME_AES_CTR	"aes_ctr"
+ #define CIPHERNAME_3DES		"des3_ede"
+ #define CIPHERNAME_BLOWFISH	"blowfish"
+ #define CIPHERNAME_CAST		"cast5"
+@@ -89,6 +90,7 @@
+
+ #define ESP_3DES		3
+ #define ESP_AES			12
++#define ESP_AES_CTR		13
+ #define ESP_BLOWFISH		7	/* truely _constant_  :)  */
+ #define ESP_CAST		6	/* quite constant :) */
+ #define ESP_SERPENT		252	/* from ipsec drafts */
+@@ -160,6 +162,7 @@
+ };
+ static struct ipsec_alg_capi_cipher alg_capi_carray[] = {
+ 	{ CIPHERNAME_AES ,     16, 128, 256, aes    , { ixt_alg_id: ESP_AES, }},
++	{ CIPHERNAME_AES_CTR , 16, 160, 288, aes_ctr, { ixt_alg_id: ESP_AES_CTR, }},
+ 	{ CIPHERNAME_TWOFISH , 16, 128, 256, twofish, { ixt_alg_id: ESP_TWOFISH, }},
+ 	{ CIPHERNAME_SERPENT , 16, 128, 256, serpent, { ixt_alg_id: ESP_SERPENT, }},
+ 	{ CIPHERNAME_CAST ,     8, 128, 128, cast   , { ixt_alg_id: ESP_CAST, }},
+diff -bur openswan-original/linux/net/ipsec/ipsec_alg_cryptoapi.c openswan-Mar14-working/linux/net/ipsec/ipsec_alg_cryptoapi.c
+--- openswan-original/linux/net/ipsec/ipsec_alg_cryptoapi.c	2017-03-14 17:57:18.960599724 +0530
++++ openswan-Mar14-working/linux/net/ipsec/ipsec_alg_cryptoapi.c	2017-03-14 19:08:32.632536293 +0530
+@@ -173,6 +173,7 @@
+ #else
+ 	#define ecb(X)	"ecb(" #X ")"
+ 	#define cbc(X)	"cbc(" #X ")"
++	#define ctr(X)	"rfc3686(ctr(" #X "))"
+ 	#define hmac(X)	"hmac(" #X ")"
+ #endif /* if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19) */
+
+@@ -180,6 +181,7 @@
+ # define CIPHERNAME_NULL		cbc(null)
+ #endif
+ #define CIPHERNAME_AES		cbc(aes)
++#define CIPHERNAME_AES_CTR	ctr(aes)
+ #define CIPHERNAME_1DES		cbc(des)
+ #define CIPHERNAME_3DES		cbc(des3_ede)
+ #define CIPHERNAME_BLOWFISH	cbc(blowfish)
+@@ -214,6 +216,7 @@
+ #endif
+ static int des_ede3[] = {-1, -1};
+ static int aes[] = {-1, -1};
++static int aes_ctr[] = {-1, -1};
+ static int blowfish[] = {-1, -1};
+ static int cast[] = {-1, -1};
+ static int serpent[] = {-1, -1};
+@@ -227,6 +230,7 @@
+ #endif
+ module_param_array(des_ede3,int,NULL,0444);
+ module_param_array(aes,int,NULL,0444);
++module_param_array(aes_ctr,int,NULL,0444);
+ module_param_array(blowfish,int,NULL,0444);
+ module_param_array(cast,int,NULL,0444);
+ module_param_array(serpent,int,NULL,0444);
+@@ -256,6 +260,7 @@
+
+ static struct ipsec_alg_capi_cipher alg_capi_carray[] = {
+   { CIPHERNAME_AES,     16, 128, 256, aes,      { ixt_common:{ ixt_support:{ ias_id: ESP_AES}}}},
++  { CIPHERNAME_AES_CTR, 16, 160, 288, aes_ctr,  { ixt_common:{ ixt_support:{ ias_id: ESP_AES_CTR}}}},
+   { CIPHERNAME_TWOFISH, 16, 128, 256, twofish,  { ixt_common:{ ixt_support:{ ias_id: ESP_TWOFISH,}}}},
+   { CIPHERNAME_SERPENT, 16, 128, 256, serpent,  { ixt_common:{ ixt_support:{ ias_id: ESP_SERPENT,}}}},
+   { CIPHERNAME_CAST,     8, 128, 128, cast   ,  { ixt_common:{ ixt_support:{ ias_id: ESP_CAST,}}}},
+diff -bur openswan-original/linux/net/ipsec/ipsec_xmit.c openswan-Mar14-working/linux/net/ipsec/ipsec_xmit.c
+--- openswan-original/linux/net/ipsec/ipsec_xmit.c	2017-03-14 17:57:18.960599724 +0530
++++ openswan-Mar14-working/linux/net/ipsec/ipsec_xmit.c	2017-03-14 19:08:32.632536293 +0530
+@@ -657,6 +657,10 @@
+ 				ixs->blocksize = 16;
+ 				ixs->headroom += ESP_HEADER_LEN + 16 /* ivsize */;
+ 				break;
++			case ESP_AES_CTR:
++				ixs->blocksize = 16;
++				ixs->headroom += ESP_HEADER_LEN + 8 /* ivsize */;
++				break;
+ 			default:
+ 				if (ixs->stats)
+ 					ixs->stats->tx_errors++;
+@@ -1951,6 +1955,10 @@
+ 					ixs->blocksize = 16;
+ 					ixs->headroom += ESP_HEADER_LEN + 16 /* ivsize */;
+ 					break;
++				case ESP_AES_CTR:
++					ixs->blocksize = 16;
++					ixs->headroom += ESP_HEADER_LEN + 8 /* ivsize */;
++					break;
+ 				default:
+ 					if (ixs->stats)
+ 						ixs->stats->tx_errors++;
+diff -bur openswan-original/programs/pluto/ikev1_quick.c openswan-Mar14-working/programs/pluto/ikev1_quick.c
+--- openswan-original/programs/pluto/ikev1_quick.c	2017-03-14 17:57:18.964599747 +0530
++++ openswan-Mar14-working/programs/pluto/ikev1_quick.c	2017-03-14 19:08:32.632536293 +0530
+@@ -223,6 +223,13 @@
+ 		    needed_len = st->st_esp.attrs.transattrs.enckeylen/8;
+ 		}
+ 		break;
++	    case ESP_AES_CTR:
++		needed_len = AES_CBC_BLOCK_SIZE + 4;
++		/* if an attribute is set, then use that! */
++		if(st->st_esp.attrs.transattrs.enckeylen) {
++			needed_len = st->st_esp.attrs.transattrs.enckeylen/8;
++		}
++		break;
+
+ 	    default:
+ #ifdef KERNEL_ALG
+diff -bur openswan-original/programs/pluto/kernel.c openswan-Mar14-working/programs/pluto/kernel.c
+--- openswan-original/programs/pluto/kernel.c	2017-03-14 17:57:18.964599747 +0530
++++ openswan-Mar14-working/programs/pluto/kernel.c	2017-03-14 19:08:32.632536293 +0530
+@@ -1631,6 +1631,16 @@
+             { FALSE, ESP_AES, AUTH_ALGORITHM_HMAC_SHA1,
+                 AES_CBC_BLOCK_SIZE, HMAC_SHA1_KEY_LEN,
+                 SADB_X_EALG_AESCBC, SADB_AALG_SHA1HMAC },
++
++	    { FALSE, ESP_AES_CTR, AUTH_ALGORITHM_NONE,
++		    AES_CBC_BLOCK_SIZE + 4, 0,
++		    SADB_X_EALG_AESCTR, SADB_AALG_NONE },
++	    { FALSE, ESP_AES_CTR, AUTH_ALGORITHM_HMAC_MD5,
++		    AES_CBC_BLOCK_SIZE + 4, HMAC_MD5_KEY_LEN,
++		    SADB_X_EALG_AESCTR, SADB_AALG_MD5HMAC },
++	    { FALSE, ESP_AES_CTR, AUTH_ALGORITHM_HMAC_SHA1,
++		    AES_CBC_BLOCK_SIZE + 4, HMAC_SHA1_KEY_LEN,
++		    SADB_X_EALG_AESCTR, SADB_AALG_SHA1HMAC },
+         };
+ 	/* static const int esp_max = elemsof(esp_info); */
+ 	/* int esp_count; */
+diff -bur openswan-original/programs/pluto/kernel_netlink.c openswan-Mar14-working/programs/pluto/kernel_netlink.c
+--- openswan-original/programs/pluto/kernel_netlink.c	2017-03-14 17:57:18.964599747 +0530
++++ openswan-Mar14-working/programs/pluto/kernel_netlink.c	2017-03-14 19:08:32.632536293 +0530
+@@ -160,7 +160,7 @@
+ 	{ SADB_X_EALG_CASTCBC, "cast128" },
+ 	{ SADB_X_EALG_BLOWFISHCBC, "blowfish" },
+ 	{ SADB_X_EALG_AESCBC, "aes" },
+-	{ SADB_X_EALG_AESCTR, "ctr(aes)" },
++	{ SADB_X_EALG_AESCTR, "rfc3686(ctr(aes))" },
+ 	{ SADB_X_EALG_CAMELLIACBC, "cbc(camellia)" },
+ 	{ 0, sparse_end }
+ };
+@@ -1074,6 +1074,21 @@
+ #define  AES_KEY_DEF_LEN       128
+ #define  AES_KEY_MAX_LEN       256
+
++struct encrypt_desc algo_aes_ctr =
++{
++	common: {
++	  name: "rfc3686(ctr(aes))",
++	  officname: "rfc3686(ctr(aes))",
++	  algo_type:    IKE_ALG_ENCRYPT,
++	  algo_v2id:    IKEv2_ENCR_AES_CTR,
++	  algo_next:    NULL, },
++	enc_blocksize:  AES_CBC_BLOCK_SIZE,
++	keyminlen:      AES_KEY_MIN_LEN + 32,
++	keydeflen:      AES_KEY_DEF_LEN + 32,
++	keymaxlen:      AES_KEY_MAX_LEN + 32,
++};
++
++
+ struct encrypt_desc algo_aes_ccm_8 =
+ {
+ 	common: {
+@@ -1167,6 +1182,15 @@
+
+ 	alg.sadb_alg_ivlen = 8;
+ 	alg.sadb_alg_minbits = 128 + 4 * BITS_PER_BYTE;
++	alg.sadb_alg_maxbits = 256 + 4 * BITS_PER_BYTE;
++
++	alg.sadb_alg_id = SADB_X_EALG_AESCTR;
++	kernel_alg_add(SADB_SATYPE_ESP, SADB_EXT_SUPPORTED_ENCRYPT, &alg);
++	ike_alg_register_enc(&algo_aes_ctr);
++
++
++	alg.sadb_alg_ivlen = 8;
++	alg.sadb_alg_minbits = 128 + 4 * BITS_PER_BYTE;
+ 	alg.sadb_alg_maxbits = 256 + 4 * BITS_PER_BYTE;
+
+ 	alg.sadb_alg_id = SADB_X_EALG_AES_GCM_ICV8;
+diff -bur openswan-original/programs/pluto/rcv_info.c openswan-Mar14-working/programs/pluto/rcv_info.c
+--- openswan-original/programs/pluto/rcv_info.c	2017-03-14 17:57:18.964599747 +0530
++++ openswan-Mar14-working/programs/pluto/rcv_info.c	2017-03-14 19:08:32.632536293 +0530
+@@ -186,6 +186,7 @@
+ 	    break;
+
+ 	case ESP_AES:
++	case ESP_AES_CTR:
+ 	    ipcq->strength = IPSEC_PRIVACY_STRONG;
+ 	    ipcq->bandwidth = IPSEC_QOS_FTP;
+ 	    break;
+diff -bur openswan-original/programs/pluto/spdb.c openswan-Mar14-working/programs/pluto/spdb.c
+--- openswan-original/programs/pluto/spdb.c	2017-03-14 17:57:18.964599747 +0530
++++ openswan-Mar14-working/programs/pluto/spdb.c	2017-03-14 19:08:32.632536293 +0530
+@@ -852,6 +852,8 @@
+ static struct db_trans espa_trans[] = {
+     { AD_TR(ESP_AES, espasha1_attr) },
+     { AD_TR(ESP_AES, espamd5_attr) },
++    { AD_TR(ESP_AES_CTR, espasha1_attr) },
++    { AD_TR(ESP_AES_CTR, espamd5_attr) },
+     { AD_TR(ESP_3DES,espsha1_attr) },
+     { AD_TR(ESP_3DES,espmd5_attr) },
+     };
+diff -bur openswan-original/programs/pluto/spdb_v1_struct.c openswan-Mar14-working/programs/pluto/spdb_v1_struct.c
+--- openswan-original/programs/pluto/spdb_v1_struct.c	2017-03-14 17:57:18.964599747 +0530
++++ openswan-Mar14-working/programs/pluto/spdb_v1_struct.c	2017-03-14 19:08:32.632536293 +0530
+@@ -2356,6 +2356,7 @@
+                               {
+ #ifdef KERNEL_ALG          /* strictly use runtime information */
+                               case ESP_AES:
++                              case ESP_AES_CTR:
+                               case ESP_3DES:
+                                   break;
+ #endif

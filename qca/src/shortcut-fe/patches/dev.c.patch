@@ -1,0 +1,43 @@
+diff --git a/net/core/dev.c b/net/core/dev.c
+index d23742f..1f0415f 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -3168,6 +3168,9 @@ void netdev_rx_handler_unregister(struct net_device *dev)
+ }
+ EXPORT_SYMBOL_GPL(netdev_rx_handler_unregister);
+ 
++int (*athrs_fast_nat_recv)(struct sk_buff *skb) __rcu __read_mostly;
++EXPORT_SYMBOL_GPL(athrs_fast_nat_recv);
++
+ static int __netif_receive_skb(struct sk_buff *skb)
+ {
+ 	struct packet_type *ptype, *pt_prev;
+@@ -3177,6 +3180,7 @@ static int __netif_receive_skb(struct sk_buff *skb)
+ 	bool deliver_exact = false;
+ 	int ret = NET_RX_DROP;
+ 	__be16 type;
++	int (*fast_recv)(struct sk_buff *skb);
+ 
+ 	net_timestamp_check(!netdev_tstamp_prequeue, skb);
+ 
+@@ -3194,10 +3198,18 @@ static int __netif_receive_skb(struct sk_buff *skb)
+ 	skb_reset_transport_header(skb);
+ 	skb_reset_mac_len(skb);
+ 
+-	pt_prev = NULL;
+-
+ 	rcu_read_lock();
+ 
++	fast_recv = rcu_dereference(athrs_fast_nat_recv);
++	if (fast_recv) {
++		if (fast_recv(skb)) {
++			rcu_read_unlock();
++			return NET_RX_SUCCESS;
++		}
++	}
++
++	pt_prev = NULL;
++
+ another_round:
+ 
+ 	__this_cpu_inc(softnet_data.processed);

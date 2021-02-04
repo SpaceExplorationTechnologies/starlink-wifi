@@ -1,0 +1,38 @@
+config switch s17
+	option ifname 'eth1'
+
+config lacp 'lan'
+	option enable '0'
+	option name 'lan'
+	option txHashPolicy 'L2_L3'
+	option lacpRate '0'
+	option adSelect 'all'
+
+config port port1
+	option enable '1'
+	option lacp 'lan'
+	option switch 's17'
+	option switchPortId '1'
+	option userKey '0'
+
+config port port2
+	option enable '1'
+	option lacp 'lan'
+	option switch 's17'
+	option switchPortId '2'
+	option userKey '0'
+
+config port port3
+	option enable '1'
+	option lacp 'lan'
+	option switch 's17'
+	option switchPortId '3'
+	option userKey '0'
+
+config port port4
+	option enable '1'
+	option lacp 'lan'
+	option switch 's17'
+	option switchPortId '4'
+	option userKey '0'
+

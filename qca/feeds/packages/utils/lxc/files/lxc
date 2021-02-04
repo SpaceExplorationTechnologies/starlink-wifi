@@ -1,0 +1,81 @@
+#!/bin/sh /etc/rc.common
+
+# Copyright (c) 2017, The Linux Foundation. All rights reserved.
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
+
+. /lib/functions.sh
+
+START=99
+STOP=00
+
+
+config_file(){
+
+        local name=$1
+        cat<<EOT > /lxc/$name/config
+lxc.network.type =$(uci_get lxc.$name.net_type)
+lxc.rootfs = /lxc/$name/rootfs
+
+lxc.network.flags =$(uci_get lxc.$name.flags)
+lxc.network.link =$(uci_get lxc.$name.link)
+lxc.network.name =$(uci_get lxc.$name.net_name)
+
+# fix for lxc-stop
+lxc.haltsignal=$(uci_get lxc.$name.haltsignal)
+
+# Default mount entries
+lxc.mount.entry = proc proc proc nodev,noexec,nosuid 0 0
+
+#Include common configuration
+lxc.include =$(uci_get lxc.$name.include)
+EOT
+}
+
+
+start_container() {
+	local cfg="$1"
+	local name
+	config_get name "$cfg" name
+	/usr/bin/lxc-create -n "$name" -t qsdk
+	config_file $name
+
+	if [ -n "$name" ]; then
+		/usr/bin/lxc-start -n "$name"
+	fi
+}
+
+stop_container() {
+	local cfg="$1"
+        local name
+
+        config_get name "$cfg" name
+        if [ -n "$name" ]; then
+                /usr/bin/lxc-stop -n "$name"
+        fi
+}
+
+
+start() {
+	config_load lxc
+	config_foreach start_container LXC
+}
+
+stop() {
+	config_load lxc
+	config_foreach stop_container LXC
+}
+
+
+

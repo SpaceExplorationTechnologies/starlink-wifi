@@ -1,0 +1,20 @@
+qca,ipq806x-pcm
+
+VOIP PCM driver for IPQ806X
+
+Required properties:
+
+  - compatible		: "qca,ipq806x-pcm"
+  - pinctrl-N		: One property must exist for each entry in
+			  pinctrl-names.  See ../pinctrl/pinctrl-bindings.txt
+			  for details of the property values.
+  - pinctrl-names	: Must contain a "default" entry.
+
+
+Example:
+pcm: pcm@28100000 {
+	compatible = "qca,ipq806x-pcm";
+	pinctrl-0 = <&voip_pins>;
+	pinctrl-names = "default";
+};
+

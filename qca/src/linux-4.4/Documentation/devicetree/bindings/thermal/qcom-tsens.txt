@@ -1,0 +1,27 @@
+* QCOM SoC Temperature Sensor (TSENS)
+
+Required properties:
+- compatible :
+ - "qcom,msm8916-tsens" : For 8916 Family of SoCs
+ - "qcom,msm8974-tsens" : For 8974 Family of SoCs
+ - "qcom,msm8996-tsens" : For 8996 Family of SoCs
+ - "qcom,ipq8064-tsens" : For IPQ8064
+ - "qcom,ipq807x-tsens" : For IPQ807x
+
+- reg: Address range of the thermal registers
+- #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description.
+- Refer to Documentation/devicetree/bindings/nvmem/nvmem.txt to know how to specify
+nvmem cells
+
+Optional properties:
+- interrupts: Interrupt which gets triggered when threshold is hit
+
+Example:
+tsens: thermal-sensor@900000 {
+		compatible = "qcom,msm8916-tsens";
+		reg = <0x4a8000 0x2000>;
+		nvmem-cells = <&tsens_caldata>, <&tsens_calsel>;
+		nvmem-cell-names = "caldata", "calsel";
+		interrupts = <0 178 0>;
+		#thermal-sensor-cells = <1>;
+	};

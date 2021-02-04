@@ -1,0 +1,113 @@
+--- a/drivers/net/wireless/ath/ath10k/htt_rx.c
++++ b/drivers/net/wireless/ath/ath10k/htt_rx.c
+@@ -29,6 +29,7 @@
+ #include "spectral.h"
+ #include <linux/log2.h>
+ #include <linux/bitfield.h>
++#include "hif.h"
+ 
+ /* when under memory pressure rx ring refill may fail and needs a retry */
+ #define HTT_RX_RING_REFILL_RETRY_MS 50
+@@ -1162,6 +1163,7 @@ static void ath10k_htt_rx_h_undecap_raw(
+ 	size_t crypto_len;
+ 	bool is_first;
+ 	bool is_last;
++	bool msdu_limit_err;
+ 
+ 	rxd = (void *)msdu->data - sizeof(*rxd);
+ 	is_first = !!(rxd->msdu_end.common.info0 &
+@@ -1179,12 +1181,25 @@ static void ath10k_htt_rx_h_undecap_raw(
+ 	 * [FCS] <-- at end, needs to be trimmed
+ 	 */
+ 
++	/* Some hardwares(QCA99x0 variants) limit number of msdus in a-msdu when
++	 * deaggregate, so that unwanted MSDU-deaggregation is avoided for
++	 * error packets. If limit exceeds, hw sends all remaining MSDUs as
++	 * a single last MSDU with this msdu limit error set.
++	 */
++	msdu_limit_err = ath10k_rx_desc_msdu_limit_error(&ar->hw_params, rxd);
++
++	/* If MSDU limit error happens due to FCS error, then don't warn on,
++	 * the partial raw MSDU without first MSDU is expected in that case,
++	 * those packet will be dropped in upper layer.
++	 */
+ 	/* This probably shouldn't happen but warn just in case */
+-	if (unlikely(WARN_ON_ONCE(!is_first)))
++	if (unlikely(WARN_ON_ONCE(!is_first && !(msdu_limit_err &&
++				  (status->flag & RX_FLAG_FAILED_FCS_CRC)))))
+ 		return;
+ 
+ 	/* This probably shouldn't happen but warn just in case */
+-	if (unlikely(WARN_ON_ONCE(!(is_first && is_last))))
++	if (unlikely(WARN_ON_ONCE(!(is_first && is_last) && !(msdu_limit_err &&
++				  (status->flag & RX_FLAG_FAILED_FCS_CRC)))))
+ 		return;
+ 
+ 	skb_trim(msdu, msdu->len - FCS_LEN);
+--- a/drivers/net/wireless/ath/ath10k/hw.c
++++ b/drivers/net/wireless/ath/ath10k/hw.c
+@@ -924,8 +924,15 @@ static int ath10k_qca99x0_rx_desc_get_l3
+ 		  RX_MSDU_END_INFO1_L3_HDR_PAD);
+ }
+ 
++static int ath10k_qca99x0_rx_desc_msdu_limit_error(struct htt_rx_desc *rxd)
++{
++	return !!(rxd->msdu_end.common.info0 &
++		  __cpu_to_le32(RX_MSDU_END_INFO0_MSDU_LIMIT_ERR));
++}
++
+ const struct ath10k_hw_ops qca99x0_ops = {
+ 	.rx_desc_get_l3_pad_bytes = ath10k_qca99x0_rx_desc_get_l3_pad_bytes,
++	.rx_desc_get_msdu_limit_error = ath10k_qca99x0_rx_desc_msdu_limit_error,
+ };
+ 
+ const struct ath10k_hw_ops qca6174_ops = {
+--- a/drivers/net/wireless/ath/ath10k/hw.h
++++ b/drivers/net/wireless/ath/ath10k/hw.h
+@@ -590,6 +590,7 @@ struct ath10k_hw_ops {
+ 	int (*rx_desc_get_l3_pad_bytes)(struct htt_rx_desc *rxd);
+ 	void (*set_coverage_class)(struct ath10k *ar, s16 value);
+ 	int (*enable_pll_clk)(struct ath10k *ar);
++	int (*rx_desc_get_msdu_limit_error)(struct htt_rx_desc *rxd);
+ };
+ 
+ extern const struct ath10k_hw_ops qca988x_ops;
+@@ -608,6 +609,15 @@ ath10k_rx_desc_get_l3_pad_bytes(struct a
+ 	return 0;
+ }
+ 
++static inline int
++ath10k_rx_desc_msdu_limit_error(struct ath10k_hw_params *hw,
++				struct htt_rx_desc *rxd)
++{
++	if (hw->hw_ops->rx_desc_get_msdu_limit_error)
++		return hw->hw_ops->rx_desc_get_msdu_limit_error(rxd);
++	return 0;
++}
++
+ /* Target specific defines for MAIN firmware */
+ #define TARGET_NUM_VDEVS			8
+ #define TARGET_NUM_PEER_AST			2
+--- a/drivers/net/wireless/ath/ath10k/rx_desc.h
++++ b/drivers/net/wireless/ath/ath10k/rx_desc.h
+@@ -570,6 +570,7 @@ struct rx_msdu_start {
+ #define RX_MSDU_END_INFO0_REPORTED_MPDU_LENGTH_LSB  0
+ #define RX_MSDU_END_INFO0_FIRST_MSDU                (1 << 14)
+ #define RX_MSDU_END_INFO0_LAST_MSDU                 (1 << 15)
++#define RX_MSDU_END_INFO0_MSDU_LIMIT_ERR            (1 << 18)
+ #define RX_MSDU_END_INFO0_PRE_DELIM_ERR             (1 << 30)
+ #define RX_MSDU_END_INFO0_RESERVED_3B               (1 << 31)
+ 
+@@ -674,6 +675,12 @@ struct rx_msdu_end {
+  *		Indicates the last MSDU of the A-MSDU.  MPDU end status is
+  *		only valid when last_msdu is set.
+  *
++ *msdu_limit_error
++ * 		Indicates that the MSDU threshold was exceeded and thus
++ *		all the rest of the MSDUs will not be scattered and
++ *		will not be decapsulated but will be received in RAW format
++ *		as a single MSDU buffer.
++ *
+  *reserved_3a
+  *		Reserved: HW should fill with zero.  FW should ignore.
+  *

@@ -1,0 +1,66 @@
+--- a/include/net/cfg80211.h
++++ b/include/net/cfg80211.h
+@@ -380,6 +380,7 @@ static inline void wiphy_read_of_freq_li
+ struct vif_params {
+ 	u32 flags;
+ 	int use_4addr;
++	int map_enabled;
+ 	u8 macaddr[ETH_ALEN];
+ 	const u8 *vht_mumimo_groups;
+ 	const u8 *vht_mumimo_follow_addr;
+--- a/include/uapi/linux/nl80211.h
++++ b/include/uapi/linux/nl80211.h
+@@ -2196,6 +2196,9 @@ enum nl80211_commands {
+  * @NL80211_ATTR_NSS: Station's New/updated  RX_NSS value notified using this
+  *	u8 attribute. This is used with %NL80211_CMD_STA_OPMODE_CHANGED.
+  *
++ * @NL80211_ATTR_MAP: Station's Multi-AP capability notified using this
++ * 	attribute. This is used with %NL80211_CMD_SET_INTERFACE.
++ *
+  * @NUM_NL80211_ATTR: total number of nl80211_attrs available
+  * @NL80211_ATTR_MAX: highest attribute number currently defined
+  * @__NL80211_ATTR_AFTER_LAST: internal use
+@@ -2627,6 +2630,7 @@ enum nl80211_attrs {
+ 
+ 	NL80211_ATTR_NSS,
+ 	NL80211_ATTR_ACK_SIGNAL,
++	NL80211_ATTR_MAP,
+ 
+ 	/* add attributes here, update the policy in nl80211.c */
+ 
+--- a/net/wireless/nl80211.c
++++ b/net/wireless/nl80211.c
+@@ -422,6 +422,7 @@ static const struct nla_policy nl80211_p
+ 	[NL80211_ATTR_PMK] = { .type = NLA_BINARY, .len = PMK_MAX_LEN },
+ 	[NL80211_ATTR_SCHED_SCAN_MULTI] = { .type = NLA_FLAG },
+ 	[NL80211_ATTR_EXTERNAL_AUTH_SUPPORT] = { .type = NLA_FLAG },
++	[NL80211_ATTR_MAP] = { .type = NLA_U8},
+ };
+ 
+ /* policy for the key attributes */
+@@ -2938,6 +2939,15 @@ static int nl80211_set_interface(struct
+ 		params.use_4addr = -1;
+ 	}
+ 
++	if (info->attrs[NL80211_ATTR_MAP]) {
++		params.map_enabled = !!nla_get_u8(info->attrs[NL80211_ATTR_MAP]);
++		params.use_4addr = 1;
++		change = true;
++		err = nl80211_valid_4addr(rdev, dev, params.use_4addr, ntype);
++		if (err)
++			return err;
++	}
++
+ 	err = nl80211_parse_mon_options(rdev, ntype, info, &params);
+ 	if (err < 0)
+ 		return err;
+--- a/net/wireless/util.c
++++ b/net/wireless/util.c
+@@ -899,6 +899,7 @@ int cfg80211_change_iface(struct cfg8021
+ 
+ 	/* if it's part of a bridge, reject changing type to station/ibss */
+ 	if ((dev->priv_flags & IFF_BRIDGE_PORT) &&
++	    (ntype != otype) &&
+ 	    (ntype == NL80211_IFTYPE_ADHOC ||
+ 	     ntype == NL80211_IFTYPE_STATION ||
+ 	     ntype == NL80211_IFTYPE_P2P_CLIENT))

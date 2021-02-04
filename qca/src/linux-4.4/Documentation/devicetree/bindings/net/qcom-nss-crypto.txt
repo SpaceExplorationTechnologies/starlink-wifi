@@ -1,0 +1,21 @@
+* Qualcomm Technologies Inc. Crypto Platform Driver.
+
+This driver configures the crypto engine for IPSec traffic in UBI32.
+
+Required properties:
+- compatible: Should be qcom,nss-crypto
+- reg: Physical address and length of the register set for the device.
+- resets: physical address for crypto reset registe
+- qcom,ee: Number of interrupt lines(Execution Environments) supported by BAM.
+
+Example:
+
+crypto0: crypto@38000000 {
+	»        compatible = "qcom,nss-crypto";
+		»        reg-names = "crypto_pbase", "bam_base";
+		»        reg = <0x38000000 0x20000>,
+		»            <0x38004000 0x22000>;
+		»        resets = <&gcc CRYPTO_ENG2_RESET>;
+		»        reset-names = "rst_eng";
+		»        qcom,ee = <0>;
+};

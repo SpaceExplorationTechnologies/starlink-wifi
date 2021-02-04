@@ -1,0 +1,15 @@
+* Qualcomm Technologies IPQ4019 ASoC platform driver
+
+This node models the Qualcomm Technologies IPQ4019 ASoC platform driver
+
+Required properties:
+
+- compatible	 : "qca,ipq4019-pcm-i2s1"
+- reg		 : should have the stereo register address, length
+
+Example:
+i2s1platform: qca-pcm-i2s1@770b000 {
+	compatible = "qca,ipq4019-pcm-i2s1";
+	reg = <0x770b000 0x1000>;
+	status = "disabled";
+};

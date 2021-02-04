@@ -1,0 +1,13 @@
+Index: iozone3_420/src/current/makefile
+===================================================================
+--- iozone3_420.orig/src/current/makefile	2017-04-12 15:28:14.587543846 +0530
++++ iozone3_420/src/current/makefile	2017-04-12 15:30:10.184420779 +0530
+@@ -223,7 +223,7 @@
+ #
+ linux-mips:	iozone_linux-mips.o  libbif.o fileop_linux-mips.o pit_server.o
+ 	$(CC) -O3 $(LDFLAGS) iozone_linux-mips.o libbif.o \
+-		-lrt -lpthread -o iozone
++		-lrt -lpthread -ldl -o iozone
+ 	$(CC) -O3 -Dlinux fileop_linux-mips.o -o fileop
+ 	$(CC) -O3 -Dlinux pit_server.o -o pit_server
+ 
